@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" shouldIndentWhileEditing="NO" reuseIdentifier="cell" rowHeight="55" id="XyR-fy-Uvz" customClass="RearrangeGroupTableViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="55"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="XyR-fy-Uvz" id="eFu-7N-0Dq">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="71"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="group_friends_pic.png" translatesAutoresizingMaskIntoConstraints="NO" id="6Vo-NI-RRY" userLabel="BackgroundcontactImage">
+                        <rect key="frame" x="14" y="7" width="40" height="40"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="40" id="HTf-NT-tgI"/>
+                            <constraint firstAttribute="height" constant="40" id="w0Q-Ra-VFy"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Oa-Id-FIh" userLabel="BackgroundNameLabel">
+                        <rect key="frame" x="62" y="7" width="255" height="40"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="40" id="52Z-eZ-1Zq"/>
+                            <constraint firstAttribute="width" constant="255" id="5uC-bs-m94"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ADe-Bd-D7p" userLabel="MarginDividerLabel">
+                        <rect key="frame" x="0.0" y="54" width="320" height="1"/>
+                        <color key="backgroundColor" red="0.7843137255" green="0.78039215689999997" blue="0.80000000000000004" alpha="1" colorSpace="calibratedRGB"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" red="0.92156862750000001" green="0.92156862750000001" blue="0.92156862750000001" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                <constraints>
+                    <constraint firstAttribute="trailingMargin" secondItem="2Oa-Id-FIh" secondAttribute="trailing" constant="-5" id="0u2-Yh-g07"/>
+                    <constraint firstItem="2Oa-Id-FIh" firstAttribute="top" secondItem="eFu-7N-0Dq" secondAttribute="topMargin" constant="-1" id="4rU-5C-WFd"/>
+                    <constraint firstItem="6Vo-NI-RRY" firstAttribute="top" secondItem="eFu-7N-0Dq" secondAttribute="topMargin" constant="-1" id="AY7-av-O2u"/>
+                    <constraint firstItem="6Vo-NI-RRY" firstAttribute="leading" secondItem="eFu-7N-0Dq" secondAttribute="leadingMargin" constant="6" id="bam-iS-TJO"/>
+                    <constraint firstItem="2Oa-Id-FIh" firstAttribute="leading" secondItem="6Vo-NI-RRY" secondAttribute="trailing" constant="8" id="hHl-ap-f7C"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="2Oa-Id-FIh" secondAttribute="bottom" constant="-1" id="xvX-Ca-07S"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="6Vo-NI-RRY" secondAttribute="bottom" constant="-1" id="z1C-0Z-xKb"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <connections>
+                <outlet property="consLeadSpace" destination="bam-iS-TJO" id="zj8-e4-BIx"/>
+                <outlet property="nameLabel" destination="2Oa-Id-FIh" id="at5-cp-Ih9"/>
+                <outlet property="profileImg" destination="6Vo-NI-RRY" id="RFp-uc-77M"/>
+            </connections>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="group_friends_pic.png" width="50" height="50"/>
+    </resources>
+    <simulatedMetricsContainer key="defaultSimulatedMetrics">
+        <simulatedStatusBarMetrics key="statusBar"/>
+        <simulatedOrientationMetrics key="orientation"/>
+        <simulatedScreenMetrics key="destination" type="retina4"/>
+    </simulatedMetricsContainer>
+</document>
