@@ -1027,6 +1027,7 @@
 -(void)cellEditBtnPressed:(id)sender
 {
     UIButton *button=sender;
+    
     NSArray *titleArray=[button.titleLabel.text componentsSeparatedByString:@","];
     
     int row=[[titleArray objectAtIndex:0] intValue];
@@ -1049,7 +1050,6 @@
     MainMenuFlag=NO;
     [self.navigationController popViewControllerAnimated:YES];
 }
-
 
 - (IBAction)saveButtonPressed:(id)sender
 {
@@ -1102,4 +1102,28 @@
     textField.userInteractionEnabled=NO;
     return YES;
 }
+
+
+#pragma mark
+#pragma mark Helper Method
+#pragma mark
+
+-(id)getSuperviewOfType:(id)superview fromView:(id)myView
+{
+    if ([myView isKindOfClass:[superview class]]) {
+        return myView;
+    }
+    else
+    {
+        id temp=[myView superview];
+        while (1) {
+            if ([temp isKindOfClass:[superview class]]) {
+                return temp;
+            }
+            temp=[temp superview];
+        }
+    }
+    return nil;
+}
+
 @end

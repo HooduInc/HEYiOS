@@ -9,6 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
-@interface EditProfileControllerViewController : UIViewController<UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface EditProfileControllerViewController : UIViewController<UINavigationControllerDelegate,UIImagePickerControllerDelegate>
 
 @end

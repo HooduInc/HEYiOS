@@ -8,6 +8,7 @@
 
 #import "EditViewController.h"
 #import "PickFromListController.h"
+#import "Pick4mListViewController.h"
 #import "RearrangeViewController.h"
 #import "ButtonCell.h"
 #import "ChangeColorView.h"
@@ -22,6 +23,7 @@
 @interface EditViewController ()<UITableViewDataSource,UITableViewDelegate,UITextFieldDelegate, UIAlertViewDelegate>
 {
     IBOutlet UITableView *tblView;
+    IBOutlet UIButton *headerSaveButton;
     NSIndexPath *selectedIndexPath;
     BOOL isAddDelPressed;
     NSMutableArray *arrButtonStatus;
@@ -33,10 +35,9 @@
     BOOL isButtonSavePressed;
     
     //for menu editing and saving
-    BOOL isMenuEditingEnabled;
     BOOL isSubMenuEditingEnabled;
     NSIndexPath *menuEditingIndexPath;
-    UIAlertView *saveAlert;
+    UIAlertView *saveAlert, *warningAlert;
     int keyboardHeight;
 }
 
@@ -85,7 +86,6 @@
     }
     
     isAddDelPressed=NO;
-    isButtonSavePressed=NO;
     
     //Dismiss any Keyborad if background is tapped
     UITapGestureRecognizer* tapBackground = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard:)];
@@ -158,7 +158,9 @@
     [cell.btnHeader addTarget:self action:@selector(btnHeaderTapped:) forControlEvents:UIControlEventTouchUpInside];
     [cell.btnArrow setTag:section];
     [cell.btnArrow addTarget:self action:@selector(btnHeaderTapped:) forControlEvents:UIControlEventTouchUpInside];
-    //[cell.txtFiled setUserInteractionEnabled:NO];
+    [cell.btnSave addTarget:self action:@selector(btnSaveMenuTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [cell.btnSave setTag:section];
+    [cell.btnSave setHidden:YES];
     [cell.txtFiled setEnabled:NO];
     
     if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
@@ -170,10 +172,43 @@
     cell.constraintBgImgBottomSpace.constant=cell.constraintBgImgBottomSpace.constant+8;
     
     if (obj.arrSubMenu.count==0)
-    {
         cell.btnArrow.hidden=YES;
+    
+    if (obj.isSubMenuOpen)
+        cell.btnArrow.transform=CGAffineTransformMakeRotation(M_PI);
+        
+    else
+        cell.btnArrow.transform=CGAffineTransformMakeRotation(M_PI*2);
+    
+    
+    if (obj.isShowSaveBtn)
+    {
+        cell.btnSave.hidden=NO;
+        if (obj.arrSubMenu.count==0)
+            cell.constraintbtnArrowWidth.constant=0.0f;
+        
+        [cell.txtFiled setEnabled:YES];
+        [cell.txtFiled becomeFirstResponder];
+        
+        NSIndexPath *createIndexPathForSection=[NSIndexPath indexPathForRow:0 inSection:section];
+        menuEditingIndexPath=createIndexPathForSection;
+        
+        
+        CGRect rectOfCellInTableView = [tblView rectForSection:section];
+        CGPoint point=tblView.contentOffset;
+        CGRect textFieldRect=cell.txtFiled.frame;
+        
+        NSLog(@"KeyBoardHeight: %d", keyboardHeight);
+        
+        if (rectOfCellInTableView.origin.y+textFieldRect.origin.y+textFieldRect.size.height+textFieldRect.size.height>keyboardHeight)
+        {
+            [tblView setContentOffset:CGPointMake(point.x, rectOfCellInTableView.origin.y-textFieldRect.size.height- textFieldRect.origin.y) animated:YES];
+        }
+        
     }
-
+    
+    
+    
     UIView *headerView = [[UIView alloc] initWithFrame:[cell frame]];
     [headerView addSubview:cell];
     
@@ -183,21 +218,28 @@
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     ModelMenu *obj=[arrDisplay objectAtIndex:section];
-    if (selectedIndexPath==nil) {
+    if (selectedIndexPath==nil)
+    {
         //NSLog(@"%ld = 0",(long)section);
         return 0;
-    }else{
-        if (selectedIndexPath.section==section) {
-            if (obj.arrSubMenu.count==0 && isAddDelPressed==NO) {
+    }
+    else
+    {
+        if (selectedIndexPath.section==section)
+        {
+            if (obj.arrSubMenu.count==0 && isAddDelPressed==NO)
+            {
                 //NSLog(@"%ld = 1",(long)section);
                 return 1;
             }
-            else if (obj.arrSubMenu.count==0 && isAddDelPressed==YES){
+            else if (obj.arrSubMenu.count==0 && isAddDelPressed==YES)
+            {
                 return 3;
             }
-            else{
+            else if(obj.arrSubMenu.count>0)
+            {
                 //NSLog(@"%ld = %ld",(long)section,obj.arrSubMenu.count);
-                return obj.arrSubMenu.count+3;
+                return obj.arrSubMenu.count+2;
             }
         }
     }
@@ -221,9 +263,11 @@
     //NSLog(@"Section=%ld Row=%ld",(long)indexPath.section,indexPath.row);
     UITableViewCell *myCell;
     
+    ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
+    
     if (indexPath.row==0)
     {
-        //This is for First Row.
+        //This is for First Row. All buttons are here
         ButtonCell *cell=(ButtonCell*)[tableView dequeueReusableCellWithIdentifier:str];
         if (cell==nil) {
             cell=[[[NSBundle mainBundle] loadNibNamed:@"ButtonCell" owner:selectedIndexPath options:nil] objectAtIndex:0];
@@ -252,10 +296,11 @@
         
         myCell=cell;
     }
-    else if (indexPath.row==[self tableView:tableView numberOfRowsInSection:indexPath.section]-1)
+    
+    else if (indexPath.row==[self tableView:tableView numberOfRowsInSection:indexPath.section]-2 && obj.arrSubMenu.count==0)
     {
         
-        //This is for Last Row.
+        //This is for 2nd Last Row. Enter your new sub message
         MenuListTableViewCell *cell=(MenuListTableViewCell*)[tableView dequeueReusableCellWithIdentifier:str];
         if (cell==nil)
         {
@@ -264,39 +309,8 @@
         
         cell.constraintLeadingSpace.constant=cell.constraintTrailingSpace.constant+20.0f;
         
-        if (indexPath.row==0) {
-            cell.constraintBgImgTopSpace.constant=2.0f;
-        }
-        cell.btnArrow.hidden=YES;
-        
-        cell.txtFiled.text=@"Add More";
-        cell.txtFiled.font=[UIFont boldSystemFontOfSize:16.0f];
-        [cell.txtFiled setUserInteractionEnabled:NO];
-        
-        ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
-        cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
-        
-        cell.constraintBtnCloseHeight.constant=cell.constraintBtnCloseWidth.constant=0.0f;
-        
-        [cell.btnHeader addTarget:self action:@selector(btnAddMorePressed:) forControlEvents:UIControlEventTouchUpInside];
-        cell.btnHeader.hidden=NO;
-        
-        myCell=cell;
-        
-    }
-    else if (indexPath.row==[self tableView:tableView numberOfRowsInSection:indexPath.section]-2)
-    {
-        
-        //This is for 2nd Last Row.
-        MenuListTableViewCell *cell=(MenuListTableViewCell*)[tableView dequeueReusableCellWithIdentifier:str];
-        if (cell==nil)
+        if (indexPath.row==0)
         {
-            cell=[[[NSBundle mainBundle] loadNibNamed:@"MenuListTableViewCell" owner:self options:nil] objectAtIndex:0];
-        }
-        
-        cell.constraintLeadingSpace.constant=cell.constraintTrailingSpace.constant+20.0f;
-        
-        if (indexPath.row==0) {
             cell.constraintBgImgTopSpace.constant=2.0f;
         }
         cell.btnArrow.hidden=YES;
@@ -306,9 +320,54 @@
         
         [cell.txtFiled setUserInteractionEnabled:YES];
         
-        ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
+        //ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
         cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
-
+        
+        cell.constraintBtnCloseHeight.constant=cell.constraintBtnCloseWidth.constant=0.0f;
+        
+        cell.txtFiled.delegate=self;
+        cell.txtFiled.returnKeyType=UIReturnKeyDone;
+        
+        if (indexPath.section==lastEditedIndexPath.section && indexPath.row==lastEditedIndexPath.row)
+        {
+            cell.txtFiled.text=strTemp;
+        }
+        [cell.btnSave addTarget:self action:@selector(btnAddSubMenuFromCellTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.btnSave setTag:indexPath.section];
+        [cell.btnSave setHidden:NO];
+        cell.constraintbtnArrowWidth.constant=0.0f;
+        
+        myCell=cell;
+        
+    }
+    
+    //Whenever each menu have sub menus show only one editable bubble
+    else if (indexPath.row==[self tableView:tableView numberOfRowsInSection:indexPath.section]-1 && obj.arrSubMenu.count>0)
+    {
+        
+        //This is for 2nd Last Row. Enter your new sub message
+        MenuListTableViewCell *cell=(MenuListTableViewCell*)[tableView dequeueReusableCellWithIdentifier:str];
+        if (cell==nil)
+        {
+            cell=[[[NSBundle mainBundle] loadNibNamed:@"MenuListTableViewCell" owner:self options:nil] objectAtIndex:0];
+        }
+        
+        cell.constraintLeadingSpace.constant=cell.constraintTrailingSpace.constant+20.0f;
+        
+        if (indexPath.row==0)
+        {
+            cell.constraintBgImgTopSpace.constant=2.0f;
+        }
+        cell.btnArrow.hidden=YES;
+        
+        NSAttributedString *str = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor whiteColor] }];
+        cell.txtFiled.attributedPlaceholder = str;
+        
+        [cell.txtFiled setUserInteractionEnabled:YES];
+        
+        //ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
+        cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
+        
         cell.constraintBtnCloseHeight.constant=cell.constraintBtnCloseWidth.constant=0.0f;
         
         cell.txtFiled.delegate=self;
@@ -317,22 +376,66 @@
         if (indexPath.section==lastEditedIndexPath.section && indexPath.row==lastEditedIndexPath.row) {
             cell.txtFiled.text=strTemp;
         }
-
+        [cell.btnSave addTarget:self action:@selector(btnAddSubMenuFromCellTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.btnSave setTag:indexPath.section];
+        [cell.btnSave setHidden:NO];
+        cell.constraintbtnArrowWidth.constant=0.0f;
+        
         myCell=cell;
         
     }
+    
+    else if (indexPath.row==[self tableView:tableView numberOfRowsInSection:indexPath.section]-1 && obj.arrSubMenu.count==0)
+    {
+        
+        //This is for Last Row.Enter your message here is disabled but will generate new sub message bubble by clicking it.
+        MenuListTableViewCell *cell=(MenuListTableViewCell*)[tableView dequeueReusableCellWithIdentifier:str];
+        if (cell==nil)
+        {
+            cell=[[[NSBundle mainBundle] loadNibNamed:@"MenuListTableViewCell" owner:self options:nil] objectAtIndex:0];
+        }
+        
+        cell.constraintLeadingSpace.constant=cell.constraintTrailingSpace.constant+20.0f;
+        
+        if (indexPath.row==0) {
+            cell.constraintBgImgTopSpace.constant=2.0f;
+        }
+        cell.btnArrow.hidden=YES;
+        
+        cell.txtFiled.text=@"Enter your message here";
+        cell.txtFiled.font=[UIFont boldSystemFontOfSize:16.0f];
+        [cell.txtFiled setUserInteractionEnabled:NO];
+        
+        //ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
+        cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
+        
+        cell.constraintBtnCloseHeight.constant=cell.constraintBtnCloseWidth.constant=0.0f;
+        
+        [cell.btnHeader addTarget:self action:@selector(btnAddMorePressed:) forControlEvents:UIControlEventTouchUpInside];
+        cell.btnHeader.hidden=NO;
+        cell.constraintbtnArrowWidth.constant=0.0f;
+        
+        myCell=cell;
+        
+    }
+    
     else
     {
-        ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
+        //Other sub message options
+        //ModelMenu *obj=[arrDisplay objectAtIndex:indexPath.section];
         ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:indexPath.row-1];
         if (selectedsubmenuIndexPath==indexPath)
         {
+            //selected sub message
             MenuListSelectedTableViewCell *cell=(MenuListSelectedTableViewCell*)[tableView dequeueReusableCellWithIdentifier:str];
             if (cell==nil) {
                 cell=[[[NSBundle mainBundle] loadNibNamed:@"MenuListSelectedTableViewCell" owner:self options:nil] objectAtIndex:0];
             }
             [cell.btnClose addTarget:self action:@selector(btnClosePressed:) forControlEvents:UIControlEventTouchUpInside];
             [cell.btnSubMenu addTarget:self action:@selector(btnSubMenuTapped:) forControlEvents:UIControlEventTouchUpInside];
+            
+            [cell.btnSave addTarget:self action:@selector(btnSaveSubMenuTapped:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.btnSave setTag:indexPath.section];
             
             [cell.btnChangeMessage addTarget:self action:@selector(btnChangeSubMenuText:) forControlEvents:UIControlEventTouchUpInside];
             [cell.btnPickFromList addTarget:self action:@selector(btnPickFromListSubMenu:) forControlEvents:UIControlEventTouchUpInside];
@@ -351,6 +454,7 @@
         }
         else
         {
+            //normal non selected sub message
             MenuListTableViewCell *cell=(MenuListTableViewCell*)[tableView dequeueReusableCellWithIdentifier:str];
             if (cell==nil)
             {
@@ -380,6 +484,9 @@
             [cell.contentView bringSubviewToFront:cell.btnClose];
             
             [cell.btnHeader addTarget:self action:@selector(btnSubMenuTapped:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.btnSave addTarget:self action:@selector(btnSaveSubMenuTapped:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.btnSave setTag:indexPath.section];
+            [cell.btnSave setHidden:YES];
             
             myCell=cell;
         }
@@ -421,7 +528,6 @@
 -(void) dismissKeyboard:(id)sender
 {
     [self.view endEditing:YES];
-    isMenuEditingEnabled=NO;
     isSubMenuEditingEnabled=NO;
     [tblView setContentOffset:CGPointZero animated:YES];
 }
@@ -439,6 +545,7 @@
 -(void) hideAlertView
 {
     [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
+    [warningAlert dismissWithClickedButtonIndex:0 animated:YES];
 }
 
 #pragma mark
@@ -459,7 +566,11 @@
 
 -(void)btnHeaderTapped:(id)sender
 {
-    if (isAddDelPressed) {
+    
+    [self viewWillAppear:YES];
+    
+    if (isAddDelPressed)
+    {
         isAddDelPressed=NO;
     }
     NSLog(@"sender tag = %ld",(long)[sender tag]);
@@ -479,10 +590,19 @@
         if (selectedIndexPath.section==[sender tag]) {
             
             selectedIndexPath=nil;
-        }else{
+        }
+        else
+        {
             selectedIndexPath=[NSIndexPath indexPathForRow:0 inSection:[sender tag]];
         }
     }
+    ModelMenu *obj=[arrDisplay objectAtIndex:[sender tag]];
+    if (obj.isSubMenuOpen)
+        obj.isSubMenuOpen=NO;
+
+    else
+        obj.isSubMenuOpen=YES;
+    
     [tblView reloadData];
 }
 
@@ -503,7 +623,12 @@
 
 -(void)btnAddMorePressed:(id)sender
 {
-    if (lastEditedIndexPath) {
+    warningAlert=[[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Please add first sub-message" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    [warningAlert show];
+    [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:1.0];
+    
+    if (lastEditedIndexPath)
+    {
         MenuListTableViewCell *cell=(MenuListTableViewCell*)[tblView cellForRowAtIndexPath:lastEditedIndexPath];
         cell.txtFiled.text=@"";
         [cell.txtFiled becomeFirstResponder];
@@ -521,7 +646,7 @@
     
     if([DBManager checkSubmenuWithMenuText:obj.strMenuId withTableColoum:@"menuId"])
     {
-        UIAlertView *warning= [[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Do You Want to Delete All Sub Messages of This Menu?" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Ok", nil];
+        UIAlertView *warning= [[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Do You Want to Delete All Sub Messages of This Menu?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
         warning.tag=[obj.strMenuId intValue];
         [warning show];
     }
@@ -534,6 +659,7 @@
     NSLog(@"Section = %ld row= %ld",(long)indexPath.section,(long)indexPath.row);
     selectedIndexPath=indexPath;
     isAddDelPressed=YES;
+    obj.iscellAddDelBtnPressed=YES;
     [tblView reloadData];
 }
 
@@ -554,7 +680,9 @@
     NSString *menuDetails=[NSString stringWithFormat:@"%@,%@",obj.strMenuId,obj.strMenuName];
     NSLog(@"MenuDetails sent to PickFromListController: %@",menuDetails);
     
-    PickFromListController *pickListController = [[PickFromListController alloc] initWithNibName:@"PickFromListController" bundle:nil];
+    //PickFromListController *pickListController = [[PickFromListController alloc] initWithNibName:@"PickFromListController" bundle:nil];
+    
+    Pick4mListViewController *pickListController = [[Pick4mListViewController alloc] initWithNibName:@"Pick4mListViewController" bundle:nil];
     pickListController.MainMenuDetailsFromPrevious=menuDetails;
     pickListController.MainMenuFlag=YES;
     pickListController.FlagFromSettings=NO;
@@ -574,7 +702,8 @@
     NSString *subMenuDetails=[NSString stringWithFormat:@"%@,%@,%@",obj.strMenuId,objSub.strSubMenuId,objSub.strSubMenuName];
     NSLog(@"submenuDetails sent to PickFromListController %@",subMenuDetails);
     
-    PickFromListController *pickListController = [[PickFromListController alloc] initWithNibName:@"PickFromListController" bundle:nil];
+    //PickFromListController *pickListController = [[PickFromListController alloc] initWithNibName:@"PickFromListController" bundle:nil];
+    Pick4mListViewController *pickListController = [[Pick4mListViewController alloc] initWithNibName:@"Pick4mListViewController" bundle:nil];
     pickListController.SubMenuDetailsFromPrevious=subMenuDetails;
     pickListController.FlagFromSettings=NO;
     [self.navigationController pushViewController:pickListController animated:YES];
@@ -584,34 +713,41 @@
 //Change Message for Menu
 -(void)btnChangeMenuText:(id)sender
 {
-    ButtonCell *cell=(ButtonCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
-    NSIndexPath *indexPath=[tblView indexPathForCell:cell];
-    //NSLog(@"Section Clicked: %ld",(long)indexPath.section);
+    ModelMenu *obj=[arrDisplay objectAtIndex:[sender tag]];
     
-    UITextField *menuTextField=(UITextField *)[self.view viewWithTag:400+indexPath.section];
-    //NSLog(@"Text: %@",menuTextField.text);
-    
-    [menuTextField setEnabled:YES];
-    [menuTextField becomeFirstResponder];
-    
-    menuEditingIndexPath=indexPath;
-    isMenuEditingEnabled=YES;
-    isSubMenuEditingEnabled=NO;
-    
-    
-    CGRect rectOfCellInTableView = [tblView rectForSection:indexPath.section];
-    CGPoint point=tblView.contentOffset;
-    CGRect textFieldRect=menuTextField.frame;
-    UIButton *buttonChangeMsg=(UIButton*)sender;
-    CGRect buttonFieldRect=buttonChangeMsg.frame;
-    
-    NSLog(@"KeyBoardHeight: %d", keyboardHeight);
-    
-    if (rectOfCellInTableView.origin.y+textFieldRect.origin.y+textFieldRect.size.height+buttonFieldRect.size.height>keyboardHeight)
+    NSLog(@"SaveButtonStatus: %d",obj.isShowSaveBtn);
+    if(obj.isShowSaveBtn)
     {
-        [tblView setContentOffset:CGPointMake(point.x, rectOfCellInTableView.origin.y-textFieldRect.size.height- textFieldRect.origin.y-buttonFieldRect.size.height-buttonFieldRect.origin.y) animated:YES];
+        obj.isShowSaveBtn=NO;
+        [tblView reloadData];
     }
+    else
+    {
+        obj.isShowSaveBtn=YES;
+        [tblView reloadData];
+    }
+}
 
+-(void) btnSaveMenuTapped:(id)sender
+{
+    NSLog(@"Section=%ld Row=%ld",(long)lastEditedIndexPath.section,(long)lastEditedIndexPath.row);
+    
+    ModelMenu *obj=[arrDisplay objectAtIndex:menuEditingIndexPath.section];
+    UITextField *menuTextField=(UITextField *)[self.view viewWithTag:400+menuEditingIndexPath.section];
+    NSLog(@"MenuID: %@",obj.strMenuId);
+    NSLog(@"Updated MenuText: %@",menuTextField.text);
+    [menuTextField setEnabled:NO];
+    [menuTextField resignFirstResponder];
+    
+    if(menuTextField.text.length>0)
+        [DBManager updatemenuWithMenuId:obj.strMenuId withMenuTitle:menuTextField.text];
+    
+    menuEditingIndexPath=nil;
+    arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+    [tblView reloadData];
+    
+    [saveAlert show];
+    [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
 }
 
 //Change Message for Menu
@@ -623,12 +759,59 @@
     NSLog(@"Row Clicked for Section: %ld, %ld",(long)indexPath.section,(long)indexPath.row);
     
     MenuListSelectedTableViewCell *subMmenuCell=(MenuListSelectedTableViewCell*)[tblView cellForRowAtIndexPath:indexPath];
+    [subMmenuCell.btnSave setHidden:NO];
     [subMmenuCell.txtField setUserInteractionEnabled:YES];
     [subMmenuCell.txtField becomeFirstResponder];
     
     menuEditingIndexPath=indexPath;
-    isMenuEditingEnabled=NO;
-    isSubMenuEditingEnabled=YES;
+}
+
+
+-(void) btnSaveSubMenuTapped:(id)sender
+{
+    if(menuEditingIndexPath)
+    {
+        MenuListSelectedTableViewCell *cell = (MenuListSelectedTableViewCell*)[tblView cellForRowAtIndexPath:menuEditingIndexPath];
+    
+        ModelMenu *obj=[arrDisplay objectAtIndex:menuEditingIndexPath.section];
+        ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:menuEditingIndexPath.row-1];
+        NSLog(@"MenuID: %@",obj.strMenuId);
+        NSLog(@"SubMenuID: %@",objSub.strSubMenuId);
+        NSLog(@"Updated SubMenu: %@",cell.txtField.text);
+        
+        if(cell.txtField.text.length>0)
+            [DBManager updatesubnemuWithMenuId:[NSString stringWithFormat:@"%@,%@",obj.strMenuId,objSub.strSubMenuId] withsubmenutitle:cell.txtField.text];
+        
+        
+        isSubMenuEditingEnabled=NO;
+        menuEditingIndexPath=nil;
+        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+        [tblView reloadData];
+        
+        [saveAlert show];
+        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+    }
+    
+}
+
+-(void) btnAddSubMenuFromCellTapped:(id) sender
+{
+    if (lastEditedIndexPath)
+    {
+        MenuListTableViewCell *cell=(MenuListTableViewCell*)[tblView cellForRowAtIndexPath:lastEditedIndexPath];
+        if ([cell.txtFiled isFirstResponder])
+        {
+            [cell.txtFiled resignFirstResponder];
+        }
+        ModelMenu *obj=[arrDisplay objectAtIndex:lastEditedIndexPath.section];
+        [DBManager addSubMenuWithMenuId:obj.strMenuId withSubMenuText:strTemp];
+        lastEditedIndexPath=nil;
+        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+        [tblView reloadData];
+        
+        [saveAlert show];
+        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+    }
 }
 
 -(IBAction)btnRearrangedPressed:(id)sender
@@ -648,7 +831,7 @@
     NSLog(@"Section=%ld Row=%ld",(long)lastEditedIndexPath.section,(long)lastEditedIndexPath.row);
     isButtonSavePressed=YES;
     
-    if (lastEditedIndexPath && isMenuEditingEnabled==NO && isSubMenuEditingEnabled==NO)
+    if (lastEditedIndexPath && isSubMenuEditingEnabled==NO)
     {
         MenuListTableViewCell *cell=(MenuListTableViewCell*)[tblView cellForRowAtIndexPath:lastEditedIndexPath];
         if ([cell.txtFiled isFirstResponder])
@@ -662,27 +845,6 @@
         [tblView reloadData];
         
         [saveAlert show];
-        
-        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
-    }
-    
-    else if(menuEditingIndexPath && isMenuEditingEnabled)
-    {
-        ModelMenu *obj=[arrDisplay objectAtIndex:menuEditingIndexPath.section];
-        UITextField *menuTextField=(UITextField *)[self.view viewWithTag:400+menuEditingIndexPath.section];
-        NSLog(@"MenuID: %@",obj.strMenuId);
-        NSLog(@"Updated MenuText: %@",menuTextField.text);
-        
-        if(menuTextField.text.length>0)
-         [DBManager updatemenuWithMenuId:obj.strMenuId withMenuTitle:menuTextField.text];
-        
-        isMenuEditingEnabled=NO;
-        menuEditingIndexPath=nil;
-        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
-        [tblView reloadData];
-        
-        [saveAlert show];
-        
         [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
     }
     
@@ -706,7 +868,6 @@
         [tblView reloadData];
         
         [saveAlert show];
-        
         [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
     }
 }
@@ -774,7 +935,6 @@
         arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
         [tblView reloadData];
     }
-    
 }
 
 @end

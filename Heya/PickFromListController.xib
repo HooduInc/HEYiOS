@@ -9,7 +9,7 @@
             <connections>
                 <outlet property="editButton" destination="xC4-SK-f72" id="xDg-UT-jeB"/>
                 <outlet property="editTextLabel" destination="TN1-RM-O3u" id="zWd-Qr-sRN"/>
-                <outlet property="pickListTableView" destination="juw-NI-u58" id="YOD-pZ-3r7"/>
+                <outlet property="pickListTableView" destination="juw-NI-u58" id="ll6-4k-vsj"/>
                 <outlet property="saveButton" destination="yFP-f5-y9p" id="dnp-J7-RLg"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
@@ -69,8 +69,8 @@
                     <color key="sectionIndexBackgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                     <color key="sectionIndexTrackingBackgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     <connections>
-                        <outlet property="dataSource" destination="-1" id="FbN-Of-rRZ"/>
-                        <outlet property="delegate" destination="-1" id="xtm-TL-Mf0"/>
+                        <outlet property="dataSource" destination="-1" id="Lej-ib-sxQ"/>
+                        <outlet property="delegate" destination="-1" id="91s-ii-GSE"/>
                     </connections>
                 </tableView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   Swipe a message to Edit or Delete it from Pick List" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="TN1-RM-O3u" userLabel="Message">

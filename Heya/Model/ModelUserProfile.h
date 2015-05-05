@@ -16,4 +16,7 @@
 @property(strong,nonatomic) NSString *strPhoneNo;
 @property(strong,nonatomic) NSString *strDeviceUDID;
 @property(strong,nonatomic) NSString *strProfileImage;
+@property(strong,nonatomic) NSString *strCurrentTimeStamp;
+@property(strong,nonatomic) NSString *strAccountCreated;
+@property(assign,nonatomic) int isSendToServer;
 @end

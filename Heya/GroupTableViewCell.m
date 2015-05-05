@@ -209,8 +209,8 @@ static CGFloat const kBounceValue = 10.0f;
 - (void)resetConstraintContstantsToZero:(BOOL)animated notifyDelegateDidClose:(BOOL)notifyDelegate {
     //TODO: Notify delegate.
     
-    if (self.startingRightLayoutConstraintConstant == -8 &&
-        self.contentViewRightConstraint.constant == -8) {
+    if (self.startingRightLayoutConstraintConstant == -8 && self.contentViewRightConstraint.constant == -8)
+    {
         //Already all the way closed, no bounce necessary
         return;
     }
@@ -236,6 +236,7 @@ static CGFloat const kBounceValue = 10.0f;
     {
         return;
     }
+    
     //2
     self.contentViewLeftConstraint.constant = -[self buttonTotalWidth] - kBounceValue;
     self.contentViewRightConstraint.constant = [self buttonTotalWidth] + kBounceValue;
@@ -260,14 +261,15 @@ static CGFloat const kBounceValue = 10.0f;
 {
     if (sender == self.changeTextBtn)
     {
-        [self.delegate groupButtonChangeActionForItemText:sender];
         [self resetConstraintContstantsToZero:YES notifyDelegateDidClose:YES];
+        [self.delegate groupButtonChangeActionForItemText:sender];
+        
         NSLog(@"Clicked change button!");
     }
     else if (sender == self.deleteTextBtn)
     {
-        [self.delegate buttonDeleteActionForItemText:sender];
         [self resetConstraintContstantsToZero:YES notifyDelegateDidClose:YES];
+        [self.delegate buttonDeleteActionForItemText:sender];
         NSLog(@"Clicked delete button!");
     }
     else

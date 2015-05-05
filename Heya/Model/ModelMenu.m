@@ -19,6 +19,9 @@
         self.strMenuOrder=@"";
         self.strMenuPageNo=@"";
         self.arrSubMenu=[[NSMutableArray alloc] init];
+        self.isSubMenuOpen=NO;
+        self.isShowSaveBtn=NO;
+        self.iscellAddDelBtnPressed=NO;
     }
     return self;
 }

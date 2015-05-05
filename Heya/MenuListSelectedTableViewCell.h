@@ -19,5 +19,6 @@
 
 @property(strong,nonatomic) IBOutlet NSLayoutConstraint *constraintLeadingImage;
 @property(strong,nonatomic) IBOutlet NSLayoutConstraint *constraintTrailingImage;
+@property(strong,nonatomic) IBOutlet UIButton *btnSave;
 
 @end

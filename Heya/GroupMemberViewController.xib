@@ -15,6 +15,7 @@
                 <outlet property="groupNameTextField" destination="eCg-Z6-mJa" id="AF8-Pc-hMg"/>
                 <outlet property="groupSwipeTextLabel" destination="Zzd-Bv-4eM" id="Y8Y-OQ-loA"/>
                 <outlet property="resignEditGroupButtonLabel" destination="B7j-qG-geW" id="x7b-Ci-1o7"/>
+                <outlet property="saveBtn" destination="Upt-Mt-7NE" id="QVG-xL-YJg"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="PIi-D9-CSZ"/>
             </connections>
         </placeholder>

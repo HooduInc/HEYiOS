@@ -11,8 +11,7 @@
 #import "Reachability.h"
 #import "MBProgressHUD.h"
 #import "ModelUserProfile.h"
-
-#define RegisterURL @"https://qa.campusclouds.com/hey/profile_details"
+#import "HeyWebService.h"
 
 @interface CreateProfileController ()<UIAlertViewDelegate>
 {
@@ -21,7 +20,7 @@
     NSUserDefaults *pref;
     NSMutableDictionary *contactInfoDict;
     NSString *urlString, *contactNumString;
-    NSString *UDID, *fullName, *contactNumber, *timeStamp;
+    NSString *UDID, *fullName, *contactNumber;
     
     BOOL isReachable;
     NSData *profileImageData;
@@ -56,7 +55,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWasShown:)
                                                  name:UIKeyboardDidShowNotification object:nil];
-
+    
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -110,10 +109,10 @@
         callIcon.hidden=YES;
         
         /*self.FirstName.text=@"";
-        self.lastName.text=@"";
-        self.heyName.text=@"";
-        self.ContactNo.text=@"";
-        self.profileImage.image = [UIImage imageNamed:@"man_icon.png"];*/
+         self.lastName.text=@"";
+         self.heyName.text=@"";
+         self.ContactNo.text=@"";
+         self.profileImage.image = [UIImage imageNamed:@"man_icon.png"];*/
         
         [self.FirstName setUserInteractionEnabled:YES];
         [self.lastName setUserInteractionEnabled:YES];
@@ -165,145 +164,139 @@
         [self.heyName resignFirstResponder];
         [self.ContactNo resignFirstResponder];
         
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-        
-        NSString *remoteHostName =RegisterURL;
-        
-        self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-        [self.hostReachability startNotifier];
-        [self updateInterfaceWithReachability:self.hostReachability];
-        
-        self.internetReachability = [Reachability reachabilityForInternetConnection];
-        [self.internetReachability startNotifier];
-        [self updateInterfaceWithReachability:self.internetReachability];
-        
-        self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-        [self.wifiReachability startNotifier];
-        [self updateInterfaceWithReachability:self.wifiReachability];
-        
-        if([self isNetworkAvailable])
+        NSString *profileImage=@"";
+        if([pref objectForKey:@"ProfileImage"])
         {
-            NSString *profileImage;
-            if([pref objectForKey:@"ProfileImage"])
+            NSString *imgValue=[NSString stringWithFormat:@"%@",[pref objectForKey:@"ProfileImage"]];
+            
+            if([imgValue isEqualToString:@"man_icon.png"])
+                self.profileImage.image = [UIImage imageNamed:@"man_icon.png"];
+            
+            else
             {
-                NSString *imgValue=[NSString stringWithFormat:@"%@",[pref objectForKey:@"ProfileImage"]];
+                NSData *imgData=(NSData*)[pref objectForKey:@"ProfileImage"];
                 
-                if([imgValue isEqualToString:@"man_icon.png"])
-                    self.profileImage.image = [UIImage imageNamed:[pref objectForKey:@"ProfileImage"]];
-                
-                else
-                {
-                    NSData *imgData=(NSData*)[pref objectForKey:@"ProfileImage"];
-                    
-                    profileImage= [imgData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-                    UIImage  *img = [UIImage imageWithData:imgData];
-                    self.profileImage.image=img;
-                }
-                [pref removeObjectForKey:@"ProfileImage"];
-            }
-            else if(profileImageData!=NULL)
-            {
-                profileImage= [profileImageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-                UIImage  *img = [UIImage imageWithData:profileImageData];
+                profileImage= [imgData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+                UIImage  *img = [UIImage imageWithData:imgData];
                 self.profileImage.image=img;
             }
-            
-            //NSLog(@"IMageString: %@",[profileImageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength]);
-            
-            UDID=@"80000000000000";
-            //UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-            
-            NSMutableArray *arrayUser=[[NSMutableArray alloc] init];
-            ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
-            userObj.strFirstName=self.FirstName.text;
-            userObj.strLastName=self.lastName.text;
-            userObj.strHeyName=self.heyName.text;
-            userObj.strPhoneNo=self.ContactNo.text;
-            userObj.strDeviceUDID=UDID;
-            userObj.strProfileImage=profileImage;
-            
-            [arrayUser addObject:userObj];
-            
-            BOOL isInserted=[DBManager addProfile:arrayUser];
+            [pref removeObjectForKey:@"ProfileImage"];
+        }
+        else if(profileImageData!=NULL)
+        {
+            profileImage= [profileImageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+            UIImage  *img = [UIImage imageWithData:profileImageData];
+            self.profileImage.image=img;
+        }
         
-            if (isInserted)
+        //NSLog(@"IMageString: %@",[profileImageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength]);
+        
+        #warning “Change Random No to Device UDID!!!!!”
+        
+        //long long int rand_phone = (arc4random() % 900000000000000) + 100000000000000;
+        //UDID=[NSString stringWithFormat:@"%ld",(long)rand_phone];
+        UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        
+        NSMutableArray *arrayUser=[[NSMutableArray alloc] init];
+        ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
+        userObj.strFirstName=self.FirstName.text;
+        userObj.strLastName=self.lastName.text;
+        userObj.strHeyName=self.heyName.text;
+        userObj.strPhoneNo=self.ContactNo.text;
+        userObj.strDeviceUDID=UDID;
+        if (profileImage.length==0)
+            userObj.strProfileImage=@"man_icon.png";
+        else
+            userObj.strProfileImage=profileImage;
+        
+        
+        NSDate *today=[NSDate date];
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"dd-MM-yyyy"];
+        NSString *timeStamp = [formatter stringFromDate:today];
+        
+        userObj.strCurrentTimeStamp=timeStamp;
+        
+        NSDate *downloadDate= (NSDate*)[[NSUserDefaults standardUserDefaults] valueForKey:@"applicationInstalledDate"];
+        NSDateFormatter *formatterStart = [[NSDateFormatter alloc] init];
+        [formatterStart setDateFormat:@"dd-MM-yyyy"];
+        NSString *accountCreated = [formatter stringFromDate:downloadDate];
+        
+        userObj.strAccountCreated=accountCreated;
+        
+        [arrayUser addObject:userObj];
+        
+        BOOL isInserted=[DBManager addProfile:arrayUser];
+        
+        if (isInserted)
+        {
+            
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Successfully registered." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
+            
+            fullName=[NSString stringWithFormat:@"%@ %@",userObj.strFirstName,userObj.strLastName];
+            contactNumber=self.ContactNo.text;
+            
+            [pref setValue:self.ContactNo.text forKey:@"ProfileContactNo"];
+            [pref synchronize];
+            
+            //Send to server
+            
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+            
+            NSString *remoteHostName =HostTwo;
+            
+            self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+            [self.hostReachability startNotifier];
+            [self updateInterfaceWithReachability:self.hostReachability];
+            
+            self.internetReachability = [Reachability reachabilityForInternetConnection];
+            [self.internetReachability startNotifier];
+            [self updateInterfaceWithReachability:self.internetReachability];
+            
+            self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+            [self.wifiReachability startNotifier];
+            [self updateInterfaceWithReachability:self.wifiReachability];
+            
+            if([self isNetworkAvailable])
             {
                 [self.view addSubview:HUD];
                 [HUD show:YES];
                 
-                
-                fullName=[NSString stringWithFormat:@"%@ %@",userObj.strFirstName,userObj.strLastName];
-                contactNumber=self.ContactNo.text;
-
-                [pref setValue:self.ContactNo.text forKey:@"ProfileContactNo"];
-                [pref synchronize];
-                NSDate *today=[NSDate date];
-                NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-                [formatter setDateFormat:@"dd-MM-yyyy h:mm:ss"];
-                timeStamp = [formatter stringFromDate:today];
-                
-                NSURL *url = [NSURL URLWithString:RegisterURL];
-        
-                ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:url];
-                [request setAuthenticationScheme:@"https"];
-                [request setValidatesSecureCertificate:NO];
-                [request setRequestMethod:@"POST"];
-                
-                [request setPostValue:UDID forKey:@"unique_token"];
-                [request setPostValue:fullName forKey:@"user_name"];
-                [request setPostValue:contactNumber forKey:@"contact_number"];
-                [request setPostValue:timeStamp forKey:@"timestamp"];
-                [request addRequestHeader:@"Content-Type" value:@"application/x-www-form-urlencoded"];
-                
-                [request startAsynchronous];
-                [request setTimeOutSeconds:20];
-                [request setDelegate:self];
-              
+                [[HeyWebService service] registerWithUDID:[UDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreated WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                 {
+                     
+                     [HUD hide:YES];
+                     [HUD removeFromSuperview];
+                     if (isError)
+                         NSLog(@"Resigartion Error Message: %@",strMsg);
+                     
+                     else
+                     {   [DBManager updatedToServerForUserWithFlag:1];
+                         NSLog(@"Resigartion Success Message: %@",strMsg);
+                     }
+                     
+                 }];
             }
-            
             else
             {
-                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                [alert show];
+                [self showNetworkErrorMessage];
             }
-                
+            
         }
+        
         else
         {
-            [self showNetworkErrorMessage];
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
         }
+        
     }
     else
     {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"All fields are mandatory." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Please insert all fields." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alert show];
     }
-    
-}
-
-//API Response Method
-- (void) requestFinished:(ASIHTTPRequest *)request
-{
-    [HUD hide:YES];
-    [HUD removeFromSuperview];
-    
-    NSString *responseString = [request responseString];
-    NSLog(@"responseString: %@",responseString);
-    NSError *error;
-    
-    NSDictionary *jsonResponeDict= [NSJSONSerialization JSONObjectWithData:request.responseData options:kNilOptions error:&error];
-
-    if ([[jsonResponeDict valueForKey:@"success"] boolValue]==true)
-    {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Successfully registered." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
-    }
-    else
-    {
-        NSLog(@"Message: %@",[jsonResponeDict valueForKey:@"message"]);
-    }
-
-    
 }
 
 
@@ -415,7 +408,7 @@
         
         if([imgValue isEqualToString:@"man_icon.png"])
             self.profileImage.image = [UIImage imageNamed:[contactInfoDict objectForKey:@"image"]];
-
+        
         else
         {
             NSData *imgData=[contactInfoDict valueForKey:@"image"];
@@ -490,7 +483,7 @@
         if(self.ContactNo.superview.frame.origin.y+self.ContactNo.superview.frame.size.height>keyBoardHeight)
         {
             contentScrollView.contentSize=CGSizeMake(contentScrollView.frame.size.width,contentScrollView.frame.size.height+textField.superview.frame.origin.y);
-        
+            
             CGPoint Offset = CGPointMake(0,textField.superview.frame.origin.y/2);
             [contentScrollView setContentOffset:Offset animated:YES];
         }
@@ -547,7 +540,7 @@
             baseLabelText = NSLocalizedString(@"Cellular data network is active.\nInternet traffic will be routed through it.", @"Reachability text if a connection is not required");
         }
         
-
+        
         NSLog(@"Reachability Message: %@", baseLabelText);
     }
     

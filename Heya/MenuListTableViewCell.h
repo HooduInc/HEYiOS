@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MenuListTableViewCell : UITableViewCell<UITextFieldDelegate>
+@interface MenuListTableViewCell : UITableViewCell
 
 @property(strong,nonatomic) IBOutlet UIImageView *imgBackground;
 @property(strong,nonatomic) IBOutlet UIButton *btnClose;
@@ -19,7 +19,10 @@
 @property(strong,nonatomic) IBOutlet NSLayoutConstraint *constraintBtnCloseHeight;
 @property(strong,nonatomic) IBOutlet NSLayoutConstraint *constraintBgImgBottomSpace;
 @property(strong,nonatomic) IBOutlet NSLayoutConstraint *constraintBgImgTopSpace;
+
+@property(strong,nonatomic) IBOutlet NSLayoutConstraint *constraintbtnArrowWidth;
+@property(strong,nonatomic) IBOutlet NSLayoutConstraint *constraintbtnSaveWidth;
 @property(strong,nonatomic) IBOutlet UIButton *btnHeader;
 @property(strong,nonatomic) IBOutlet UIButton *btnArrow;
-
+@property(strong,nonatomic) IBOutlet UIButton *btnSave;
 @end

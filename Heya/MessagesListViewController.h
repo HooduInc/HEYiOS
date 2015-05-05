@@ -11,6 +11,7 @@
 #import <stdio.h>
 
 @class AppDelegate;
+
 @interface MessagesListViewController : UIViewController <UITableViewDataSource,UITableViewDelegate, UIScrollViewDelegate>
 
 @property (nonatomic, retain) IBOutlet UITableView *menulistTable;
@@ -19,4 +20,5 @@
 @property (nonatomic, retain) IBOutlet UITableView *menulistTableFour;
 @property (nonatomic, strong) IBOutlet UIScrollView *messageListScrollView;
 @property (nonatomic, strong) IBOutlet UIPageControl* pageControl;
+
 @end

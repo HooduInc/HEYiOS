@@ -24,6 +24,7 @@
 @property (nonatomic, retain) IBOutlet UITableView *fevoriteList_table;
 @property (nonatomic, retain) NSMutableArray *fevoritelist_array,*alphabetArray;
 @property (strong, nonatomic) IBOutlet UIImageView *testingImage;
+@property (nonatomic, retain) IBOutlet UIButton *saveBtn;
 
 - (IBAction)getcontacts:(id)sender;
 - (IBAction)back:(id)sender;

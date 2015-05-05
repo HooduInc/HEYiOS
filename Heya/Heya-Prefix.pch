@@ -14,7 +14,6 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
     #import "DBManager.h"
-    #import "ASIFormDataRequest.h"
 #endif
 
 
@@ -29,7 +28,11 @@
 
 #define kNetworkErrorMessage @"Network is not availbale.Please try again Later."
 
+#define HostOne @"api.edhubs.com/lo"
+#define HostTwo @"qa.campusclouds.com/hey"
+#define HeyBaseURL @"https://qa.campusclouds.com/hey/"
+
 NSString * messageHolderString;
 BOOL addPhoneClicked;
 
-NSString *conatctNoFetchFromContactList;
+NSString *conatctNoFetchFromContactList, *strSelectContact;

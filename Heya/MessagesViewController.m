@@ -21,16 +21,15 @@
 #import "ModelFevorite.h"
 #import "ModelGroup.h"
 #import "ModelGroupMembers.h"
+#import "ModelUserProfile.h"
+#import "ModelMessageSend.h"
+#import "HeyWebService.h"
 
-
-#define FbClientID @"745558112158495"
-#define clearText @""
-#define APIURL @"https://api.edhubs.com/lo"
-BOOL isReachable;
 
 @interface MessagesViewController ()<MBProgressHUDDelegate>
 {
     int fontSize;
+    NSInteger emojiTag;
     MBProgressHUD *HUD;
     NSMutableArray *contactNumArray;
     NSMutableArray *tickImageGroupArray, *tickImageFavArray;
@@ -38,9 +37,9 @@ BOOL isReachable;
     NSString *urlString, *imageURL, *contactNumString;
     NSUserDefaults *preferances;
     NSMutableDictionary *contactInfoDict;
-    
     NSString *shareHeyTextString, *shareHeyLink, *phoneTextString, *insertPhoneString;
-
+    BOOL isReachable;
+    NSData *imageData;
 }
 @property (retain) AOTagList *tag;
 @property (nonatomic, strong) NSString *universalMobNumber;
@@ -82,6 +81,9 @@ unsigned long location;
 {
     [super viewDidLoad];
     
+    //HUD=[[MBProgressHUD alloc] initWithView:self.view];
+    HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
+    
     if(isIphone4)
     {
         fontSize=12;
@@ -103,16 +105,6 @@ unsigned long location;
     
     preferances=[NSUserDefaults standardUserDefaults];
     quickContactsArray = [[NSMutableArray alloc]init];
-    
-    //initialize default contacts array
-    //[preferances setObject:[[NSMutableArray alloc] init] forKey:@"allContactsArray"];
-    
-    
-    tickImageGroupArray =[NSMutableArray array];
-    tickImageFavArray =[NSMutableArray array];
-    
-    peopleImageFavArray =[NSMutableArray array];
-    peopleImageGroupArray =[NSMutableArray array];
     
     [self.view bringSubviewToFront:self.contactsScroller];
     messageTextView.font = [UIFont fontWithName:@"Helvetica" size:15];
@@ -142,6 +134,15 @@ unsigned long location;
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
+    
+    emojiTag=9999;
+    
+    tickImageGroupArray =[NSMutableArray array];
+    tickImageFavArray =[NSMutableArray array];
+    
+    peopleImageFavArray =[NSMutableArray array];
+    peopleImageGroupArray =[NSMutableArray array];
+    
     //store only when Contact No exists
     if([preferances valueForKey:@"ProfileContactNo"])
     {
@@ -155,7 +156,10 @@ unsigned long location;
     //Execute only whenever message comes from Homescreen
     if(getMessageStr.length>0)
     {
-        
+        if ([getMessageStr isEqualToString:@"HEY! "])
+        {
+            [messageTextView becomeFirstResponder];
+        }
         messageHolderString=getMessageStr;
         
         NSMutableAttributedString *wholeMsg=[[NSMutableAttributedString alloc] initWithString:messageHolderString];
@@ -225,6 +229,7 @@ unsigned long location;
     }
     
     messageTextView.font = [UIFont fontWithName:@"Helvetica" size:fontSize];
+
     [self favouriteLoad];
     [self groupViewLoad];
 }
@@ -238,13 +243,20 @@ unsigned long location;
 #pragma mark
 #pragma mark Favorite Contacts
 #pragma mark
+
 -(void) favouriteLoad
 {
     arrFavData = [[NSMutableArray alloc]init];
     arrFavData = [DBManager fetchFavorite];
     int count=0;
-    
     float imagx = 15.0f;
+    
+    //first remove existed subviews
+    NSArray *viewsToRemove = [feviratScroll subviews];
+    for (UIView *sub in viewsToRemove) {
+        [sub removeFromSuperview];
+    }
+
     
     //for (NSMutableDictionary *dic in arrFavData)
     for (int i=0; i<arrFavData.count; i++)
@@ -321,18 +333,20 @@ unsigned long location;
         tickImage.hidden=YES;
         [tickImageFavArray addObject:tickImage];
         [peopleContainer addSubview:tickImage];
+        peopleContainer.tag=count;
         
         [peopleContainer insertSubview:contactButton aboveSubview:peopleImg];
         [feviratScroll addSubview:peopleContainer];
         imagx = imagx + peopleContainer.frame.size.width+15;
         
         count++;
-        
     }
 }
 
 - (void) addFavoriteContactNumber:(UIButton*)sender
 {
+    NSLog(@"tickImageFavArray: %@",tickImageFavArray);
+    NSLog(@"Clicked On: %@",[tickImageFavArray objectAtIndex:sender.tag]);
     
     UIImageView *tImg=[tickImageFavArray objectAtIndex:sender.tag];
     UIImageView *pImg=[peopleImageFavArray objectAtIndex:sender.tag];
@@ -418,6 +432,7 @@ unsigned long location;
             [contactsContainer addSubview:toPeopleImg];
             [contactsContainer addSubview:peopleNameLabel];
             [contactsContainer addSubview:closeButton];
+            [contactsContainer bringSubviewToFront:closeButton];
             
             NSArray *temparrMem=[sender.titleLabel.text componentsSeparatedByString:@","];
 
@@ -428,11 +443,6 @@ unsigned long location;
                     [quickContactsArray addObject:sender.titleLabel.text];
                 }
             }
-           
-            /*NSString *convertToString=[quickContactsArray componentsJoinedByString: @","];
-            NSString *stringWithoutColons = [convertToString
-                                             stringByReplacingOccurrencesOfString:@"\"" withString:@""];
-            NSLog(@"All Contacts from Favourite selection: %@",stringWithoutColons);*/
             
             contactsContainer.frame = CGRectMake(contactsContainerX, contactsContainer.frame.origin.y, contactsContainer.frame.size.width, contactsContainer.frame.size.height);
             
@@ -488,6 +498,14 @@ unsigned long location;
     
     arrGroupList = [[NSMutableArray alloc]init];
     arrGroupList = [DBManager fetchDetailsFromGroup];
+    
+    
+    //first remove existed subviews
+    NSArray *viewsToRemove = [groupScrollView subviews];
+    for (UIView *sub in viewsToRemove) {
+        [sub removeFromSuperview];
+    }
+    
     
     for (int i=0; i<arrGroupList.count;i++)
     {
@@ -553,117 +571,119 @@ unsigned long location;
 {
     UIImageView *tImg=[tickImageGroupArray objectAtIndex:sender.tag];
     UIImageView *pImg=[peopleImageGroupArray objectAtIndex:sender.tag];
-
     
     if(tImg.hidden==YES)
     {
-        tImg.hidden=NO;
-        pImg.layer.borderColor=[UIColor redColor].CGColor;
         NSLog(@"Before Adding to Main Contacts array from Group: %@",quickContactsArray);
-        arrFavData = [[NSMutableArray alloc]init];
-        arrFavData = [DBManager fetchDataFromGroupWithGroupId:sender.titleLabel.text];
+        NSMutableArray *mainGroup = [[NSMutableArray alloc]init];
+        mainGroup = [DBManager fetchDataFromGroupWithGroupId:sender.titleLabel.text];
         
-        NSMutableDictionary *dic=[[NSMutableDictionary alloc] init];
-        dic= [arrFavData objectAtIndex:0];
-     
-            contactsContainer=[[UIView alloc] initWithFrame:CGRectMake(0.0f,4.0f,110.0f,22.0f)];
-            contactsContainer.backgroundColor=[UIColor  colorWithRed:213.0f/255.0f green:213.0f/255.0f blue:213.0f/255.0f alpha:1.0f];
-            contactsContainer.userInteractionEnabled=YES;
-            contactsContainer.layer.cornerRadius = 11.0f;
-            
-            toPeopleImg=[[UIImageView alloc] initWithFrame:CGRectMake(2.0f,2.0f,18.0f,18.0f)];
-            toPeopleImg.layer.cornerRadius = toPeopleImg.frame.size.width / 2;
-            toPeopleImg.clipsToBounds = YES;
-            
-            toPeopleImg.image = [UIImage imageNamed:@"man_group.png"];
-            
-            /*if([[dic valueForKey:@"profileimage"]isEqualToString:@"man_icon.png"])
+        ModelGroup *objGroup=[mainGroup objectAtIndex:0];
+        
+        contactsContainer=[[UIView alloc] initWithFrame:CGRectMake(0.0f,4.0f,110.0f,22.0f)];
+        contactsContainer.backgroundColor=[UIColor  colorWithRed:213.0f/255.0f green:213.0f/255.0f blue:213.0f/255.0f alpha:1.0f];
+        contactsContainer.userInteractionEnabled=YES;
+        contactsContainer.layer.cornerRadius = 11.0f;
+        
+        toPeopleImg=[[UIImageView alloc] initWithFrame:CGRectMake(2.0f,2.0f,18.0f,18.0f)];
+        toPeopleImg.layer.cornerRadius = toPeopleImg.frame.size.width / 2;
+        toPeopleImg.clipsToBounds = YES;
+        
+        toPeopleImg.image = [UIImage imageNamed:@"man_group.png"];
+        
+        /*if([[dic valueForKey:@"profileimage"]isEqualToString:@"man_icon.png"])
+         {
+         toPeopleImg.image = [UIImage imageNamed:[dic objectForKey:@"profileimage"]];
+         }
+         
+         else
+         {
+         NSString *str = [dic objectForKey:@"profileimage"];
+         NSLog(@"ImageURL: %@",str);
+         NSURL *myAssetUrl = [NSURL URLWithString:str];
+         
+         ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
+         {
+         ALAssetRepresentation *rep = [myasset defaultRepresentation];
+         @autoreleasepool {
+         CGImageRef iref = [rep fullScreenImage];
+         if (iref) {
+         UIImage *image = [UIImage imageWithCGImage:iref];
+         
+         dispatch_async(dispatch_get_main_queue(), ^{
+         //UIMethod trigger...
+         toPeopleImg.image=image;
+         });
+         iref = nil;
+         }
+         }
+         };
+         
+         ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
+         {
+         NSLog(@"Can't get image - %@",[myerror localizedDescription]);
+         };
+         
+         ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+         [assetslibrary assetForURL:myAssetUrl resultBlock:resultblock failureBlock:failureblock];
+         }*/
+        
+        peopleNameLabel=[[UILabel alloc] initWithFrame:CGRectMake(27.0f,2.0f,70.0f,18.0f)];
+        peopleNameLabel.font=[UIFont fontWithName:@"OpenSans" size:10];
+        peopleNameLabel.textColor=[UIColor blackColor];
+        peopleNameLabel.text=[NSString stringWithFormat:@"%@", objGroup.strGroupName];
+        
+        closeButton = [[UIButton alloc] initWithFrame:CGRectMake(90.0f, 2.0f, 18.0f, 18.0f)];
+        [closeButton setImage:[UIImage imageNamed:@"close_btn.png"] forState:UIControlStateNormal];
+        [closeButton addTarget:self action:@selector(removeGroupContact:) forControlEvents:UIControlEventTouchUpInside];
+        
+        closeButton.titleLabel.text=sender.titleLabel.text;
+        closeButton.layer.cornerRadius = closeButton.frame.size.width / 2;
+        closeButton.clipsToBounds = YES;
+        closeButton.tag=sender.tag;
+        
+        [contactsContainer addSubview:toPeopleImg];
+        [contactsContainer addSubview:peopleNameLabel];
+        [contactsContainer addSubview:closeButton];
+        [contactsContainer bringSubviewToFront:closeButton];
+        
+        arrGroupMember=[[NSMutableArray alloc] init];
+        arrGroupMember=[DBManager fetchGroupMembersWithGroupId:objGroup.strGroupId];
+        NSMutableArray *fetchContact=[[NSMutableArray alloc] init];
+        
+        if (arrGroupMember.count>0)
+        {
+            //fetch contact no from group members
+            for (int g=0; g<arrGroupMember.count; g++)
             {
-                toPeopleImg.image = [UIImage imageNamed:[dic objectForKey:@"profileimage"]];
+                ModelGroupMembers *objGroupMem= [arrGroupMember objectAtIndex:g];
+                [fetchContact addObject:objGroupMem.strMobileNumber];
             }
             
-            else
-            {
-                NSString *str = [dic objectForKey:@"profileimage"];
-                NSLog(@"ImageURL: %@",str);
-                NSURL *myAssetUrl = [NSURL URLWithString:str];
-                
-                ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
-                {
-                    ALAssetRepresentation *rep = [myasset defaultRepresentation];
-                    @autoreleasepool {
-                        CGImageRef iref = [rep fullScreenImage];
-                        if (iref) {
-                            UIImage *image = [UIImage imageWithCGImage:iref];
-                            
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                //UIMethod trigger...
-                                toPeopleImg.image=image;
-                            });
-                            iref = nil;
-                        }
-                    }
-                };
-                
-                ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
-                {
-                    NSLog(@"Can't get image - %@",[myerror localizedDescription]);
-                };
-                
-                ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
-                [assetslibrary assetForURL:myAssetUrl resultBlock:resultblock failureBlock:failureblock];
-            }*/
-            
-            peopleNameLabel=[[UILabel alloc] initWithFrame:CGRectMake(27.0f,2.0f,70.0f,18.0f)];
-            peopleNameLabel.font=[UIFont fontWithName:@"OpenSans" size:10];
-            peopleNameLabel.textColor=[UIColor blackColor];
-            peopleNameLabel.text=[NSString stringWithFormat:@"%@", [dic objectForKey:@"groupName"]];
-            
-            closeButton = [[UIButton alloc] initWithFrame:CGRectMake(90.0f, 2.0f, 18.0f, 18.0f)];
-            [closeButton setImage:[UIImage imageNamed:@"close_btn.png"] forState:UIControlStateNormal];
-            [closeButton addTarget:self action:@selector(removeGroupContact:) forControlEvents:UIControlEventTouchUpInside];
-            
-            closeButton.titleLabel.text=sender.titleLabel.text;
-            closeButton.layer.cornerRadius = closeButton.frame.size.width / 2;
-            closeButton.clipsToBounds = YES;
-            closeButton.tag=sender.tag;
-            
-            [contactsContainer addSubview:toPeopleImg];
-            [contactsContainer addSubview:peopleNameLabel];
-            [contactsContainer addSubview:closeButton];
-            
-            arrGroupMember=[[NSMutableArray alloc] init];
-            arrGroupMember=[DBManager fetchGroupMembersWithGroupId:[dic objectForKey:@"groupId"]];
-            NSMutableArray *fetchContact=[[NSMutableArray alloc] init];
-            
-            for (NSMutableDictionary *groupMemberDic in arrGroupMember)
-            {
-                [fetchContact addObject:[groupMemberDic objectForKey:@"mobileNumber"]];
-                
-            }
-            
+            //add group contacts to main contact array
             for(int x=0; x<fetchContact.count;x++)
             {
                 if (![quickContactsArray containsObject:[fetchContact objectAtIndex:x]])
-                {
                     [quickContactsArray addObject:[fetchContact objectAtIndex:x]];
-                }
             }
-        
+            
+            tImg.hidden=NO;
+            pImg.layer.borderColor=[UIColor redColor].CGColor;
             contactsContainer.frame = CGRectMake(contactsContainerX, contactsContainer.frame.origin.y, contactsContainer.frame.size.width, contactsContainer.frame.size.height);
             
             [self.contactsScroller addSubview:contactsContainer];
             contactsContainerX = contactsContainer.frame.origin.x + contactsContainer.frame.size.width+6.0f;
             NSLog(@"contactsContainerX:  %f", contactsContainerX);
             self.contactsScroller.contentSize =CGSizeMake(contactsContainerX,self.contactsScroller.frame.size.height);
-        
-            /*NSString *convertToString=[quickContactsArray componentsJoinedByString: @","];
-            NSString *stringWithoutColons = [convertToString
-                                             stringByReplacingOccurrencesOfString:@"\"" withString:@""];
-            NSLog(@"All Contacts from Group selection: %@",stringWithoutColons);*/
             
+            NSLog(@"After Adding to Main Contacts array from Group: %@",quickContactsArray);
+        }
+        else
+        {
+            UIAlertView *errorDialog=[[UIAlertView alloc] initWithTitle:@"Warning!" message:[NSString stringWithFormat:@"No contacts exist in %@ group.",objGroup.strGroupName] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [errorDialog show];
+        }
         
-        NSLog(@"After Adding to Main Contacts array from Group: %@",quickContactsArray);
     }
     
 }
@@ -937,6 +957,17 @@ unsigned long location;
         emugeImg.image = [UIImage hg_imageFromString:[EMOJI_arr objectAtIndex:i]];
         
         [emugeImg setUserInteractionEnabled:TRUE];
+        emugeImg.tag=i;
+        
+        if (emugeImg.tag==emojiTag)
+        {
+            emugeImg.layer.shadowColor = [UIColor redColor].CGColor;
+            emugeImg.layer.shadowOffset = CGSizeMake(0, 0);
+            emugeImg.layer.shadowOpacity = 1;
+            emugeImg.layer.shadowRadius = 2.0;
+            emugeImg.clipsToBounds = YES;
+            NSLog(@"Shadow Imoji Tag: %ld",(long)emojiTag);
+        }
         
         UIButton * ButtonOnImageView = [[UIButton alloc]init];
         [ButtonOnImageView setFrame:CGRectMake(0,0,40,40)];
@@ -953,6 +984,9 @@ unsigned long location;
 - (IBAction)smile:(id)sender
 {
     UIButton *button = sender;
+    
+    [buttonArray removeAllObjects];
+    [self showEMUJ];
     
     UIImageView *triangleImageView=[[UIImageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, [appDel.window bounds].size.width,7.0f)];
     triangleImageView.image=[UIImage imageNamed:@"line_arrow.png"];
@@ -995,6 +1029,10 @@ unsigned long location;
 - (void) addEmoticon:(UIButton*)sender
 {
     NSString *normalImageNameToPass = [NSString stringWithFormat:@"%@",[EMOJI_arr objectAtIndex:sender.tag]];
+    
+    emojiTag=sender.tag;
+    NSLog(@"Selected Imoji Tag: %ld",(long)emojiTag);
+    
     NSMutableAttributedString *imageNameToPass = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@",[EMOJI_arr objectAtIndex:sender.tag]]];
     NSLog(@"Emoticon Added: %@",imageNameToPass);
     
@@ -1095,69 +1133,12 @@ unsigned long location;
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     UIImage *chosenImage = info[UIImagePickerControllerEditedImage];
-    //self.imageView.image = chosenImage;
-    NSData *myData = UIImageJPEGRepresentation(chosenImage, 0.2);
+    imageData=nil;
+    imageData = UIImageJPEGRepresentation(chosenImage, 0.2);
     
-    UIImage *image = [[UIImage alloc]initWithData:myData];
+    UIImage *image = [[UIImage alloc]initWithData:imageData];
     self.imageView.image =image;
-    
-    NSURL *url = [NSURL URLWithString:APIURL];
-    NSLog(@">>>%@",url);
-    
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-    
-    //Change the host name here to change the server you want to monitor.
-    NSString *remoteHostName =APIURL;
-    
-    self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-    [self.hostReachability startNotifier];
-    [self updateInterfaceWithReachability:self.hostReachability];
-    
-    self.internetReachability = [Reachability reachabilityForInternetConnection];
-    [self.internetReachability startNotifier];
-    [self updateInterfaceWithReachability:self.internetReachability];
-    
-    self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-    [self.wifiReachability startNotifier];
-    [self updateInterfaceWithReachability:self.wifiReachability];
-    
-    if([self isNetworkAvailable])
-     {
-        //Prepare and post the data to the server
-        ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:url];
-        
-        [request setAuthenticationScheme:@"https"];
-        [request setValidatesSecureCertificate:NO];
-        
-        [request setRequestMethod:@"POST"];
-        [request addRequestHeader:@"Authorization" value:@"Token cf8b69e720eee6a09159c41c0ad96555"];
-        [request addRequestHeader:@"companyID" value:@"LMPPROD"];
-        [request addRequestHeader:@"User-Agent" value:@"IOS"];
-        
-        [request setPostValue:@"Image" forKey:@"title"];
-        [request setPostValue:@"Image Description" forKey:@"description"];
-        [request setData:myData withFileName:@"image.jpg" andContentType:@"image/jpg" forKey:@"file"];
-        
-        
-        [request startAsynchronous];
-        [request setTimeOutSeconds:20];
-        [request setDelegate:self];
-        
-        HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
-        [self.navigationController.view addSubview:HUD];
-        
-        HUD.delegate = self;
-        HUD.labelText = @"Uploading";
-        [HUD show:YES];
-        
-        [picker dismissViewControllerAnimated:YES completion:NULL];
-         
-     }
-    else
-    {
-        [[[UIAlertView alloc] initWithTitle:@"Error" message:@"No internet connection found." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-    }
+    [picker dismissViewControllerAnimated:YES completion:NULL];
     
 }
 
@@ -1167,204 +1148,305 @@ unsigned long location;
 }
 
 
-//API response method
-- (void) requestFinished:(ASIHTTPRequest *)request
-{
-    //NSString *responseString = [request responseString];
-    //NSLog(@"responseString: %@",responseString);
-    NSError *error;
-    
-    [HUD hide:YES];
-    NSDictionary *jsonResponeDict= [NSJSONSerialization JSONObjectWithData:request.responseData options:kNilOptions error:&error];
-    
-    
-    if(error)
-    {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something wrong. Please try again."
-                                                       delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-        [alert show];
-    }
-    else
-    {
-        if ([[jsonResponeDict valueForKey:@"status"] isEqualToString:@"success"])
-        {
-            imageURL=[jsonResponeDict valueForKey:@"fileUrl"];
-            NSLog(@"Image URL: %@",imageURL);
-        }
-        else
-        {
-            self.imageView.image=nil;
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Upload Error!" message:@"Something went wrong. Please try again." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            
-            [alert show];
-        }
-    }
-
-}
-
-
 #pragma mark
 #pragma mark Send SMS and Message Compose Delegate Methods
 #pragma mark
 
 - (IBAction)sendsms:(id)sender
 {
-    MFMessageComposeViewController *controller = [[MFMessageComposeViewController alloc] init];
-
     if([quickContactsArray containsObject:@""])
     {
         [quickContactsArray removeObject:@""];
     }
     
-    NSArray *arrayOfStrings= (NSArray *)quickContactsArray;
-    NSLog(@"Conatcts: %@",arrayOfStrings);
+    NSArray *arrayOfContacts= (NSArray *)quickContactsArray;
+    NSLog(@"Conatcts: %@",arrayOfContacts);
     
-    NSString *finalMessage;
-    finalMessage=messageTextView.text;
-    
-    //NSString *initialMessage;
-    //initialMessage=messageTextView.text;
+    __block NSString *finalMessage=messageTextView.text;
     
     //add hey fever link
     if ([messageTextView.text containsString:@"Get HEY Fever!"])
     {
        finalMessage = [NSString stringWithFormat: @"%@ %@", messageTextView.text, shareHeyLink];
     }
-    if(imageURL.length>0)
-    {
-        //add Image link
-        finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
-    }
     
-    NSLog(@"finalMessage: %@ with length: %ld",finalMessage,(long)finalMessage.length);
-
-    if(arrayOfStrings.count>0)
+    if(arrayOfContacts.count>0)
     {
-        if(finalMessage.length>0)
+        if (imageData.length>0)
         {
-            if([MFMessageComposeViewController canSendText])
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+            
+            //Change the host name here to change the server you want to monitor.
+            NSString *remoteHostName =HeyBaseURL;
+            
+            self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+            [self.hostReachability startNotifier];
+            [self updateInterfaceWithReachability:self.hostReachability];
+            
+            self.internetReachability = [Reachability reachabilityForInternetConnection];
+            [self.internetReachability startNotifier];
+            [self updateInterfaceWithReachability:self.internetReachability];
+            
+            self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+            [self.wifiReachability startNotifier];
+            [self updateInterfaceWithReachability:self.wifiReachability];
+            
+            if([self isNetworkAvailable])
             {
-                controller.body = finalMessage;
-                NSLog(@"Sending Message :%@",controller.body);
-                controller.recipients = arrayOfStrings;
-                //controller.recipients=[NSArray arrayWithObjects:@"98736542635", @"9875463982", nil];
-                controller.messageComposeDelegate = self;
-                [self presentViewController:controller animated:YES completion:^{
+                [self.navigationController.view addSubview:HUD];
+                //[self.view addSubview:HUD];
+                
+                HUD.delegate = self;
+                HUD.labelText = @"Uploading";
+                [HUD show:YES];
+                
+                [[HeyWebService service] callGenerateImageURL:imageData  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
                     
-                    if(![preferances valueForKey:@"totalMesssageSentLifeTime"])
+                    [HUD hide:YES];
+                    [HUD removeFromSuperview];
+                    if (isError)
                     {
-                        [preferances setValue:@"1" forKey:@"totalMesssageSentLifeTime"];
+                        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error" message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                        [alert show];
+                        
                     }
                     else
                     {
-                        int totalCount=[[preferances valueForKey:@"totalMesssageSentLifeTime"] intValue];
-                        totalCount=totalCount+1;
-                        [preferances setValue:[NSString stringWithFormat:@"%d",totalCount] forKey:@"totalMesssageSentLifeTime"];
+                        if ([result isKindOfClass:[NSString class]])
+                        {
+                            imageURL=(NSString*)result;
+                            if(imageURL.length>0)
+                            {
+                                //add Image link
+                                NSLog(@"Image URL: %@",imageURL);
+                                finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
+                                [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
+                            }
+                        }
                     }
-                    
                 }];
             }
         }
-        /*else
-        {
-            NSString *subStringMessageOne, *subStringMessageTwo;
-            
-            //remove hey string from message if exists
-            if ([initialMessage containsString:shareHeyTextString])
-            {
-                subStringMessageOne= [initialMessage stringByReplacingOccurrencesOfString:shareHeyTextString withString:@""];
-            
-                NSLog(@"subStringMessageOne without Hey : %@",subStringMessageOne);
-            }
-            
-             //remove phone no from message if exists
-            if ([initialMessage containsString:phoneTextString])
-            {
-                subStringMessageOne= [subStringMessageOne stringByReplacingOccurrencesOfString:phoneTextString withString:@""];
-                
-                NSLog(@"initialMessage without Phone: %@",subStringMessageOne);
-            }
-            
-            //add hey string to subStringMessageTwo if exists
-            if ([initialMessage containsString:shareHeyTextString])
-            {
-                subStringMessageTwo = [NSString stringWithFormat: @"%@ %@", @"Get HEY Fever!", shareHeyLink];
-            }
-            
-            //add phone no to subStringMessageTwo if exists
-            if ([initialMessage containsString:phoneTextString])
-            {
-                subStringMessageTwo=[NSString stringWithFormat: @"%@ %@",subStringMessageTwo, phoneTextString];
-            }
-            
-            //add photo imageURL to subStringMessageTwo if exists
-            if (imageURL.length>0)
-            {
-                subStringMessageTwo=[NSString stringWithFormat: @"%@\r\n\n%@",subStringMessageTwo, imageURL];
-            }
-                
-            NSLog(@"2nd Message: %@",subStringMessageTwo);
-            
-            if(subStringMessageOne.length>0 && subStringMessageOne.length<=160 && subStringMessageTwo.length>0 && subStringMessageTwo.length<=160)
-            {
-
-                if([MFMessageComposeViewController canSendText])
-                {
-                    controller.body = subStringMessageOne;
-                    NSLog(@"Sending 1st Msg :%@",controller.body);
-                    controller.recipients = arrayOfStrings;
-                    controller.messageComposeDelegate = self;
-                    [self presentViewController:controller animated:YES completion:^{
-                        
-                        controller.body = subStringMessageTwo;
-                        NSLog(@"Before Sending 2nd Msg :%@",controller.body);
-                        controller.recipients = arrayOfStrings;
-                        controller.messageComposeDelegate = self;
-                        [self presentViewController:controller animated:YES completion:^{
-                                
-                            if(![preferances valueForKey:@"totalMessageSent"])
-                            {
-                                [preferances setValue:@"1" forKey:@"totalMessageSent"];
-                            }
-                            else
-                            {
-                                int totalCount=[[preferances valueForKey:@"totalMessageSent"] intValue];
-                                totalCount=totalCount+1;
-                                [preferances setValue:[NSString stringWithFormat:@"%d",totalCount] forKey:@"totalMessageSent"];
-                            }
-                                
-                        }];
-                        
-                    }];
-                }
-                
-            }
-            else
-            {
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Warning!" message:@"This message contains more than 320 characters. Make it short." delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-                [alert show];
-            }
-        }*/
+        else
+            [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
     }
     else
     {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Please add contact no. to send message." delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
         [alert show];
-
+        
     }
+    NSLog(@"finalMessage: %@ with length: %ld",finalMessage,(long)finalMessage.length);
+
+}
+
+
+-(void) prepareMessageWithContact:(NSArray*)allContacts Message:(NSString*)finalMessage
+{
+    MFMessageComposeViewController *controller = [[MFMessageComposeViewController alloc] init];
     
+    if(finalMessage.length>0)
+    {
+        
+        //FOR TEST
+        
+        NSMutableArray *msgArray=[[NSMutableArray alloc] init];
+        NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+        ModelMessageSend *msgObj=[[ModelMessageSend alloc] init];
+        
+        userProfile=[DBManager fetchUserProfile];
+        
+        NSString *toPhoneNo=@"";
+        if(userProfile.count>0)
+        {
+            ModelUserProfile *obj=[userProfile objectAtIndex:0];
+            toPhoneNo=obj.strPhoneNo;
+        }
+        
+        msgObj.strDeviceId=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        msgObj.strtemplateId=@"1";
+        msgObj.strMessageText=finalMessage;
+        
+        if (toPhoneNo.length>0 || ![toPhoneNo isEqualToString:@"0"])
+            msgObj.strFrom=toPhoneNo;
+        else
+            msgObj.strFrom=@"";
+        
+        msgObj.strTo=[allContacts componentsJoinedByString:@","];
+        
+        NSDate *todayDate=[[NSDate alloc] init];
+        NSDateFormatter *format=[[NSDateFormatter alloc] init];
+        [format setDateFormat:@"yyyy-MM-dd"];
+        
+        msgObj.strSendDate=[format stringFromDate:todayDate];
+        
+        [msgArray addObject:msgObj];
+        
+        long long msgInsertId=[DBManager insertMessageDetails:msgArray];
+        if (msgInsertId!=0)
+        {
+            NSLog(@"MessageDetails inserted.");
+            
+            [format setDateFormat:@"yyyy-MM-dd"];
+            NSDate *fecthDate=[format dateFromString:msgObj.strSendDate];
+            [format setDateFormat:@"dd-MM-yyyy"];
+            NSString *strTimeStamp = [format stringFromDate:fecthDate];
+            
+            NSLog(@"Send TimeStamp: %@",strTimeStamp);
+            
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+            
+            //Change the host name here to change the server you want to monitor.
+            NSString *remoteHostName =HeyBaseURL;
+            
+            self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+            [self.hostReachability startNotifier];
+            [self updateInterfaceWithReachability:self.hostReachability];
+            
+            self.internetReachability = [Reachability reachabilityForInternetConnection];
+            [self.internetReachability startNotifier];
+            [self updateInterfaceWithReachability:self.internetReachability];
+            
+            self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+            [self.wifiReachability startNotifier];
+            [self updateInterfaceWithReachability:self.wifiReachability];
+            
+            if([self isNetworkAvailable])
+            {
+                [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                 {
+                     
+                     if(isError)
+                     {
+                         NSLog(@"Error: %@",strMsg);
+                     }
+                     else
+                     {
+                         NSLog(@"Success: %@",strMsg);
+                         
+                         [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%lld",msgInsertId]];
+                     }
+                 }];
+            }
+            
+        }
+        else
+            NSLog(@"MessageDetails not inserted.");
+        
+        //FOR TEST
+        
+        
+        if([MFMessageComposeViewController canSendText])
+        {
+            controller.body = finalMessage;
+            NSLog(@"Sending Message :%@",controller.body);
+            controller.recipients = allContacts;
+            //controller.recipients=[NSArray arrayWithObjects:@"98736542635", @"9875463982", nil];
+            controller.messageComposeDelegate = self;
+            [self presentViewController:controller animated:YES completion:^{
+                
+                
+                /*NSMutableArray *msgArray=[[NSMutableArray alloc] init];
+                 NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                 ModelMessageSend *msgObj=[[ModelMessageSend alloc] init];
+                 
+                 userProfile=[DBManager fetchUserProfile];
+                 
+                 NSString *toPhoneNo=@"";
+                 if(userProfile.count>0)
+                 {
+                 ModelUserProfile *obj=[userProfile objectAtIndex:0];
+                 toPhoneNo=obj.strPhoneNo;
+                 }
+                 
+                 msgObj.strDeviceId=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
+                 msgObj.strtemplateId=@"1";
+                 msgObj.strMessageText=finalMessage;
+                 
+                 if (toPhoneNo.length>0 || ![toPhoneNo isEqualToString:@"0"])
+                 msgObj.strFrom=toPhoneNo;
+                 else
+                 msgObj.strFrom=@"";
+                 
+                 msgObj.strTo=[allContacts componentsJoinedByString:@","];
+                 
+                 NSDate *todayDate=[[NSDate alloc] init];
+                 NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                 [format setDateFormat:@"yyyy-MM-dd"];
+                 
+                 msgObj.strSendDate=[format stringFromDate:todayDate];
+                 
+                 [msgArray addObject:msgObj];
+                 
+                 long long msgInsertId=[DBManager insertMessageDetails:msgArray];
+                 if (msgInsertId!=0)
+                 {
+                 NSLog(@"MessageDetails inserted.");
+                 
+                 [format setDateFormat:@"yyyy-MM-dd"];
+                 NSDate *fecthDate=[format dateFromString:msgObj.strSendDate];
+                 [format setDateFormat:@"dd-MM-yyyy"];
+                 NSString *strTimeStamp = [format stringFromDate:fecthDate];
+                 
+                 
+                 [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+                 
+                 //Change the host name here to change the server you want to monitor.
+                 NSString *remoteHostName =HeyBaseURL;
+                 
+                 self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+                 [self.hostReachability startNotifier];
+                 [self updateInterfaceWithReachability:self.hostReachability];
+                 
+                 self.internetReachability = [Reachability reachabilityForInternetConnection];
+                 [self.internetReachability startNotifier];
+                 [self updateInterfaceWithReachability:self.internetReachability];
+                 
+                 self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+                 [self.wifiReachability startNotifier];
+                 [self updateInterfaceWithReachability:self.wifiReachability];
+                 
+                 if([self isNetworkAvailable])
+                 {
+                 [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                 {
+                 
+                 if(isError)
+                 {
+                 NSLog(@"Error: %@",strMsg);
+                 }
+                 else
+                 {
+                 NSLog(@"Success: %@",strMsg);
+                 }
+                 }];
+                 }
+                 
+                 }
+                 else
+                 NSLog(@"MessageDetails not inserted.");*/
+                
+            }];
+        }
+    }
 }
 
 - (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result
 {
-	switch (result) {
+	switch (result)
+    {
 		case MessageComposeResultCancelled:
 			NSLog(@"Cancelled");
+            messageTextView.text=@"";
+            imageData=nil;
+            imageURL=@"";
 			break;
 		case MessageComposeResultSent:
         {
-            messageTextView.text=clearText;
-            imageURL=clearText;
+            NSLog(@"Message Sent");
+            messageTextView.text=@"";
+            imageData=nil;
+            imageURL=@"";
 			break;
         }
 		default:
@@ -1520,11 +1602,16 @@ unsigned long location;
             //if "get hey fever" and phoneTextString exists
             [[textViewAttrString mutableString] replaceOccurrencesOfString:[NSString stringWithFormat:@"%@ %@", [attributeHEYString string],phoneTextString] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
             
-            [_addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon.png"] forState:UIControlStateNormal];
-            addPhoneClicked=0;
             
             messageTextView.attributedText=textViewAttrString;
             location=location-[attributeHEYString length]-[phoneTextString length]-1;
+            [self.addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon.png"] forState:UIControlStateNormal];
+            
+            
+            [textViewAttrString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@", insertPhoneString]]];
+            messageTextView.attributedText=textViewAttrString;
+            
+            [_addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon_over.png"] forState:UIControlStateNormal];
         }
         else
         {
@@ -1542,9 +1629,26 @@ unsigned long location;
     else
     {
         NSLog(@"HEY String Does Not Exists & Current Location: %lu",location);
-        [textViewAttrString insertAttributedString: attributeHEYString atIndex:location];
-        messageTextView.attributedText = textViewAttrString;
         
+        if(phoneTextString.length>0 && [[textViewAttrString string] containsString:phoneTextString])
+        {
+             [[textViewAttrString mutableString] replaceOccurrencesOfString:insertPhoneString withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
+            
+            [textViewAttrString appendAttributedString: attributeHEYString];
+            
+            [textViewAttrString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@", insertPhoneString]]];
+            
+            messageTextView.attributedText = textViewAttrString;
+            
+            [_addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon_over.png"] forState:UIControlStateNormal];
+        }
+        else
+        {
+            NSLog(@"LOC===================:%lu", (unsigned long) location);
+            [textViewAttrString appendAttributedString: attributeHEYString];
+            //[textViewAttrString insertAttributedString: attributeHEYString atIndex:location];
+            messageTextView.attributedText = textViewAttrString;
+        }
         [_share_btn setImage:[UIImage imageNamed:@"hey_share_icon_over.png"] forState:UIControlStateNormal];
         
         messageHolderString=messageTextView.text;
@@ -1591,6 +1695,11 @@ unsigned long location;
     {
         textView.selectedRange = NSMakeRange([textView.text rangeOfString:shareHeyTextString].location, 0);
         
+    }
+    
+    if ([textView.text containsString:phoneTextString] && ![textView.text containsString:shareHeyTextString])
+    {
+        textView.selectedRange = NSMakeRange([textView.text rangeOfString:insertPhoneString].location, 0);
     }
     messageHolderString=textView.text;
     NSLog(@"textViewDidChangeSelection-> Updated Message: %@", messageHolderString=textView.text);

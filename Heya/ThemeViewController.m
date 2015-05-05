@@ -8,17 +8,22 @@
 
 #import "ThemeViewController.h"
 #import "DBManager.h"
+#import "ModelMenu.h"
+#import "ModelSubMenu.h"
 #import "AppDelegate.h"
 
 @interface ThemeViewController ()
 
+{
+    NSMutableArray *arrAllPageValue,*arrDisplayTableOne,*arrDisplayTableTwo,*arrDisplayTableThree,*arrDisplayTableFour ;
+}
 
 @end
 
 @implementation ThemeViewController
 NSUserDefaults *preferances;
 @synthesize carousel, label, wrap, theme, themeName, selectThemeButton;
-@synthesize generatedimage,generatedView, brightArray,standardArray, oneColorArray, outLineArray, mutedArray,msglist_arr,subMenuMsgArray;
+@synthesize generatedimage,generatedView, brightArray,standardArray, oneColorArray, outLineArray, mutedArray;
 
 int globalIndex;
 
@@ -27,9 +32,7 @@ int globalIndex;
     // Do any additional setup after loading the view from its nib.
     carousel.type = iCarouselTypeCoverFlow2;
     carousel.scrollSpeed=0.1f;
-    
-    msglist_arr=[[NSMutableArray alloc] init];
-    subMenuMsgArray = [[NSMutableArray alloc] init];
+
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -41,15 +44,15 @@ int globalIndex;
         theme = [[NSMutableArray alloc] init];
         themeName = [NSMutableArray arrayWithObjects:@"Bright", @"Standard", @"One Color",@"Outline",@"Muted", nil];
         
-        brightArray=[NSArray arrayWithObjects:@"temp_blue.png", @"temp_pink.png",@"temp_red.png", @"temp_orange.png" ,@"temp_yellow.png",@"temp_green.png", @"temp_sky.png" , @"temp_white.png", nil];
+        brightArray=[NSArray arrayWithObjects:@"temp_blue.png", @"temp_pink.png",@"temp_red.png", @"temp_orange.png" ,@"temp_yellow.png",@"temp_green.png", @"temp_sky.png" , @"temp_white.png", @"temp_white.png", nil];
         
-        standardArray= [NSArray arrayWithObjects:@"menu_btn1.png", @"menu_btn2.png",@"menu_btn4.png", @"menu_btn5.png" ,@"menu_btn6.png",@"menu_btn7.png", @"menu_btn8.png" , @"menu_btn9.png", nil];
+        standardArray= [NSArray arrayWithObjects:@"menu_btn1.png", @"menu_btn2.png",@"menu_btn4.png", @"menu_btn5.png" ,@"menu_btn6.png",@"menu_btn7.png", @"menu_btn8.png" , @"menu_btn9.png", @"menu_btn9.png", nil];
         
         oneColorArray=[NSArray arrayWithObjects:@"red1.png", @"red2.png",@"red3.png", @"red4.png" ,@"red5.png",@"red6.png", @"red7.png" , @"red7.png", nil];
         
-        outLineArray=[NSArray arrayWithObjects:@"bar_1.png", @"bar_2.png",@"bar_3.png", @"bar_4.png" ,@"bar_5.png",@"bar_6.png", @"bar_7.png" , @"bar_8.png", nil];
+        outLineArray=[NSArray arrayWithObjects:@"bar_1.png", @"bar_2.png",@"bar_3.png", @"bar_4.png" ,@"bar_5.png",@"bar_6.png", @"bar_7.png" , @"bar_8.png", @"bar_8.png", nil];
         
-        mutedArray=[NSArray arrayWithObjects:@"red1.png", @"menu_btn8.png",@"temp_orange.png", @"menu_btn5.png" ,@"muted_5.png",@"menu_btn9.png", @"muted_7.png" , @"temp_pink.png", nil];
+        mutedArray=[NSArray arrayWithObjects:@"red1.png", @"menu_btn8.png",@"temp_orange.png", @"menu_btn5.png" ,@"muted_5.png",@"menu_btn9.png", @"muted_7.png" , @"temp_pink.png", @"temp_pink.png", nil];
         
         [theme addObject:brightArray];
         [theme addObject:standardArray];
@@ -165,7 +168,7 @@ int globalIndex;
     newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     
-    for(int i=0; i<brightArray.count; i++)
+    for(int i=0; i<brightArray.count-1; i++)
     {
         UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
         clImgView.image = [UIImage imageNamed:[brightArray objectAtIndex:i]];
@@ -186,7 +189,7 @@ int globalIndex;
     newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     
-    for(int i=0; i<brightArray.count; i++)
+    for(int i=0; i<brightArray.count-1; i++)
     {
         UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
         clImgView.image = [UIImage imageNamed:[standardArray objectAtIndex:i]];
@@ -207,7 +210,7 @@ int globalIndex;
     newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     
-    for(int i=0; i<brightArray.count; i++)
+    for(int i=0; i<brightArray.count-1; i++)
     {
         UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
         clImgView.image = [UIImage imageNamed:[oneColorArray objectAtIndex:i]];
@@ -226,7 +229,7 @@ int globalIndex;
     newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     
-    for(int i=0; i<brightArray.count; i++)
+    for(int i=0; i<brightArray.count-1; i++)
     {
         UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
         clImgView.image = [UIImage imageNamed:[outLineArray objectAtIndex:i]];
@@ -246,7 +249,7 @@ int globalIndex;
     newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
     
-    for(int i=0; i<brightArray.count; i++)
+    for(int i=0; i<brightArray.count-1; i++)
     {
         UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
         clImgView.image = [UIImage imageNamed:[mutedArray objectAtIndex:i]];
@@ -278,22 +281,86 @@ int globalIndex;
     NSMutableArray *createMainArray=[[NSMutableArray alloc] init];
     colArray=[theme objectAtIndex:globalIndex];
     
-    msglist_arr = [DBManager fetchmenu:0 noOfRows:32];
+    
+    arrAllPageValue=[[NSMutableArray alloc] init];
+    for (int i=1; i<=4; i++)
+    {
+        [arrAllPageValue addObject:[DBManager fetchMenuForPageNo:i]];
+    }
+    
+    arrDisplayTableOne=[arrAllPageValue objectAtIndex:0];
+    arrDisplayTableTwo=[arrAllPageValue objectAtIndex:1];
+    arrDisplayTableThree=[arrAllPageValue objectAtIndex:2];
+    arrDisplayTableFour=[arrAllPageValue objectAtIndex:3];
+    
+    
     for(int i=0; i<4; i++)
     {
-        for(int j=0; j<8; j++)
+        if (i==0)
         {
-            [createMainArray addObject:[colArray objectAtIndex:j]];
+            for(int j=0; j<arrDisplayTableOne.count; j++)
+            {
+                [createMainArray addObject:[colArray objectAtIndex:j]];
+            }
+        }
+        else
+        {
+            for(int j=0; j<8; j++)
+            {
+                [createMainArray addObject:[colArray objectAtIndex:j]];
+            }
         }
     }
     NSLog(@"Color ArraY: %@", createMainArray);
     
-    for(int i=0; i< [msglist_arr count]; i++)
+    for(int m=0; m<arrDisplayTableOne.count; m++)
     {
-        NSMutableDictionary *menuMsgListDic = [[NSMutableDictionary alloc] init];
-        menuMsgListDic = [msglist_arr objectAtIndex:i];
-        NSString * MenuId=[menuMsgListDic valueForKey:@"MenuId"];
-        [DBManager updatemenuWithMenuId:MenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:i]];
+        ModelMenu *obj=[arrDisplayTableOne objectAtIndex:m];
+        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+        if (obj.arrSubMenu.count>0)
+        {
+            for (int n=0;n<obj.arrSubMenu.count; n++) {
+                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            }
+        }
+    }
+    
+    for(int m=0; m<arrDisplayTableTwo.count; m++)
+    {
+        ModelMenu *obj=[arrDisplayTableTwo objectAtIndex:m];
+        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+        if (obj.arrSubMenu.count>0)
+        {
+            for (int n=0;n<obj.arrSubMenu.count; n++) {
+                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            }
+        }
+    }
+    for(int m=0; m<arrDisplayTableThree.count; m++)
+    {
+        ModelMenu *obj=[arrDisplayTableThree objectAtIndex:m];
+        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+        if (obj.arrSubMenu.count>0)
+        {
+            for (int n=0;n<obj.arrSubMenu.count; n++) {
+                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            }
+        }
+    }
+    for(int m=0; m<arrDisplayTableFour.count; m++)
+    {
+        ModelMenu *obj=[arrDisplayTableFour objectAtIndex:m];
+        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+        if (obj.arrSubMenu.count>0)
+        {
+            for (int n=0;n<obj.arrSubMenu.count; n++) {
+                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            }
+        }
     }
     
     

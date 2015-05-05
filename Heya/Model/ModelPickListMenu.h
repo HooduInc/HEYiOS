@@ -14,6 +14,7 @@
 @property(strong,nonatomic) NSString *strPickMenuName;
 @property(strong,nonatomic) NSString *strPickImage;
 @property(strong,nonatomic) NSString *strPickMenuOrder;
+@property(assign,nonatomic) BOOL isSubMenuOpen;
 @property(strong,nonatomic) NSMutableArray *arrPickSubMenu;
 
 @end

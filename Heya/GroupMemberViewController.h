@@ -25,6 +25,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *groupSwipeTextLabel;
 @property (weak, nonatomic) IBOutlet UILabel *addNewGroupMemberLabel;
 @property (weak, nonatomic) IBOutlet UIButton *addBtnLabel;
+@property (weak, nonatomic) IBOutlet UIButton *saveBtn;
 
 @property (nonatomic, strong) ABPeoplePickerNavigationController *addressBookController;
 

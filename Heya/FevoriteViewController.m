@@ -10,13 +10,17 @@
 #import "RearrangeFevoriteViewController.h"
 #import "FevretTableViewCell.h"
 #import "ModelFevorite.h"
-
+#import "MBProgressHUD.h"
 
 @interface FevoriteViewController ()<FevretTableViewCellDelegate,UITextFieldDelegate, UIAlertViewDelegate>
 {
-    UIImage *test;
+    MBProgressHUD *HUD;
     NSIndexPath *selectedIndexPath;
     BOOL cellEditingStatus, cellDeleteStatus;
+    UIAlertView *saveAlert;
+    NSMutableArray *multipleContactNoArray;
+    
+    UIImage *contactImageFromAddressBook;
 }
 
 @end
@@ -25,7 +29,6 @@
 NSMutableDictionary *contactInfoDict;
 NSString *urlString;
 @synthesize fevoriteList_table,fevoritelist_array,number_arr,alphabetArray, testingImage;
-
 
 
 #pragma mark
@@ -45,9 +48,10 @@ NSString *urlString;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    HUD = [[MBProgressHUD alloc] initWithView:self.view];
     
-    test=[[UIImage alloc] init];
     alphabetArray = [[NSMutableArray alloc]initWithObjects:@"1",@"2",@"3", nil];
+    saveAlert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
     
 }
 
@@ -55,14 +59,29 @@ NSString *urlString;
 {
     selectedIndexPath=nil;
     self.arrContactsData = [[NSMutableArray alloc]init];
-    self.arrContactsData = [DBManager fetchFavorite];
     
-
     [fevoriteList_table setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
+    
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
         
-    [self setEditing:YES animated:YES];
-    [fevoriteList_table setEditing:YES animated:YES];
-    [fevoriteList_table reloadData];
+        //Mostly Coding Part
+        [self.view addSubview:HUD];
+        [HUD show:YES];
+        self.arrContactsData = [DBManager fetchFavorite];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{ // 2
+            
+            //Mostly UI Updates
+            [self setEditing:YES animated:YES];// 3
+            [fevoriteList_table setEditing:YES animated:YES];
+            [fevoriteList_table reloadData];
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+        });
+    });
+        
+    
     
 }
 
@@ -78,7 +97,9 @@ NSString *urlString;
 #pragma mark
 
 //Works from IOS 8
-- (void)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker didSelectPerson:(ABRecordRef)person {
+- (void)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker didSelectPerson:(ABRecordRef)person
+{
+    multipleContactNoArray=[[NSMutableArray alloc] init];
     
     // Initialize a mutable dictionary and give it initial values.
     contactInfoDict = [[NSMutableDictionary alloc]
@@ -114,106 +135,98 @@ NSString *urlString;
         NSLog(@"ContactValue: %@",currentPhoneValue);
         NSLog(@"kABPersonPhoneMobileLabel: %@", kABPersonPhoneMobileLabel);*/
         
-        if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-        }
         
+        if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+        }
+    
+        //If Phone Number doesn't exists in kABPersonPhoneMainLabel
+        if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+        }
         
         //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-        if ([[contactInfoDict objectForKey:@"mobileNumber"] isEqualToString:@""])
+        if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
         {
-            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            }
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
         }
         
-        //If Phone Number doesn't exists in kABHomeLabel
-        if ([[contactInfoDict objectForKey:@"mobileNumber"] isEqualToString:@""])
+        
+        //If Phone Number doesn't exists in kABPersonIPhoneLabel
+        if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
         {
-            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
                 [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            }
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+        }
+
+        //If Phone Number doesn't exists in kABHomeLabel
+        if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+        }
+        
+        //If Phone Number doesn't exists in kABWorkLabel
+        if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
         }
 
         CFRelease(currentPhoneLabel);
         CFRelease(currentPhoneValue);
     }
     
-    NSLog(@"Contact Dictionary: %@", contactInfoDict);
+    //NSLog(@"Contact Dictionary: %@", contactInfoDict);
     CFRelease(phonesRef);
     
     
-    
     // If the contact has an image then get it too.
-    if (ABPersonHasImageData(person)) {
+    if (ABPersonHasImageData(person))
+    {
         
         NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
         
- //       [contactInfoDict setObject:contactImageData forKey:@"image"];
-//        NSData* data=[contactInfoDict objectForKey:@"image"];
-//        UIImage *image = [UIImage imageWithData:data];
-//        self.testingImage.image = image;
+        contactImageFromAddressBook = [UIImage imageWithData:contactImageData];
         
-        UIImage  *img = [UIImage imageWithData:contactImageData];
-        
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        [library writeImageToSavedPhotosAlbum:[img CGImage] orientation:(ALAssetOrientation)[img imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error){
-            if (error)
-            {
-                NSLog(@"error: %@",error);
-            }
-            else
-            {
-                
-               urlString = [assetURL absoluteString];
-                NSLog(@"url %@", urlString);
-                [contactInfoDict setObject:urlString forKey:@"image"];
-                //NSLog(@"contactInfoDict: %@",contactInfoDict);
-
-                
-                ModelFevorite *favObj=[[ModelFevorite alloc] init];
-                favObj.strFirstName=[contactInfoDict valueForKey:@"firstName"];
-                favObj.strLastName=[contactInfoDict valueForKey:@"lastName"];
-                favObj.strMobNumber=[contactInfoDict valueForKey:@"mobileNumber"];
-                favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
-                favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
-                
-                NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
-                [favInsertArray addObject:favObj];
-                
-                self.arrContactsData = [[NSMutableArray alloc] init];
-                self.arrContactsData = [DBManager insertToFavoriteTable:favInsertArray];
-                
-                // Reload the table view data.
-                [fevoriteList_table reloadData];
-                [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-            }
-        }];
+        if (multipleContactNoArray.count>1)
+        {
+            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+            
+            for(NSString *buttonTitle in multipleContactNoArray)
+                [alertContactDialog addButtonWithTitle:buttonTitle];
+            [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
+            [alertContactDialog show];
+        }
+        else
+            [self insertFavorite];
         
     }
     
     else
     {
+        contactImageFromAddressBook=nil;
         [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
         
-        ModelFevorite *favObj=[[ModelFevorite alloc] init];
-        favObj.strFirstName=[contactInfoDict valueForKey:@"firstName"];
-        favObj.strLastName=[contactInfoDict valueForKey:@"lastName"];
-        favObj.strMobNumber=[contactInfoDict valueForKey:@"mobileNumber"];
-        favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
-        favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
-        
-        NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
-        [favInsertArray addObject:favObj];
-        
-        self.arrContactsData = [[NSMutableArray alloc] init];
-        self.arrContactsData = [DBManager insertToFavoriteTable:favInsertArray];
-        
-        // Reload the table view data.
-        [fevoriteList_table reloadData];
-        [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-    
+        if (multipleContactNoArray.count>1)
+        {
+            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+            
+            for(NSString *buttonTitle in multipleContactNoArray)
+                [alertContactDialog addButtonWithTitle:buttonTitle];
+            [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
+            [alertContactDialog show];
+        }
+        else
+            [self insertFavorite];
     }
+    
+    
     
 }
 
@@ -345,6 +358,7 @@ NSString *urlString;
 #pragma mark
 - (void)buttonChangeActionForItemText:(id)sender
 {
+    self.saveBtn.hidden=NO;
     FevretTableViewCell *cell=(FevretTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
     NSIndexPath *indexPath=[fevoriteList_table indexPathForCell:cell];
     
@@ -443,7 +457,7 @@ NSString *urlString;
         {
             NSLog(@"Updated Name: %@",cell.nameLabelText.text);
             NSLog(@"Favorite ID: %ld",(long)cell.nameLabelText.tag);
-           BOOL isUpdated=[DBManager UpdateFavoriteWithId:[NSString stringWithFormat:@"%ld",cell.nameLabelText.tag]  withColoumValue:cell.nameLabelText.text];
+           BOOL isUpdated=[DBManager UpdateFavoriteWithId:[NSString stringWithFormat:@"%ld",(long)cell.nameLabelText.tag]  withColoumValue:cell.nameLabelText.text];
             
             if (isUpdated)
             {
@@ -453,6 +467,7 @@ NSString *urlString;
                 
                 UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
+                self.saveBtn.hidden=YES;
                 
                 self.arrContactsData= [DBManager fetchFavorite];
                 [fevoriteList_table reloadData];
@@ -487,6 +502,32 @@ NSString *urlString;
     [fevoriteList_table setContentOffset:CGPointZero animated:YES];
 }
 
+#pragma mark
+#pragma mark AlertView Delegate Methods
+#pragma mark
+
+-(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"])
+    {
+        NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
+        
+        if(![DBManager checkMobileNumExistsinFavoriteTable:[alertView buttonTitleAtIndex:buttonIndex]])
+        {
+            [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
+        
+            [self.view addSubview:HUD];
+            [HUD show:YES];
+            [self insertFavorite];
+        }
+        else
+        {
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
+        }
+    }
+}
+
 
 #pragma mark
 #pragma mark Helper Method
@@ -510,7 +551,79 @@ NSString *urlString;
     return nil;
 }
 
+-(void) hideAlertView
+{
+    [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
+}
 
-
+-(void) insertFavorite
+{
+    if (contactImageFromAddressBook)
+    {
+        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+        [library writeImageToSavedPhotosAlbum:[contactImageFromAddressBook CGImage] orientation:(ALAssetOrientation)[contactImageFromAddressBook imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error)
+         {
+             if (error)
+             {
+                 NSLog(@"error: %@",error);
+             }
+             else
+             {
+                 
+                 urlString = [assetURL absoluteString];
+                 NSLog(@"url %@", urlString);
+                 [contactInfoDict setObject:urlString forKey:@"image"];
+                 //NSLog(@"contactInfoDict: %@",contactInfoDict);
+                 
+                 ModelFevorite *favObj=[[ModelFevorite alloc] init];
+                 favObj.strFirstName=[contactInfoDict valueForKey:@"firstName"];
+                 favObj.strLastName=[contactInfoDict valueForKey:@"lastName"];
+                 favObj.strMobNumber=[contactInfoDict valueForKey:@"mobileNumber"];
+                 favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
+                 favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
+                 
+                 NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
+                 [favInsertArray addObject:favObj];
+                 
+                 self.arrContactsData = [[NSMutableArray alloc] init];
+                 self.arrContactsData = [DBManager insertToFavoriteTable:favInsertArray];
+                 
+                 [HUD hide:YES];
+                 [HUD removeFromSuperview];
+                 contactImageFromAddressBook=nil;
+                 
+                 [saveAlert show];
+                 [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+                 
+                 // Reload the table view data.
+                 [fevoriteList_table reloadData];
+             }
+         }];
+    }
+    else
+    {
+        ModelFevorite *favObj=[[ModelFevorite alloc] init];
+        favObj.strFirstName=[contactInfoDict valueForKey:@"firstName"];
+        favObj.strLastName=[contactInfoDict valueForKey:@"lastName"];
+        favObj.strMobNumber=[contactInfoDict valueForKey:@"mobileNumber"];
+        favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
+        favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
+        
+        NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
+        [favInsertArray addObject:favObj];
+        
+        self.arrContactsData = [[NSMutableArray alloc] init];
+        self.arrContactsData = [DBManager insertToFavoriteTable:favInsertArray];
+        
+        [HUD hide:YES];
+        [HUD removeFromSuperview];
+        
+        [saveAlert show];
+        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        
+        // Reload the table view data.
+        [fevoriteList_table reloadData];
+    }
+}
 
 @end

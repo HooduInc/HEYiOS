@@ -9,23 +9,18 @@
 #import <UIKit/UIKit.h>
 
 
-@interface DropDownCell : UITableViewCell {
-    
-    IBOutlet UILabel *textLabel;
-    IBOutlet UIImageView *arrow_up;
-    IBOutlet UIImageView *arrow_down;
-    
-    BOOL isOpen;
-
-}
+@interface DropDownCell : UITableViewCell
+{}
 
 - (void) setOpen;
 - (void) setClosed;
 
-@property (weak, nonatomic) IBOutlet UIImageView *mainImage;
 @property (nonatomic) BOOL isOpen;
-@property (nonatomic, retain) IBOutlet UILabel *textLabel;
-@property (nonatomic, retain) IBOutlet UIImageView *arrow_up;
-@property (nonatomic, retain) IBOutlet UIImageView *arrow_down;
+
+@property (nonatomic, weak) IBOutlet UIImageView *mainImage;
+@property (nonatomic, weak) IBOutlet UILabel *textLabel;
+@property (nonatomic, weak) IBOutlet UIImageView *arrow_up;
+@property (nonatomic, weak) IBOutlet UIImageView *arrow_down;
+@property (nonatomic, weak) IBOutlet UIButton *btnHeader;
 
 @end

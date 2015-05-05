@@ -8,6 +8,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FevoriteViewController">
             <connections>
                 <outlet property="fevoriteList_table" destination="heT-4P-b7q" id="q2Z-YW-uoy"/>
+                <outlet property="saveBtn" destination="fgK-9H-zhU" id="XPt-wF-u21"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
@@ -83,7 +84,7 @@
                         <action selector="back:" destination="-1" eventType="touchUpInside" id="rsE-QM-HJF"/>
                     </connections>
                 </button>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="fgK-9H-zhU">
+                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="fgK-9H-zhU">
                     <rect key="frame" x="268" y="27" width="46" height="30"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>

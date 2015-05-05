@@ -9,6 +9,7 @@
 #import "SettingsViewController.h"
 #import "ThemeViewController.h"
 #import "PickFromListController.h"
+#import "Pick4mListViewController.h"
 #import "FevoriteViewController.h"
 #import "GroupViewController.h"
 #import "OtherSettingsController.h"
@@ -51,6 +52,9 @@ NSUserDefaults *preferances;
 {
     self.settingsProfileImage.layer.cornerRadius = self.settingsProfileImage.frame.size.width / 2;
     self.settingsProfileImage.clipsToBounds = YES;
+    self.settingsProfileImage.layer.borderColor=[UIColor grayColor].CGColor;
+    self.settingsProfileImage.layer.borderWidth=1.0f;
+    
     [self.themeNameLabel setText:[preferances valueForKey:@"themeName"]];
     
     NSMutableArray *userProfile=[[NSMutableArray alloc] init];
@@ -98,7 +102,8 @@ NSUserDefaults *preferances;
 
 - (IBAction)pickListButton:(id)sender {
     
-    PickFromListController *pickListController = [[PickFromListController alloc] initWithNibName:@"PickFromListController" bundle:nil];
+    //PickFromListController *pickListController = [[PickFromListController alloc] initWithNibName:@"PickFromListController" bundle:nil];
+    Pick4mListViewController *pickListController = [[Pick4mListViewController alloc] initWithNibName:@"Pick4mListViewController" bundle:nil];
     pickListController.FlagFromSettings=YES;
     [self.navigationController pushViewController:pickListController animated:YES];
 }

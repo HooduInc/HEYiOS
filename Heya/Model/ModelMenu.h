@@ -16,5 +16,7 @@
 @property(strong,nonatomic) NSString *strMenuColor;
 @property(strong,nonatomic) NSString *strMenuPageNo;
 @property(strong,nonatomic) NSMutableArray *arrSubMenu;
-
+@property(assign,nonatomic) BOOL isSubMenuOpen;
+@property(assign,nonatomic) BOOL isShowSaveBtn;
+@property(assign,nonatomic) BOOL iscellAddDelBtnPressed;
 @end

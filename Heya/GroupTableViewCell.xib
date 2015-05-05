@@ -140,7 +140,7 @@
                 <outlet property="changeTextBtn" destination="mKT-7B-Ea5" id="gFM-3L-gYX"/>
                 <outlet property="contentViewLeftConstraint" destination="Q5t-FJ-kWM" id="fJd-Xb-y82"/>
                 <outlet property="contentViewRightConstraint" destination="q6H-uu-Rkl" id="FmQ-Fz-Xpt"/>
-                <outlet property="deleteTextBtn" destination="3Gz-OA-Kq3" id="m6n-6J-HLD"/>
+                <outlet property="deleteTextBtn" destination="3Gz-OA-Kq3" id="9Mq-V3-SeK"/>
                 <outlet property="groupNameLabel" destination="2lS-jy-6Cm" id="F7y-83-c4t"/>
                 <outlet property="myConteView" destination="Fv8-Kl-Onc" id="c4R-A3-EaY"/>
                 <outlet property="nameLabel" destination="eGo-Wy-Dk4" id="xVB-zU-2yO"/>

@@ -17,17 +17,15 @@
 //***************** DATABASE RELATED FUNCTIONS ***********************
 
 + (NSString *)getDBPath;
-
 + (FMDatabase *)getDatabase;
 + (void) checkAndCreateDatabaseAtPath:(NSString *)databasePath;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 //Menu & Submenu
-
-+ (NSMutableArray*) fetchTotalSubmenu;
-+ (NSMutableArray*)fetchmenu:(int)startLimit noOfRows:(int)noOfRows;
++ (NSMutableArray*)fetchAllMenu;
 + (NSMutableArray*)fetchMenuForPageNo:(NSInteger)menuPageNo;
++ (NSMutableArray*) fetchTotalSubmenu;
 + (NSMutableArray*) fetchSubmenuWithmenuIdUpdated:(NSString*)menuId;
 + (NSMutableArray*) fetchSubmenuWithmenuId:(NSString*)menuId;
 + (NSMutableArray*) fetchSubmenuWithmenuId:(NSString*)menuId subMenuID:(NSString*)subMenuID;
@@ -52,30 +50,28 @@
 
 +(void) updateMenuOrderWithMenuId:(NSString*)menuId withMenuOrder:(NSString*)menuOrder;
 
-+(void) updateSubMenuOrderWithMenuId:(NSString*)menuId withSubMenuId:(NSString*)subMenuIdSource withSubMenuOrder:(NSString*)subMenuOrderSource withSubMenuIdDestination:(NSString*)subMenuIdDestination withSubMenuOrderDestination:(NSString*)subMenuOrderDestination;
+//+(void) updateSubMenuOrderWithMenuId:(NSString*)menuId withSubMenuId:(NSString*)subMenuIdSource withSubMenuOrder:(NSString*)subMenuOrderSource withSubMenuIdDestination:(NSString*)subMenuIdDestination withSubMenuOrderDestination:(NSString*)subMenuOrderDestination;
 
 
 //Favourite
-
 +(NSMutableArray*)insertToFavoriteTable:(NSMutableArray*)fevoriteArray;
 +(void) UpdateFavoriteWithId:(NSString*)favoriteId withTableColoum:(NSString*)tableColoumName withColoumValue:(NSString*)tableColoumValue;
-
 +(BOOL) UpdateFavoriteWithId:(NSString*)favoriteId withColoumValue:(NSString*)tableColoumValue;
-
 +(BOOL) deleteFavoriteDetailsWithFavoriteId:(NSString*)favoriteId;
 
 +(NSMutableArray*)fetchFavorite;
 +(NSMutableArray*)fetchFavoriteWithMobileNumber:(NSString*)Mob;
++(BOOL)checkMobileNumExistsinFavoriteTable:(NSString*)MobileNum;
 
 //Group
-
 +(NSMutableArray*)saveGroupNameToTable:(NSString*)groupName;
 +(NSMutableArray*)saveGroupMembersToGroup:(NSMutableDictionary*)infoGroupMember;
-
 
 +(NSMutableArray*)fetchDetailsFromGroup;
 +(NSMutableArray*)fetchDataFromGroupWithGroupId:(NSString*)groupId;
 +(NSMutableArray*)fetchGroupMembersWithGroupId:(NSString*)groupId;
++(BOOL)checkGroupNameExistsinGroupTable:(NSString*)GroupName;
++(BOOL)checkGroupMembersExistsinGroupTable:(NSString*)memberMobileNum groupID:(NSString*)groupId;
 
 //Updated
 +(long long) insertGroup:(NSString*)groupName;
@@ -87,22 +83,36 @@
 +(BOOL) updateGroupMemberNameWithMemberId:(NSString*)memberId withGroupName:(NSString*)memberName;
 +(BOOL) deleteGroupMemberWithMemberId:(NSString*)memberId;
 +(BOOL) deleteGroupMemberWithGroupId:(NSString*)groupId;
-//PickFromList
 
+//PickFromList
 + (NSMutableArray*) fetchAllPickFromListUpdated;
 + (NSMutableArray*) fetchPickSubMenuWithPickMenuIdUpdated:(NSString*)pickMenuId;
 
-
-+(BOOL) insertPickSubMenu:(NSMutableArray*)pickArray;
++(long long) insertPickSubMenu:(NSMutableArray*)pickArray;
 +(void) updatePickSubMenuWithPickId:(NSString*)pickId withTableColoum:(NSString*)tableColoumName withColoumValue:(NSString*)tableColoumValue;
 
 +(void) updatePickSubMenuWithPickName:(NSString*)pickName withTableColoum:(NSString*)tableColoumName withColoumValue:(NSString*)tableColoumValue;
++(BOOL) deletePickTextWithSubPickId:(NSString*)subPickId;
 
 //UserProfile
-
 +(BOOL) addProfile:(NSMutableArray*)profileArray;
++(BOOL) updatedToServerForUserWithFlag:(int)isSendToServer;
 +(BOOL) updateProfile:(NSMutableArray*)profileArray;
 + (NSMutableArray*) fetchUserProfile;
+
+
+//Message Send
++(long long) insertMessageDetails:(NSMutableArray*)msgArray;
++(BOOL)updateMessageDetailsIsPushedToServer:(int)flag withMessageId:(NSString*) strMessageId;
++(BOOL) deleteMessageWithDate:(NSString*)strDate;
+
++(NSMutableArray*)fetchUnSyncMessageDetailsWithisPushedToServer:(int) flag;
++(long)fetchMessageDetailsWithYestadayDate;
++(long)fetchMessageDetailsWithCurrentMonth;
++(long)fetchMessageDetailsWithCurrentYear;
++(long)fetchMessageDetailsWithLifeTime;
+
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 

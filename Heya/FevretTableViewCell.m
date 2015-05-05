@@ -260,14 +260,15 @@ static CGFloat const kBounceValue = 10.0f;
 {
     if (sender == self.changeTextBtn)
     {
-        [self.delegate buttonChangeActionForItemText:sender];
         [self resetConstraintContstantsToZero:YES notifyDelegateDidClose:YES];
+        [self.delegate buttonChangeActionForItemText:sender];
         NSLog(@"Clicked change button!");
     }
     else if (sender == self.deleteTextBtn)
     {
+        [self resetConstraintContstantsToZero:YES notifyDelegateDidClose:YES];
         [self.delegate buttonDeleteActionForItemText:sender];
-         [self resetConstraintContstantsToZero:YES notifyDelegateDidClose:YES];
+        
         NSLog(@"Clicked delete button!");
     }
     else

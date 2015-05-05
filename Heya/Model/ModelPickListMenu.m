@@ -18,6 +18,7 @@
         self.strPickMenuName=@"";
         self.strPickImage=@"";
         self.strPickMenuOrder=@"";
+        self.isSubMenuOpen=NO;
         self.arrPickSubMenu=[[NSMutableArray alloc] init];
     }
     return self;

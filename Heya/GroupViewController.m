@@ -7,14 +7,16 @@
 //
 
 #import "GroupViewController.h"
-#import "GroupTableViewCell.h"
+#import "MBProgressHUD.h"
 #import "GroupMemberViewController.h"
 #import "RearrangeGroupViewController.h"
+#import "GroupTableViewCell.h"
 #import "ModelGroup.h"
 
 
 @interface GroupViewController ()<GroupTableViewCellDelegate,UITextFieldDelegate>
 {
+    MBProgressHUD *HUD;
     NSIndexPath *selectedIndexPath;
     BOOL cellEditingStatus, cellDeleteStatus;
 }
@@ -32,19 +34,29 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    HUD = [[MBProgressHUD alloc] initWithView:self.view];
 }
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
     selectedIndexPath=nil;
-    
-    groupListArray = [DBManager fetchDetailsFromGroup];
-    NSLog(@"Total No of Groups: %ld",(long)groupListArray.count);
-
     [groupTableView setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
- 
-    [groupTableView reloadData];
     
+    dispatch_queue_t myQueue = dispatch_queue_create("hey_main_group", NULL);
+    
+    dispatch_async(myQueue, ^{
+        //stuffs to do in background thread
+        [self.view addSubview:HUD];
+        [HUD show:YES];
+        groupListArray = [DBManager fetchDetailsFromGroup];
+        NSLog(@"Total No of Groups: %ld",(long)groupListArray.count);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //stuffs to do in foreground thread, mostly UI updates
+            [groupTableView reloadData];
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+        });
+    });
 }
 
 - (void)didReceiveMemoryWarning
@@ -118,6 +130,7 @@
 #pragma mark
 #pragma mark - SwipeableCellDelegate
 #pragma mark
+
 - (void)groupButtonChangeActionForItemText:(id)sender
 {
     GroupTableViewCell *cell=(GroupTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
@@ -147,7 +160,7 @@
             [groupTableView setContentOffset:CGPointMake(0,rectOfCellInTableView.origin.y-120) animated:YES];
     }
     
-    else if (isIphone6)
+    else if (isIphone6Plus)
     {
         if(rectOfCellInTableView.origin.y+120>271)
             [groupTableView setContentOffset:CGPointMake(0,rectOfCellInTableView.origin.y-120) animated:YES];
@@ -213,23 +226,33 @@
         {
             NSLog(@"Updated Name: %@",cell.groupNameLabel.text);
             NSLog(@"GROUP ID: %ld",(long)cell.groupNameLabel.tag);
-            BOOL isUpdated=[DBManager updateGroupNameWithGroupId:[NSString stringWithFormat:@"%ld",cell.groupNameLabel.tag] withGroupName:cell.groupNameLabel.text];
             
-            if (isUpdated)
+            if (![DBManager checkGroupNameExistsinGroupTable:cell.groupNameLabel.text])
             {
-                cellEditingStatus=NO;
-                cellDeleteStatus=YES;
-                selectedIndexPath=nil;
+            
+                BOOL isUpdated=[DBManager updateGroupNameWithGroupId:[NSString stringWithFormat:@"%ld",(long)cell.groupNameLabel.tag] withGroupName:cell.groupNameLabel.text];
                 
-                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                [alert show];
-                
-                groupListArray= [DBManager fetchDetailsFromGroup];
-                [groupTableView reloadData];
+                if (isUpdated)
+                {
+                    cellEditingStatus=NO;
+                    cellDeleteStatus=YES;
+                    selectedIndexPath=nil;
+                    
+                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                    [alert show];
+                    
+                    groupListArray= [DBManager fetchDetailsFromGroup];
+                    [groupTableView reloadData];
+                }
+                else
+                {
+                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something went wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                    [alert show];
+                }
             }
             else
             {
-                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something went wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Group name already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
             }
             
@@ -245,6 +268,11 @@
 {
     [textField resignFirstResponder];
     return YES;
+}
+
+-(void) textFieldDidEndEditing:(UITextField *)textField
+{
+     [groupTableView setContentOffset:CGPointZero animated:YES];
 }
 
 #pragma mark

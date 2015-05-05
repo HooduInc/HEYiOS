@@ -9,13 +9,17 @@
 #import "EditViewController.h"
 #import "SettingsViewController.h"
 #import "MessagesViewController.h"
-#import "DBManager.h"
 #import "AppDelegate.h"
 #import "ModelMenu.h"
 #import "ModelSubMenu.h"
+#import "ModelMessageSend.h"
 #import "MenuListTableViewCell.h"
+#import "Reachability.h"
+#import "HeyWebService.h"
 
-@interface MessagesListViewController (){
+@interface MessagesListViewController ()
+{
+    BOOL isReachable;
     NSMutableArray *arrAllPageValue;
     NSMutableArray *arrDisplayTableOne, *arrDisplayTableTwo, *arrDisplayTableThree, *arrDisplayTableFour;
     NSInteger pageNumber;
@@ -24,6 +28,10 @@
     NSString *emoString;
     NSString *loveyouString;
 }
+
+@property (nonatomic) Reachability *hostReachability;
+@property (nonatomic) Reachability *internetReachability;
+@property (nonatomic) Reachability *wifiReachability;
 @end
 
 @implementation MessagesListViewController
@@ -97,6 +105,20 @@ NSUserDefaults *preferances;
     [menulistTableTwo reloadData];
     [menulistTableThree reloadData];
     [menulistTableFour reloadData];
+    
+    
+    dispatch_queue_t myQueue = dispatch_queue_create("hey_push_account_details_to_server", NULL);
+    
+    dispatch_async(myQueue, ^{
+        //stuffs to do in background thread
+        [self sendUnSyncDataToServer];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //stuffs to do in foreground thread, mostly UI updates
+
+        });
+    });
+    
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -190,9 +212,9 @@ NSUserDefaults *preferances;
     cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
     [cell.btnHeader setTag:section];
     [cell.btnHeader addTarget:self action:@selector(btnHeaderTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [cell.btnArrow setTag:section];
     [cell.btnArrow addTarget:self action:@selector(btnHeaderTapped:) forControlEvents:UIControlEventTouchUpInside];
-    
+    [cell.btnArrow setTag:section];
+    [cell.btnSave setHidden:YES];
     [cell.txtFiled setUserInteractionEnabled:NO];
     
     if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
@@ -210,11 +232,22 @@ NSUserDefaults *preferances;
         }
     }
     
-    //NSLog(@"btnArrow Frame = %@",NSStringFromCGRect(cell.btnArrow.frame));
     [cell.contentView bringSubviewToFront:cell.btnArrow];
+    
+    if (obj.isSubMenuOpen)
+    {
+        cell.btnArrow.transform=CGAffineTransformMakeRotation(M_PI);
+
+    }
+    else
+    {
+        cell.btnArrow.transform=CGAffineTransformMakeRotation(M_PI*2);
+    }
+    
     
     return cell;
 }
+
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     if (selectedSection==-1) {
@@ -263,6 +296,7 @@ NSUserDefaults *preferances;
     }
     return 0;
 }
+
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.row==0)
@@ -299,6 +333,7 @@ NSUserDefaults *preferances;
     cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
     [cell.txtFiled setUserInteractionEnabled:NO];
     cell.btnHeader.hidden=YES;
+    cell.btnSave.hidden=YES;
     cell.constraintLeadingSpace.constant=cell.constraintTrailingSpace.constant+20.0f;
     
     if (indexPath.row==0) {
@@ -359,8 +394,11 @@ NSUserDefaults *preferances;
 #pragma mark IBActions
 #pragma mark
 
+
+
 -(IBAction)btnHeaderTapped:(id)sender
 {
+    
     if (selectedSection==[sender tag])
     {
         selectedSection=-1;
@@ -368,9 +406,6 @@ NSUserDefaults *preferances;
     else
     {
         selectedSection=[sender tag];
-        
-        UIButton *btnArrow=(UIButton*)sender;
-        btnArrow.transform=CGAffineTransformMakeRotation(M_PI);
         
     }
     
@@ -384,7 +419,7 @@ NSUserDefaults *preferances;
             
             if([obj.strMenuName containsString:@"[ Custom Message ]"])
             {
-               messagesView_obj.getMessageStr =@"HEY!";
+               messagesView_obj.getMessageStr =@"HEY! ";
             }
             
             else if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
@@ -403,7 +438,15 @@ NSUserDefaults *preferances;
                 [self.navigationController pushViewController:messagesView_obj animated:YES];
         }
         else
+        {
+            if (obj.isSubMenuOpen) {
+                obj.isSubMenuOpen=NO;
+            }
+            else
+                obj.isSubMenuOpen=YES;
+            
             [menulistTable reloadData];
+        }
     }
     else if (pageNumber==1)
     {
@@ -422,7 +465,14 @@ NSUserDefaults *preferances;
                 [self.navigationController pushViewController:messagesView_obj animated:YES];
         }
         else
+        {
+            if (obj.isSubMenuOpen) {
+                obj.isSubMenuOpen=NO;
+            }
+            else
+                obj.isSubMenuOpen=YES;
             [menulistTableTwo reloadData];
+        }
     }
     
     else if (pageNumber==2)
@@ -442,7 +492,14 @@ NSUserDefaults *preferances;
                 [self.navigationController pushViewController:messagesView_obj animated:YES];
         }
         else
+        {
+            if (obj.isSubMenuOpen) {
+                obj.isSubMenuOpen=NO;
+            }
+            else
+                obj.isSubMenuOpen=YES;
             [menulistTableThree reloadData];
+        }
     }
     
     else if (pageNumber==3)
@@ -462,9 +519,17 @@ NSUserDefaults *preferances;
                 [self.navigationController pushViewController:messagesView_obj animated:YES];
         }
         else
+        {
+            if (obj.isSubMenuOpen) {
+                obj.isSubMenuOpen=NO;
+            }
+            else
+                obj.isSubMenuOpen=YES;
             [menulistTableFour reloadData];
+        }
     }
 }
+
 
 - (IBAction)settingsButtonTapped:(id)sender
 {
@@ -500,6 +565,143 @@ NSUserDefaults *preferances;
 {
     pageNumber=[pageControl currentPage];
     [messageListScrollView setContentOffset:CGPointMake(pageNumber*messageListScrollView.frame.size.width, 0) animated:YES];
+}
+
+
+#pragma mark
+#pragma mark Reachability Method Implementation
+#pragma mark
+
+//Called by Reachability whenever status changes.
+
+-(BOOL)isNetworkAvailable
+{
+    return isReachable;
+}
+- (void) reachabilityChanged:(NSNotification *)note
+{
+    Reachability* curReach = [note object];
+    NSParameterAssert([curReach isKindOfClass:[Reachability class]]);
+    [self updateInterfaceWithReachability:curReach];
+}
+
+- (void)updateInterfaceWithReachability:(Reachability *)reachability
+{
+    if (reachability == self.hostReachability)
+    {
+        NSString* baseLabelText = @"";
+        
+        Reachability *networkReachability = [Reachability reachabilityForInternetConnection];
+        NetworkStatus networkStatus = [networkReachability currentReachabilityStatus];
+        
+        if (networkStatus == NotReachable)
+        {
+            isReachable=NO;
+            baseLabelText = NSLocalizedString(@"Cellular data network is unavailable.\nInternet traffic will be routed through it after a connection is established.", @"Reachability text if a connection is required");
+        }
+        else
+        {
+            isReachable=YES;
+            baseLabelText = NSLocalizedString(@"Cellular data network is active.\nInternet traffic will be routed through it.", @"Reachability text if a connection is not required");
+        }
+        NSLog(@"Reachability Message: %@", baseLabelText);
+    }
+    
+    if (reachability == self.internetReachability)
+    {
+        NSLog(@"internetReachability is possible");
+    }
+    
+    if (reachability == self.wifiReachability)
+    {
+        NSLog(@"wifiReachability is possible");
+    }
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
+}
+
+
+#pragma mark
+#pragma mark Helper Method
+#pragma mark
+
+-(id)getSuperviewOfType:(id)superview fromView:(id)myView
+{
+    NSLog(@"superviewClass=%@",[superview class]);
+    if ([myView isKindOfClass:[superview class]]) {
+        return myView;
+    }
+    else
+    {
+        id temp=[myView superview];
+        
+        while (1) {
+            NSLog(@"tempClass=%@",[temp class]);
+            if ([temp isKindOfClass:[superview class]]) {
+                return temp;
+            }
+            temp=[temp superview];
+        }
+    }
+    return nil;
+}
+
+-(void)sendUnSyncDataToServer
+{
+    NSMutableArray *unSyncArray=[[NSMutableArray alloc] init];
+    unSyncArray=[DBManager fetchUnSyncMessageDetailsWithisPushedToServer:0];
+    
+    if (unSyncArray.count>0)
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+        
+        NSString *remoteHostName =HeyBaseURL;
+        
+        self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+        [self.hostReachability startNotifier];
+        [self updateInterfaceWithReachability:self.hostReachability];
+        
+        self.internetReachability = [Reachability reachabilityForInternetConnection];
+        [self.internetReachability startNotifier];
+        [self updateInterfaceWithReachability:self.internetReachability];
+        
+        self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+        [self.wifiReachability startNotifier];
+        [self updateInterfaceWithReachability:self.wifiReachability];
+        
+        if([self isNetworkAvailable])
+        {
+            for (ModelMessageSend *objSend in unSyncArray)
+            {
+                NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                [format setDateFormat:@"yyyy-MM-dd HH:mm:zz"];
+                NSDate *fecthDate=[format dateFromString:objSend.strSendDate];
+                [format setDateFormat:@"dd-MM-yyyy"];
+                NSString *strTimeStamp = [format stringFromDate:fecthDate];
+                
+                NSLog(@"Send TimeStamp: %@",strTimeStamp);
+                
+                
+                [[HeyWebService service] sendMessageDetailsToServerWithUDID:objSend.strDeviceId  TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                 {
+                     
+                     if(isError)
+                     {
+                         NSLog(@"Error: %@",strMsg);
+                     }
+                     else
+                     {
+                         NSLog(@"Success: %@",strMsg);
+                         
+                         [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
+                     }
+                 }];
+            }
+        }
+    }
 }
 
 @end

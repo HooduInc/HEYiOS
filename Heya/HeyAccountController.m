@@ -7,19 +7,18 @@
 //
 
 #import "HeyAccountController.h"
+#import "ModelMessageSend.h"
+#import "MBProgressHUD.h"
 #import "Reachability.h"
-#define ProfileURL @"https://qa.campusclouds.com/hey/account_details"
+#import "HeyWebService.h"
 
-NSMutableArray *MainArray;
-NSArray *menuArray, *pointsArray, *totalArray, *rigthsideArray;
-int count=0;
-@interface HeyAccountController ()
+@interface HeyAccountController ()<MBProgressHUDDelegate>
 {
-    NSString *totalMesssageSentLifeTime, *totalPointLifeTime;
-    NSString *totalMesssageSentCurrentYear, *totalPointCurrentYear;
-    NSString *totalMesssageSentCurrentMonth, *totalPointCurrentMonth;
-    NSString *totalMesssageSentYesterday, *totalPointYesterday;
+    NSMutableArray *pointsArray, *totalMsgCountArray;
+    NSArray *menuArray;
+    NSString *dateDownloaded,*appVersion;
     BOOL isReachable;
+    MBProgressHUD *HUD;
 }
 
 @property (nonatomic) Reachability *hostReachability;
@@ -29,8 +28,11 @@ int count=0;
 
 @implementation HeyAccountController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
+    HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
+    menuArray=[NSArray arrayWithObjects:@"Yesterday",@"This month",@"This year",@"Lifetime",@"",@"Version",@"Date Downloaded",@"",@"Account started",@"My Renewal date", nil];
     
     /*NSArray *fontFamilies = [UIFont familyNames];
     for (int i = 0; i < [fontFamilies count]; i++)
@@ -43,104 +45,28 @@ int count=0;
 
 -(void) viewWillAppear:(BOOL)animated
 {
-    menuArray=[NSArray arrayWithObjects:@"Yesterday",@"This month",@"This year",@"Lifetime",@"",@"Version",@"Date Downloaded",@"",@"Account started",@"My Renewal date", nil];
-    
     CGFloat currentBundleVersion = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] floatValue];
-    NSDate *downloadDate= (NSDate*)[[NSUserDefaults standardUserDefaults] valueForKey:@"applicationInstalledDate"];
+    appVersion=[NSString stringWithFormat:@"%.01f",currentBundleVersion];
     
+    NSDate *downloadDate= (NSDate*)[[NSUserDefaults standardUserDefaults] valueForKey:@"applicationInstalledDate"];
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"MM.dd.yyyy"];
-    NSString *newStartDate = [formatter stringFromDate:downloadDate];
+    dateDownloaded = [formatter stringFromDate:downloadDate];
     
     
+    dispatch_queue_t myQueue = dispatch_queue_create("hey_account_details", NULL);
     
-    #pragma mark
-    #pragma mark Yesterday Message Row
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentYesterday"])
-    {
-        totalMesssageSentYesterday=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentYesterday"];
-    }
-    else
-    {
-        totalMesssageSentYesterday=@"0";
-    }
-    
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointYesterday"])
-    {
-        totalPointYesterday=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointYesterday"];
-    }
-    else
-    {
-        totalPointYesterday=@"0";
-    }
-    
-    
-    #pragma mark
-    #pragma mark Current Month Message Row
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentCurrentMonth"])
-    {
-        totalMesssageSentCurrentMonth=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentCurrentMonth"];
-    }
-    else
-    {
-        totalMesssageSentCurrentMonth=@"0";
-    }
-    
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointCurrentMonth"])
-    {
-        totalPointCurrentMonth=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointCurrentMonth"];
-    }
-    else
-    {
-        totalPointCurrentMonth=@"0";
-    }
-    
-    
-    #pragma mark
-    #pragma mark Current Year Message Row
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentCurrentYear"])
-    {
-        totalMesssageSentCurrentYear=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentCurrentYear"];
-    }
-    else
-    {
-        totalMesssageSentCurrentYear=@"0";
-    }
-    
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointCurrentYear"])
-    {
-        totalPointCurrentYear=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointCurrentYear"];
-    }
-    else
-    {
-        totalPointCurrentYear=@"0";
-    }
-    
-    #pragma mark
-    #pragma mark Life Time Message Row
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentLifeTime"])
-    {
-        totalMesssageSentLifeTime=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalMesssageSentLifeTime"];
-    }
-    else
-    {
-        totalMesssageSentLifeTime=@"0";
-    }
-    
-    if([[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointLifeTime"])
-    {
-        totalPointLifeTime=[[NSUserDefaults standardUserDefaults] valueForKey:@"totalPointLifeTime"];
-    }
-    else
-    {
-        totalPointLifeTime=@"0";
-    }
-    #pragma mark
-    
-    pointsArray=[NSArray arrayWithObjects:totalMesssageSentYesterday,totalMesssageSentCurrentMonth,totalMesssageSentCurrentYear,totalMesssageSentLifeTime, nil];
-    totalArray=[NSArray arrayWithObjects:totalPointYesterday,totalPointCurrentMonth,totalPointCurrentYear,totalPointLifeTime, nil];
-    
-    rigthsideArray=[NSArray arrayWithObjects:[NSString stringWithFormat:@"%.02f",currentBundleVersion],newStartDate,newStartDate,newStartDate, nil];
+    dispatch_async(myQueue, ^{
+        //stuffs to do in background thread
+        [self.view addSubview:HUD];
+        [HUD show:YES];
+        [self fetchAccountDetailsFromServerORDatabase];
+         
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //stuffs to do in foreground thread, mostly UI updates
+            [self.myAccountTableView reloadData];
+        });
+    });
 }
 
 - (void)didReceiveMemoryWarning {
@@ -150,7 +76,12 @@ int count=0;
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [menuArray count];
+    if ([totalMsgCountArray count]>0) {
+        return [totalMsgCountArray count];
+    }
+    else
+        return  0;
+    
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -193,13 +124,13 @@ int count=0;
         cell.separatorInset=UIEdgeInsetsMake(0.0f, 0, 0.0f, 10000.0f);
         
         UILabel *labelViewTotal = [[UILabel alloc] initWithFrame:CGRectMake(190, 0, 58, 38)];
-        labelViewTotal.text=[totalArray objectAtIndex:indexPath.row];
+        labelViewTotal.text=[totalMsgCountArray objectAtIndex:indexPath.row];
         labelViewTotal.textColor=[UIColor colorWithRed:128/255.0f green:128/255.0f blue:128/255.0f alpha:1.0];
         labelViewTotal.textAlignment=NSTextAlignmentCenter;
         labelViewTotal.font=[UIFont fontWithName:@"Helvetica" size:15];
         
         UILabel *labelViewPoints = [[UILabel alloc] initWithFrame:CGRectMake(252, 0, 58, 38)];
-        labelViewPoints.text=[pointsArray objectAtIndex:indexPath.row];
+        labelViewPoints.text=[totalMsgCountArray objectAtIndex:indexPath.row];
         labelViewPoints.textColor=[UIColor colorWithRed:128/255.0f green:128/255.0f blue:128/255.0f alpha:1.0];
         labelViewPoints.textAlignment=NSTextAlignmentCenter;
         labelViewPoints.font=[UIFont fontWithName:@"Helvetica" size:15];
@@ -217,32 +148,29 @@ int count=0;
     else
     {
         UILabel *labelViewPoints = [[UILabel alloc] initWithFrame:CGRectMake(205, 0, 100, 38)];
-        labelViewPoints.text=[rigthsideArray objectAtIndex:count];
+        labelViewPoints.text=[totalMsgCountArray objectAtIndex:indexPath.row];
         labelViewPoints.textColor=[UIColor colorWithRed:128/255.0f green:128/255.0f blue:128/255.0f alpha:1.0];
         labelViewPoints.textAlignment=NSTextAlignmentRight;
         labelViewPoints.font=[UIFont fontWithName:@"Helvetica" size:15];
         [cell addSubview:labelViewPoints];
-        count++;
     }
     return cell;
 }
 
-- (IBAction)back:(id)sender {
-    
+- (IBAction)back:(id)sender
+{
     [self.navigationController popViewControllerAnimated:YES];
 }
 
 
 //Fetch Profile Details from Sever
--(void) fetchProfileDataFromServer
+-(void) fetchAccountDetailsFromServerORDatabase
 {
-    //NSString *UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-    
-    NSString *UDID=@"80000000000000";
+    NSString *UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
     
-    NSString *remoteHostName =ProfileURL;
+    NSString *remoteHostName =HeyBaseURL;
     
     self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
     [self.hostReachability startNotifier];
@@ -258,48 +186,120 @@ int count=0;
     
     if([self isNetworkAvailable])
     {
-        NSURL *url = [NSURL URLWithString:ProfileURL];
+         //fetch from server
+        //[self.view addSubview:HUD];
+        //[HUD show:YES];
         
-        ASIFormDataRequest *request = [ASIFormDataRequest requestWithURL:url];
+        [[HeyWebService service] fetchAccountDetailsFromServerWithUDID:UDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+        {
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+            if(isError)
+            {
+                NSLog(@"Couldn't fetch the details.");
+                
+                [self fetchFromDatabase];
+                [self.myAccountTableView reloadData];
+            }
+            else
+            {
+                //NSLog(@"Success: %@",result);
+                
+                NSDictionary *resultDict=(id)result;
+                
+                if (resultDict)
+                {
+                    totalMsgCountArray=[[NSMutableArray alloc] init];
+                    
+                    if ([resultDict valueForKey:@"yestarday_count"])
+                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"yestarday_count"]]];
         
-        [request setAuthenticationScheme:@"https"];
-        [request setValidatesSecureCertificate:NO];
-        [request setRequestMethod:@"POST"];
-        
-        [request setPostValue:UDID forKey:@"unique_token"];
-        [request addRequestHeader:@"Content-Type" value:@"application/x-www-form-urlencoded"];
-        
-        [request startAsynchronous];
-        [request setTimeOutSeconds:20];
-        [request setDelegate:self];
+                    
+                    if ([resultDict valueForKey:@"month_count"])
+                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"month_count"]]];
+            
+                    
+                    if ([resultDict valueForKey:@"year_count"])
+                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"year_count"]]];
+                
+                    
+                    if ([resultDict valueForKey:@"lifetime_count"])
+                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"lifetime_count"]]];
+                
+                    
+                    [totalMsgCountArray addObject:@""];
+                    [totalMsgCountArray addObject:appVersion];
+                    [totalMsgCountArray addObject:dateDownloaded];
+                    [totalMsgCountArray addObject:@""];
+                    [totalMsgCountArray addObject:dateDownloaded];
+                    
+                    if ([resultDict valueForKey:@"my_renewal_date"])
+                    {
+                        
+                        NSString *renewalDateString=[[resultDict valueForKey:@"my_renewal_date"] stringByReplacingOccurrencesOfString:@"-" withString:@"."];
+                        
+                        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                        [formatter setDateFormat:@"dd.MM.yyyy"];
+                        NSDate *renewalDate= [formatter dateFromString:renewalDateString];
+                        [formatter setDateFormat:@"MM.dd.yyyy"];
+                        
+                        [totalMsgCountArray addObject:[formatter stringFromDate:renewalDate]];
+                        
+                        [[NSUserDefaults standardUserDefaults] setValue:[formatter stringFromDate:renewalDate] forKey:@"accountRenewalDate"];
+                    }
+                    
+                    NSLog(@"totalMsgCountArray :%ld",(long)totalMsgCountArray.count);
+                    [self.myAccountTableView reloadData];
+                }
+
+                
+            }
+        }];
     }
     else
     {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
+        //fetch from Database
+        [self fetchFromDatabase];
+        [self.myAccountTableView reloadData];
+        [HUD hide:YES];
+        [HUD removeFromSuperview];
     }
 }
 
-//API Response Method
-- (void) requestFinished:(ASIHTTPRequest *)request
+-(void) fetchFromDatabase
 {
-    NSString *responseString = [request responseString];
-    NSLog(@"responseString: %@",responseString);
-    NSError *error;
+    NSLog(@"YeesterDay :%ld",(long)[DBManager fetchMessageDetailsWithYestadayDate]);
+    NSLog(@"CurrentMonth :%ld",(long)[DBManager fetchMessageDetailsWithCurrentMonth]);
+    NSLog(@"CurrentYear :%ld",(long)[DBManager fetchMessageDetailsWithCurrentYear]);
+    NSLog(@"LifeTime :%ld",(long)[DBManager fetchMessageDetailsWithLifeTime]);
     
-    NSDictionary *jsonResponeDict= [NSJSONSerialization JSONObjectWithData:request.responseData options:kNilOptions error:&error];
+    totalMsgCountArray=[[NSMutableArray alloc] init];
     
-    if ([[jsonResponeDict valueForKey:@"success"] boolValue]==true)
-    {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:[jsonResponeDict valueForKey:@"message"] delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
+    NSString *yesterdayCount=[NSString stringWithFormat:@"%ld",(long)[DBManager fetchMessageDetailsWithYestadayDate]];
+    [totalMsgCountArray addObject:yesterdayCount];
+    
+    NSString *currentMonthCount=[NSString stringWithFormat:@"%ld",(long)[DBManager fetchMessageDetailsWithCurrentMonth]];
+    [totalMsgCountArray addObject:currentMonthCount];
+    
+    NSString *currentYearCount=[NSString stringWithFormat:@"%ld",(long)[DBManager fetchMessageDetailsWithCurrentYear]];
+    [totalMsgCountArray addObject:currentYearCount];
+    
+    NSString *lifeTimeCount=[NSString stringWithFormat:@"%ld",(long)[DBManager fetchMessageDetailsWithLifeTime]];
+    [totalMsgCountArray addObject:lifeTimeCount];
+    
+    [totalMsgCountArray addObject:@""];
+    [totalMsgCountArray addObject:appVersion];
+    [totalMsgCountArray addObject:dateDownloaded];
+    [totalMsgCountArray addObject:@""];
+    [totalMsgCountArray addObject:dateDownloaded];
+    
+    if ([[NSUserDefaults standardUserDefaults] valueForKey:@"accountRenewalDate"]) {
+        [totalMsgCountArray addObject:[[NSUserDefaults standardUserDefaults] valueForKey:@"accountRenewalDate"]];
     }
     else
-    {
-        NSLog(@"Message: %@",[jsonResponeDict valueForKey:@"message"]);
-    }
+        [totalMsgCountArray addObject:@""];
     
-    
+    NSLog(@"totalMsgCountArray :%ld",(long)totalMsgCountArray.count);
 }
 
 #pragma mark

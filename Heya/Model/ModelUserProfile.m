@@ -21,6 +21,9 @@
         self.strPhoneNo=@"";
         self.strDeviceUDID=@"";
         self.strProfileImage=@"";
+        self.strCurrentTimeStamp=@"";
+        self.strAccountCreated=@"";
+        self.isSendToServer=0;
     }
     return self;
 }

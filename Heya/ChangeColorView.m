@@ -12,7 +12,7 @@
 #import "SettingsViewController.h"
 
 
-@interface ChangeColorView ()
+@interface ChangeColorView ()<UIAlertViewDelegate>
 @property (nonatomic,assign) NSInteger *seletedRow;
 @end
 
@@ -33,15 +33,15 @@ long int seletRow;
     theme = [[NSMutableArray alloc] init];
     themeName = [NSMutableArray arrayWithObjects:@"Bright", @"Standard", @"One Color",@"Outline",@"Muted", nil];
     
-    brightArray=[NSArray arrayWithObjects:@"temp_blue.png", @"temp_pink.png",@"temp_red.png", @"temp_orange.png" ,@"temp_yellow.png",@"temp_green.png", @"temp_sky.png" , @"temp_white.png", nil];
+    brightArray=[NSArray arrayWithObjects:@"temp_blue.png", @"temp_pink.png",@"temp_red.png", @"temp_orange.png" ,@"temp_yellow.png",@"temp_green.png", @"temp_sky.png" , @"temp_white.png", @"temp_white.png", nil];
     
-    standardArray= [NSArray arrayWithObjects:@"menu_btn1.png", @"menu_btn2.png",@"menu_btn4.png", @"menu_btn5.png" ,@"menu_btn6.png",@"menu_btn8.png", @"menu_btn9.png" , @"menu_btn7.png", nil];
+    standardArray= [NSArray arrayWithObjects:@"menu_btn1.png", @"menu_btn2.png",@"menu_btn4.png", @"menu_btn5.png" ,@"menu_btn6.png",@"menu_btn7.png", @"menu_btn8.png" , @"menu_btn9.png", @"menu_btn9.png", nil];
     
     oneColorArray=[NSArray arrayWithObjects:@"red1.png", @"red2.png",@"red3.png", @"red4.png" ,@"red5.png",@"red6.png", @"red7.png" , @"red7.png", nil];
     
-    outLineArray=[NSArray arrayWithObjects:@"bar_1.png", @"bar_2.png",@"bar_3.png", @"bar_4.png" ,@"bar_5.png",@"bar_6.png", @"bar_7.png" , @"bar_8.png", nil];
+    outLineArray=[NSArray arrayWithObjects:@"bar_1.png", @"bar_2.png",@"bar_3.png", @"bar_4.png" ,@"bar_5.png",@"bar_6.png", @"bar_7.png" , @"bar_8.png", @"bar_8.png", nil];
     
-    mutedArray=[NSArray arrayWithObjects:@"red1.png", @"menu_btn8.png",@"temp_orange.png", @"menu_btn5.png" ,@"muted_5.png",@"menu_btn9.png", @"muted_7.png" , @"temp_pink.png", nil];
+    mutedArray=[NSArray arrayWithObjects:@"red1.png", @"menu_btn8.png",@"temp_orange.png", @"menu_btn5.png" ,@"muted_5.png",@"menu_btn9.png", @"muted_7.png" , @"temp_pink.png", @"temp_pink.png", nil];
     
     [theme addObject:brightArray];
     [theme addObject:standardArray];
@@ -102,6 +102,10 @@ long int seletRow;
     NSLog(@"Seleted Image Name: %@",[imageList objectAtIndex:indexPath.row]);
     
     seletRow=indexPath.row;
+    
+    UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Are you sure you want to update the color?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
+    
+    [confirmDialog show];
 }
 
 - (IBAction)back:(id)sender{
@@ -109,34 +113,25 @@ long int seletRow;
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (IBAction)saveButton:(id)sender {
-    
-    NSLog(@"Seleted row in saveButton: %lu",seletRow);
-    NSLog(@"ChangeIndex: %ld",(long)changeIndex);
-    
-    [DBManager updatemenuWithMenuId:[NSString stringWithFormat:@"%ld", (long)changeIndex] withTableColoum:@"menuColor" withColoumValue:[imageList objectAtIndex:(NSUInteger)seletRow]];
-    
-    
-    
-//    if(flag==1)
-//    {
-//        NSLog(@"SubMenu color Changed");
-//        [DBManager updateSubMenuColorWithMenuId:[NSString stringWithFormat:@"%ld", (long)changeIndex+1] subMenuID:[NSString stringWithFormat:@"%ld", (long)submenuIndex+1] withcolorName:[imageList objectAtIndex:(NSUInteger)seletRow]];
-//    }
-//    else
-//    {
-//        NSLog(@"Menu color Changed");
-//        [appDel.imageArray replaceObjectAtIndex:changeIndex-1 withObject:[imageList objectAtIndex:(NSUInteger)seletRow]];
-//        NSLog(@"Array: %@", appDel.imageArray);
-//        
-//        [DBManager updateSubMenuColorWithMenuId:[NSString stringWithFormat:@"%ld", (long)changeIndex] subMenuID:@"" withcolorName:[imageList objectAtIndex:(NSUInteger)seletRow]];
-//        
-//        [preferances setObject:appDel.imageArray forKey:@"imageArrayList"];
-//        [preferances synchronize];
-//    }
-    
-    [self.navigationController popViewControllerAnimated:YES];
+- (IBAction)saveButton:(id)sender
+{}
 
+
+-(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    NSLog(@"Button Index: %ld",(long)buttonIndex);
+    
+    if (buttonIndex==1)
+    {
+        NSLog(@"Seleted row in saveButton: %lu",seletRow);
+        NSLog(@"ChangeIndex: %ld",(long)changeIndex);
+        
+        if (seletRow!=99999)
+        {
+            [DBManager updatemenuWithMenuId:[NSString stringWithFormat:@"%ld", (long)changeIndex] withTableColoum:@"menuColor" withColoumValue:[imageList objectAtIndex:(NSUInteger)seletRow]];
+            [self.navigationController popViewControllerAnimated:YES];
+        }
+    }
 }
 
 @end
