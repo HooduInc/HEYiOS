@@ -33,13 +33,16 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self setEditing:YES animated:YES];
+    [tblView setEditing:YES animated:YES];
     // Do any additional setup after loading the view from its nib.
 }
 
 -(void) viewWillAppear:(BOOL)animated
 {
-    [self setEditing:YES animated:YES];
-    [tblView setEditing:YES animated:YES];
+    fevoriteArray=[[NSMutableArray alloc] init];
+    fevoriteArray=[DBManager fetchFavorite];
+    NSLog(@"fevoriteArray: %@",fevoriteArray);
     [tblView reloadData];
 }
 
@@ -74,7 +77,7 @@
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *DropDownCellIdentifier = @"RearrangeFavTableViewCell";
+    static NSString *DropDownCellIdentifier = @"RearrangeFavTableCell";
     
     
     RearrangeFavTableViewCell *cell = (RearrangeFavTableViewCell*) [tableView dequeueReusableCellWithIdentifier:DropDownCellIdentifier];
@@ -87,13 +90,18 @@
         cell=[topLevelObjects objectAtIndex:0];
         
     }
-    
-    
-    ModelFevorite *favObj=[[ModelFevorite alloc] init];
+    ModelFevorite *favObj = [[ModelFevorite alloc] init];
     favObj=[fevoriteArray objectAtIndex:indexPath.row];
     
-    cell.favoriteId=favObj.strFevoriteId;
-    cell.favoriteOrder=favObj.strFavouriteOrder;
+    
+    NSLog(@"favObj: %@",favObj);
+    
+    
+    //cell.favoriteId=favObj.strFevoriteId;
+    //cell.favoriteOrder=favObj.strFavouriteOrder;
+    
+    NSLog(@"FirstName: %@",favObj.strFirstName);
+    NSLog(@"LastName: %@",favObj.strLastName);
     cell.name_lbl.text=[NSString stringWithFormat:@"%@ %@", favObj.strFirstName,favObj.strLastName];
     
     if([favObj.strProfileImage isEqualToString:@"man_icon.png"])
@@ -181,6 +189,8 @@
     
     [DBManager UpdateFavoriteWithId:objRemove.strFevoriteId withTableColoum:@"favouriteOrder" withColoumValue:obj.strFavouriteOrder];
     
+    fevoriteArray=[DBManager fetchFavorite];
+    [tblView reloadData];
 }
 
 

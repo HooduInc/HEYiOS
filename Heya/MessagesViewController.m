@@ -5,9 +5,8 @@
 //  Created by Jayanta Karmakar on 17/10/14.
 //  Copyright (c) 2014 Jayanta Karmakar. All rights reserved.
 //
-
-#import "MessagesViewController.h"
 #import <Social/Social.h>
+#import "MessagesViewController.h"
 #import "SettingsViewController.h"
 #import "GroupViewController.h"
 #import "AOTag.h"
@@ -31,15 +30,20 @@
     int fontSize;
     NSInteger emojiTag;
     MBProgressHUD *HUD;
-    NSMutableArray *contactNumArray;
+    NSMutableArray *contactFavoriteOnlyArr,*contactGroupOnlyArr,*onlyGroupIdArr;
     NSMutableArray *tickImageGroupArray, *tickImageFavArray;
     NSMutableArray *peopleImageGroupArray, *peopleImageFavArray;
-    NSString *urlString, *imageURL, *contactNumString;
+    NSMutableArray *multipleContactNoArray;
     NSUserDefaults *preferances;
     NSMutableDictionary *contactInfoDict;
+    NSString *urlString, *imageURL, *contactNumString;
     NSString *shareHeyTextString, *shareHeyLink, *phoneTextString, *insertPhoneString;
     BOOL isReachable;
     NSData *imageData;
+    
+    
+    NSString *afterMsgSendString;
+    NSArray *afterMsgSendContactArr;
 }
 @property (retain) AOTagList *tag;
 @property (nonatomic, strong) NSString *universalMobNumber;
@@ -80,38 +84,30 @@ unsigned long location;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    //HUD=[[MBProgressHUD alloc] initWithView:self.view];
-    HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
-    
-    if(isIphone4)
-    {
-        fontSize=12;
-         mainScrollView.contentSize = CGSizeMake(mainScrollView.frame.size.width, self.view.frame.size.height+self.sendView.frame.size.height);
-    }
-    else if (isIphone5)
-    {
-        fontSize=13;
-    }
-    else if (isIphone6)
-    {
-        fontSize=14;
-    }
-
-    else if (isIphone6Plus)
-    {
-        fontSize=15;
-    }
-    
     preferances=[NSUserDefaults standardUserDefaults];
-    quickContactsArray = [[NSMutableArray alloc]init];
-    
+    HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
     [self.view bringSubviewToFront:self.contactsScroller];
     messageTextView.font = [UIFont fontWithName:@"Helvetica" size:15];
     appDel = (AppDelegate*)[UIApplication sharedApplication].delegate;
     
-    buttonArray = [[NSMutableArray alloc]init];
+    if(isIphone4)
+    {
+        fontSize=13;
+         mainScrollView.contentSize = CGSizeMake(mainScrollView.frame.size.width, self.view.frame.size.height+self.sendView.frame.size.height);
+    }
+    else if (isIphone5)
+        fontSize=14;
     
+    else if (isIphone6 || isIphone6Plus)
+        fontSize=15;
+    
+    
+    quickContactsArray = [[NSMutableArray alloc]init];
+    contactFavoriteOnlyArr=[NSMutableArray array];
+    contactGroupOnlyArr=[NSMutableArray array];
+    onlyGroupIdArr=[NSMutableArray array];
+    buttonArray = [[NSMutableArray alloc]init];
+
     self.editingScrollView.contentSize =CGSizeMake(320,79);
     feviratScroll.contentSize =CGSizeMake(537,79);
     
@@ -123,18 +119,13 @@ unsigned long location;
     [self.tag setDelegate:self];
     [self.view addSubview:self.tag];
     
-    
-    
     shareHeyTextString=@"\nGet HEY Fever!";
     shareHeyLink=@"- http://www.n2nservices.com/hey/";
-    
-    //[preferances removeObjectForKey:@"messageHolderString"];
 }
 
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
-    
     emojiTag=9999;
     
     tickImageGroupArray =[NSMutableArray array];
@@ -229,9 +220,23 @@ unsigned long location;
     }
     
     messageTextView.font = [UIFont fontWithName:@"Helvetica" size:fontSize];
-
+    
+    [self contentSizeRectForTextView:messageTextView];
+    [messageTextView layoutIfNeeded];
+    
     [self favouriteLoad];
     [self groupViewLoad];
+    
+    NSLog(@"On viewWillAppear: %@",quickContactsArray);
+}
+
+- (CGRect)contentSizeRectForTextView:(UITextView *)textView
+{
+    [textView.layoutManager ensureLayoutForTextContainer:textView.textContainer];
+    CGRect textBounds = [textView.layoutManager usedRectForTextContainer:textView.textContainer];
+    CGFloat width =  (CGFloat)ceil(textBounds.size.width + textView.textContainerInset.left + textView.textContainerInset.right);
+    CGFloat height = (CGFloat)ceil(textBounds.size.height + textView.textContainerInset.top + textView.textContainerInset.bottom);
+    return CGRectMake(0, 0, width, height);
 }
 
 - (void)didReceiveMemoryWarning
@@ -331,16 +336,55 @@ unsigned long location;
         UIImageView *tickImage = [[UIImageView alloc] initWithFrame:CGRectMake(0.0f,0.0f,20.0f,20.0f)];
         tickImage.image = [UIImage imageNamed:@"right_icon.png"];
         tickImage.hidden=YES;
+        //pImg.layer.borderColor=[UIColor redColor].CGColor;
         [tickImageFavArray addObject:tickImage];
         [peopleContainer addSubview:tickImage];
         peopleContainer.tag=count;
-        
         [peopleContainer insertSubview:contactButton aboveSubview:peopleImg];
+        
         [feviratScroll addSubview:peopleContainer];
         imagx = imagx + peopleContainer.frame.size.width+15;
         
         count++;
     }
+    
+    [feviratScroll setContentSize:CGSizeMake(imagx, feviratScroll.frame.size.height)];
+    
+    
+    [feviratScroll.subviews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+       
+        if ([obj isKindOfClass:[UIView class]])
+        {
+            UIView *vw=(UIView*)obj;
+            for (id bObj in vw.subviews)
+            {
+                if ([bObj isKindOfClass:[UIButton class]])
+                {
+                    UIButton *btn=(UIButton*)bObj;
+                    
+                    //NSLog(@"TitleLabel Contact: %@",btn.titleLabel.text);
+                    
+                    if ([quickContactsArray containsObject:btn.titleLabel.text])
+                    {
+                        NSLog(@"contactFavoriteOnlyArr: %@",contactFavoriteOnlyArr);
+                        if ([contactFavoriteOnlyArr containsObject:btn.titleLabel.text])
+                        {
+                            //NSLog(@"Found: %ld",(long)idx);
+                            UIImageView *tImg=[tickImageFavArray objectAtIndex:idx];
+                            UIImageView *pImg=[peopleImageFavArray objectAtIndex:idx];
+                            if(tImg.hidden==YES)
+                            {
+                                tImg.hidden=NO;
+                                pImg.layer.borderColor=[UIColor redColor].CGColor;
+                            }
+                        }
+                        
+                    }
+                }
+            }
+        }
+    }];
+    
 }
 
 - (void) addFavoriteContactNumber:(UIButton*)sender
@@ -441,6 +485,7 @@ unsigned long location;
                 if (![quickContactsArray containsObject:[temparrMem objectAtIndex:x]])
                 {
                     [quickContactsArray addObject:sender.titleLabel.text];
+                    [contactFavoriteOnlyArr addObject:sender.titleLabel.text];
                 }
             }
             
@@ -460,12 +505,14 @@ unsigned long location;
 
 -(void) removeFavouriteContact: (UIButton *) sender
 {
-    if([quickContactsArray containsObject:sender.titleLabel.text])
+    if([quickContactsArray containsObject:sender.titleLabel.text] && ![contactGroupOnlyArr containsObject:sender.titleLabel.text])
     {
         NSLog(@"Matched in Favourite Contact: %@",sender.titleLabel.text);
         [quickContactsArray removeObject:sender.titleLabel.text];
-        
     }
+    if([contactFavoriteOnlyArr containsObject:sender.titleLabel.text])
+        [contactFavoriteOnlyArr removeObject:sender.titleLabel.text];
+    
     [sender.superview removeFromSuperview];
     contactsContainerX = 6.0f;
     
@@ -543,7 +590,6 @@ unsigned long location;
         groupConNameLabel.font = [UIFont fontWithName:@"Helvetica" size:10];
         
         UIButton *contactButton=[[UIButton alloc] initWithFrame:CGRectMake(0, 0,54.0f ,80.0f)];
-        //contactButton.backgroundColor=[UIColor redColor];
         [contactButton addTarget:self action:@selector(getContactFromGroup:) forControlEvents:UIControlEventTouchUpInside];
         
         contactButton.titleLabel.text = objGroup.strGroupId;
@@ -565,6 +611,38 @@ unsigned long location;
         count++;
         
     }
+    [groupScrollView setContentSize:CGSizeMake(imagx, groupScrollView.frame.size.height)];
+    
+    [groupScrollView.subviews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        
+        if ([obj isKindOfClass:[UIView class]])
+        {
+            UIView *vw=(UIView*)obj;
+            for (id bObj in vw.subviews)
+            {
+                if ([bObj isKindOfClass:[UIButton class]])
+                {
+                    UIButton *btn=(UIButton*)bObj;
+                    
+                    NSLog(@"TitleLabel Contact: %@",btn.titleLabel.text);
+                    
+                    if ([onlyGroupIdArr containsObject:btn.titleLabel.text])
+                    {
+                
+                        NSLog(@"Found: %ld",(long)idx);
+                        UIImageView *tImg=[tickImageGroupArray objectAtIndex:idx];
+                        UIImageView *pImg=[peopleImageGroupArray objectAtIndex:idx];
+                        if(tImg.hidden==YES)
+                        {
+                            tImg.hidden=NO;
+                            pImg.layer.borderColor=[UIColor redColor].CGColor;
+                        }
+                    }
+                }
+            }
+        }
+    }];
+    
 }
 
 - (void) getContactFromGroup:(UIButton*)sender
@@ -664,8 +742,13 @@ unsigned long location;
             for(int x=0; x<fetchContact.count;x++)
             {
                 if (![quickContactsArray containsObject:[fetchContact objectAtIndex:x]])
+                {
                     [quickContactsArray addObject:[fetchContact objectAtIndex:x]];
+                    [contactGroupOnlyArr addObject:[fetchContact objectAtIndex:x]];
+                }
             }
+            
+            [onlyGroupIdArr addObject:objGroup.strGroupId];
             
             tImg.hidden=NO;
             pImg.layer.borderColor=[UIColor redColor].CGColor;
@@ -680,7 +763,7 @@ unsigned long location;
         }
         else
         {
-            UIAlertView *errorDialog=[[UIAlertView alloc] initWithTitle:@"Warning!" message:[NSString stringWithFormat:@"No contacts exist in %@ group.",objGroup.strGroupName] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *errorDialog=[[UIAlertView alloc] initWithTitle:nil message:[NSString stringWithFormat:@"No contacts exist in %@ group.",objGroup.strGroupName] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [errorDialog show];
         }
         
@@ -690,19 +773,23 @@ unsigned long location;
 
 -(void) removeGroupContact: (UIButton *) sender
 {
-    
     arrGroupMember=[[NSMutableArray alloc] init];
     arrGroupMember=[DBManager fetchGroupMembersWithGroupId:sender.titleLabel.text];
     
-    
-    for (NSMutableDictionary *groupMemberDic in arrGroupMember)
+    for (int i=0; i<arrGroupMember.count; i++)
     {
-        if([quickContactsArray containsObject:sender.titleLabel.text])
+        ModelGroupMembers *objGrp=[arrGroupMember objectAtIndex:i];
+        
+        if([quickContactsArray containsObject:objGrp.strMobileNumber] && ![contactFavoriteOnlyArr containsObject:objGrp.strMobileNumber])
         {
-            NSLog(@"Matched: %@",[groupMemberDic objectForKey:@"mobileNumber"]);
-            [quickContactsArray removeObject:[groupMemberDic objectForKey:@"mobileNumber"]];
-            
+            NSLog(@"Matched: %@",objGrp.strMobileNumber);
+            [quickContactsArray removeObject:objGrp.strMobileNumber];
         }
+        if([contactGroupOnlyArr containsObject:objGrp.strMobileNumber])
+           [contactGroupOnlyArr removeObject:objGrp.strMobileNumber];
+        
+        if([onlyGroupIdArr containsObject:sender.titleLabel.text])
+            [onlyGroupIdArr removeObject:sender.titleLabel.text];
     }
     
     [sender.superview removeFromSuperview];
@@ -770,6 +857,7 @@ unsigned long location;
 //Works from IOS 8
 - (void)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker didSelectPerson:(ABRecordRef)person
 {
+    multipleContactNoArray=[[NSMutableArray alloc] init];
     
     contactInfoDict = [[NSMutableDictionary alloc]
                        initWithObjects:@[@"", @"", @"", @"", @"", @"", @"", @"", @""]
@@ -797,26 +885,46 @@ unsigned long location;
         CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
         CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
         
-        if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-            contactNumString =(__bridge NSString *)currentPhoneValue;
+        if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
             [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+        }
+        
+        //If Phone Number doesn't exists in kABPersonPhoneMainLabel
+        if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+        }
+        
+        //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
+        if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
         }
         
         
-        //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-        if ([[contactInfoDict objectForKey:@"mobileNumber"] isEqualToString:@""])
+        //If Phone Number doesn't exists in kABPersonIPhoneLabel
+        if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
         {
-            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            }
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
         }
         
         //If Phone Number doesn't exists in kABHomeLabel
-        if ([[contactInfoDict objectForKey:@"mobileNumber"] isEqualToString:@""])
+        if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
         {
-            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            }
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+        }
+        
+        //If Phone Number doesn't exists in kABWorkLabel
+        if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+        {
+            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
         }
         
         CFRelease(currentPhoneLabel);
@@ -847,13 +955,47 @@ unsigned long location;
             }
         }];
         
+        if (multipleContactNoArray.count>1)
+        {
+            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+            
+            for(NSString *buttonTitle in multipleContactNoArray)
+                [alertContactDialog addButtonWithTitle:buttonTitle];
+            [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
+            [alertContactDialog show];
+        }
+        else
+            [self insertIntoToField];
     }
     
     else
     {
         [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
+        
+        if (multipleContactNoArray.count>1)
+        {
+            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+            
+            for(NSString *buttonTitle in multipleContactNoArray)
+                [alertContactDialog addButtonWithTitle:buttonTitle];
+            [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
+            [alertContactDialog show];
+        }
+        else
+            [self insertIntoToField];
     }
+
+    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
     
+}
+
+-(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker{
+    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
+}
+
+
+-(void) insertIntoToField
+{
     contactsContainer=[[UIView alloc] initWithFrame:CGRectMake(0.0f,4.0f,110.0f,22.0f)];
     contactsContainer.backgroundColor=[UIColor  colorWithRed:213.0f/255.0f green:213.0f/255.0f blue:213.0f/255.0f alpha:1.0f];
     contactsContainer.userInteractionEnabled=YES;
@@ -927,19 +1069,9 @@ unsigned long location;
         contactsContainerX = contactsContainer.frame.origin.x + contactsContainer.frame.size.width+6.0f;
         //NSLog(@"contactsContainerX:  %f", contactsContainerX);
         self.contactsScroller.contentSize =CGSizeMake(contactsContainerX,self.contactsScroller.frame.size.height);
-
+        
     }
-    
-    
-    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
-    
 }
-
--(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker{
-    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
-}
-
-
 
 #pragma mark
 #pragma mark Emoticon Initialization and usage
@@ -993,7 +1125,7 @@ unsigned long location;
     
     if(button.tag==1)
     {
-        slideMenuView = [[SlideMenuView alloc] initWithFrameColorAndButtons:CGRectMake(0.0f, 126.0f, [appDel.window bounds].size.width,40.0f) backgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"view3.png"]]  buttons:buttonArray];
+        slideMenuView = [[SlideMenuView alloc] initWithFrameColorAndButtons:CGRectMake(0.0f, 118.0f, [appDel.window bounds].size.width,40.0f) backgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"view3.png"]]  buttons:buttonArray];
         UILabel *lineEnd=[[UILabel alloc] initWithFrame:CGRectMake(0.0f, 40.0f, [appDel.window bounds].size.width,1.0f)];
         lineEnd.backgroundColor=[UIColor  colorWithRed:190/255.0f green:190/255.0f blue:190/255.0f alpha:1.0];
         [slideMenuView addSubview:lineEnd];
@@ -1090,7 +1222,7 @@ unsigned long location;
     
     if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
     {
-        [[[UIAlertView alloc] initWithTitle:@"Warning !" message:@"Sorry! Camera Not Found." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show];
+        [[[UIAlertView alloc] initWithTitle:nil message:@"Sorry! Camera Not Found." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show];
     }
     else
     {
@@ -1206,7 +1338,7 @@ unsigned long location;
                     [HUD removeFromSuperview];
                     if (isError)
                     {
-                        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error" message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                         [alert show];
                         
                     }
@@ -1232,7 +1364,7 @@ unsigned long location;
     }
     else
     {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Please add contact no. to send message." delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Please select a contact to send a message." delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
         [alert show];
         
     }
@@ -1247,7 +1379,7 @@ unsigned long location;
     
     if(finalMessage.length>0)
     {
-        
+        /*
         //FOR TEST
         
         NSMutableArray *msgArray=[[NSMutableArray alloc] init];
@@ -1333,100 +1465,20 @@ unsigned long location;
         else
             NSLog(@"MessageDetails not inserted.");
         
-        //FOR TEST
-        
+        //FOR TEST*/
         
         if([MFMessageComposeViewController canSendText])
         {
+            afterMsgSendString=finalMessage;
+            afterMsgSendContactArr=[[NSArray alloc] initWithArray:allContacts];
+            
             controller.body = finalMessage;
             NSLog(@"Sending Message :%@",controller.body);
             controller.recipients = allContacts;
             //controller.recipients=[NSArray arrayWithObjects:@"98736542635", @"9875463982", nil];
             controller.messageComposeDelegate = self;
-            [self presentViewController:controller animated:YES completion:^{
-                
-                
-                /*NSMutableArray *msgArray=[[NSMutableArray alloc] init];
-                 NSMutableArray *userProfile=[[NSMutableArray alloc] init];
-                 ModelMessageSend *msgObj=[[ModelMessageSend alloc] init];
-                 
-                 userProfile=[DBManager fetchUserProfile];
-                 
-                 NSString *toPhoneNo=@"";
-                 if(userProfile.count>0)
-                 {
-                 ModelUserProfile *obj=[userProfile objectAtIndex:0];
-                 toPhoneNo=obj.strPhoneNo;
-                 }
-                 
-                 msgObj.strDeviceId=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
-                 msgObj.strtemplateId=@"1";
-                 msgObj.strMessageText=finalMessage;
-                 
-                 if (toPhoneNo.length>0 || ![toPhoneNo isEqualToString:@"0"])
-                 msgObj.strFrom=toPhoneNo;
-                 else
-                 msgObj.strFrom=@"";
-                 
-                 msgObj.strTo=[allContacts componentsJoinedByString:@","];
-                 
-                 NSDate *todayDate=[[NSDate alloc] init];
-                 NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                 [format setDateFormat:@"yyyy-MM-dd"];
-                 
-                 msgObj.strSendDate=[format stringFromDate:todayDate];
-                 
-                 [msgArray addObject:msgObj];
-                 
-                 long long msgInsertId=[DBManager insertMessageDetails:msgArray];
-                 if (msgInsertId!=0)
-                 {
-                 NSLog(@"MessageDetails inserted.");
-                 
-                 [format setDateFormat:@"yyyy-MM-dd"];
-                 NSDate *fecthDate=[format dateFromString:msgObj.strSendDate];
-                 [format setDateFormat:@"dd-MM-yyyy"];
-                 NSString *strTimeStamp = [format stringFromDate:fecthDate];
-                 
-                 
-                 [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-                 
-                 //Change the host name here to change the server you want to monitor.
-                 NSString *remoteHostName =HeyBaseURL;
-                 
-                 self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-                 [self.hostReachability startNotifier];
-                 [self updateInterfaceWithReachability:self.hostReachability];
-                 
-                 self.internetReachability = [Reachability reachabilityForInternetConnection];
-                 [self.internetReachability startNotifier];
-                 [self updateInterfaceWithReachability:self.internetReachability];
-                 
-                 self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-                 [self.wifiReachability startNotifier];
-                 [self updateInterfaceWithReachability:self.wifiReachability];
-                 
-                 if([self isNetworkAvailable])
-                 {
-                 [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                 {
-                 
-                 if(isError)
-                 {
-                 NSLog(@"Error: %@",strMsg);
-                 }
-                 else
-                 {
-                 NSLog(@"Success: %@",strMsg);
-                 }
-                 }];
-                 }
-                 
-                 }
-                 else
-                 NSLog(@"MessageDetails not inserted.");*/
-                
-            }];
+            [self presentViewController:controller animated:YES completion:nil];
+  
         }
     }
 }
@@ -1444,6 +1496,88 @@ unsigned long location;
 		case MessageComposeResultSent:
         {
             NSLog(@"Message Sent");
+            NSMutableArray *msgArray=[[NSMutableArray alloc] init];
+            NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+            ModelMessageSend *msgObj=[[ModelMessageSend alloc] init];
+            
+            userProfile=[DBManager fetchUserProfile];
+            
+            NSString *toPhoneNo=@"";
+            if(userProfile.count>0)
+            {
+                ModelUserProfile *obj=[userProfile objectAtIndex:0];
+                toPhoneNo=obj.strPhoneNo;
+            }
+            
+            msgObj.strDeviceId=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
+            msgObj.strtemplateId=@"1";
+            msgObj.strMessageText=afterMsgSendString;
+            
+            if (toPhoneNo.length>0 || ![toPhoneNo isEqualToString:@"0"])
+                msgObj.strFrom=toPhoneNo;
+            else
+                msgObj.strFrom=@"";
+            
+            msgObj.strTo=[afterMsgSendContactArr componentsJoinedByString:@","];
+            
+            NSDate *todayDate=[[NSDate alloc] init];
+            NSDateFormatter *format=[[NSDateFormatter alloc] init];
+            [format setDateFormat:@"yyyy-MM-dd"];
+            
+            msgObj.strSendDate=[format stringFromDate:todayDate];
+            
+            [msgArray addObject:msgObj];
+            
+            long long msgInsertId=[DBManager insertMessageDetails:msgArray];
+            if (msgInsertId!=0)
+            {
+                NSLog(@"MessageDetails inserted.");
+                
+                [format setDateFormat:@"yyyy-MM-dd"];
+                NSDate *fecthDate=[format dateFromString:msgObj.strSendDate];
+                [format setDateFormat:@"dd-MM-yyyy"];
+                NSString *strTimeStamp = [format stringFromDate:fecthDate];
+                
+                
+                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+                
+                //Change the host name here to change the server you want to monitor.
+                NSString *remoteHostName =HeyBaseURL;
+                
+                self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+                [self.hostReachability startNotifier];
+                [self updateInterfaceWithReachability:self.hostReachability];
+                
+                self.internetReachability = [Reachability reachabilityForInternetConnection];
+                [self.internetReachability startNotifier];
+                [self updateInterfaceWithReachability:self.internetReachability];
+                
+                self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+                [self.wifiReachability startNotifier];
+                [self updateInterfaceWithReachability:self.wifiReachability];
+                
+                if([self isNetworkAvailable])
+                {
+                    [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                     {
+                         
+                         if(isError)
+                         {
+                             NSLog(@"Error: %@",strMsg);
+                         }
+                         else
+                         {
+                             NSLog(@"Success: %@",strMsg);
+                         }
+                     }];
+                }
+                
+            }
+            else
+                NSLog(@"MessageDetails not inserted.");
+            
+            afterMsgSendString=@"";
+            afterMsgSendContactArr=[NSArray array];
             messageTextView.text=@"";
             imageData=nil;
             imageURL=@"";
@@ -1460,20 +1594,79 @@ unsigned long location;
 
 - (IBAction)whatsApp:(id)sender
 {
-    NSString *finalMessage=messageTextView.text;
+    __block NSString *finalMessage=messageTextView.text;
     
     //add hey fever link
     if ([messageTextView.text containsString:@"Get HEY Fever!"])
     {
         finalMessage = [NSString stringWithFormat: @"%@ - %@", messageTextView.text, @"http://www.n2nservices.com/hey/"];
     }
-    if(imageURL.length>0)
-    {
-        //add Image link
-        finalMessage = [NSString stringWithFormat: @"%@ \n%@", finalMessage, imageURL];
-    }
     
-    NSString * urlWhats = [NSString stringWithFormat:@"whatsapp://send?text=%@",finalMessage];
+    if (imageData.length>0)
+    {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+        
+        //Change the host name here to change the server you want to monitor.
+        NSString *remoteHostName =HeyBaseURL;
+        
+        self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+        [self.hostReachability startNotifier];
+        [self updateInterfaceWithReachability:self.hostReachability];
+        
+        self.internetReachability = [Reachability reachabilityForInternetConnection];
+        [self.internetReachability startNotifier];
+        [self updateInterfaceWithReachability:self.internetReachability];
+        
+        self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+        [self.wifiReachability startNotifier];
+        [self updateInterfaceWithReachability:self.wifiReachability];
+        
+        if([self isNetworkAvailable])
+        {
+            [self.navigationController.view addSubview:HUD];
+            //[self.view addSubview:HUD];
+            
+            HUD.delegate = self;
+            HUD.labelText = @"Uploading";
+            [HUD show:YES];
+            
+            [[HeyWebService service] callGenerateImageURL:imageData  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
+                
+                [HUD hide:YES];
+                [HUD removeFromSuperview];
+                if (isError)
+                {
+                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                    [alert show];
+                    
+                }
+                else
+                {
+                    if ([result isKindOfClass:[NSString class]])
+                    {
+                        imageURL=(NSString*)result;
+                        if(imageURL.length>0)
+                        {
+                            //add Image link
+                            NSLog(@"Image URL: %@",imageURL);
+                            finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
+                            [self WhatsAppComposeMsg:finalMessage];
+                        }
+                    }
+                }
+            }];
+        }
+        else
+            [self WhatsAppComposeMsg:finalMessage];
+    }
+    else
+        [self WhatsAppComposeMsg:finalMessage];
+
+}
+
+-(void)WhatsAppComposeMsg:(NSString*)composeMsg
+{
+    NSString * urlWhats = [NSString stringWithFormat:@"whatsapp://send?text=%@",composeMsg];
     NSURL * whatsappURL = [NSURL URLWithString:[urlWhats stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     
     if ([[UIApplication sharedApplication] canOpenURL: whatsappURL])
@@ -1482,13 +1675,10 @@ unsigned long location;
     }
     else
     {
-        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"WhatsApp Error!" message:@"Your device has no WhatsApp installed." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:nil message:@"Your device has no WhatsApp installed." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
     }
-    
 }
-
-
 
 
 #pragma mark
@@ -1518,7 +1708,11 @@ unsigned long location;
 - (IBAction)back:(id)sender
 {
     [quickContactsArray removeAllObjects];
-    for (UIView *cView in self.contactsScroller.subviews) {
+    [contactFavoriteOnlyArr removeAllObjects];
+    [contactGroupOnlyArr removeAllObjects];
+    [onlyGroupIdArr removeAllObjects];
+    for (UIView *cView in self.contactsScroller.subviews)
+    {
         [cView removeFromSuperview];
     }
     contactsContainerX = 6.0f;
@@ -1568,7 +1762,7 @@ unsigned long location;
     }
     else
     {
-        [[[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Please add phone number to your profile under Settings." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+        [[[UIAlertView alloc] initWithTitle:nil message:@"Please add phone number to your profile under Settings." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
     }
     
 }
@@ -1710,6 +1904,20 @@ unsigned long location;
 {
     messageHolderString=textView.text;
     NSLog(@"textViewDidEndEditing-> Last Updated Message: %@", messageHolderString);
+}
+
+#pragma mark
+#pragma mark AlertView Delegate Methods
+#pragma mark
+
+-(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"])
+    {
+        NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
+        [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
+        [self insertIntoToField];
+    }
 }
 
 #pragma mark

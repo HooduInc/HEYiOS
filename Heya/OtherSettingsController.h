@@ -11,5 +11,4 @@
 @interface OtherSettingsController : UIViewController
 - (IBAction)back:(id)sender;
 @property (weak, nonatomic) IBOutlet UISwitch *shareHey;
-
 @end

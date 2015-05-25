@@ -54,7 +54,8 @@
 
 
 //Favourite
-+(NSMutableArray*)insertToFavoriteTable:(NSMutableArray*)fevoriteArray;
+//+(NSMutableArray*)insertToFavoriteTable:(NSMutableArray*)fevoriteArray;
++(long long)insertToFavoriteTable:(NSMutableArray*)fevoriteArray;
 +(void) UpdateFavoriteWithId:(NSString*)favoriteId withTableColoum:(NSString*)tableColoumName withColoumValue:(NSString*)tableColoumValue;
 +(BOOL) UpdateFavoriteWithId:(NSString*)favoriteId withColoumValue:(NSString*)tableColoumValue;
 +(BOOL) deleteFavoriteDetailsWithFavoriteId:(NSString*)favoriteId;

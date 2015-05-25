@@ -7,10 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 
 @protocol GroupMemberTableViewCellDelegate <NSObject>
-- (void)buttonChangeActionForItemText:(id)sender;
+//- (void)buttonChangeActionForItemText:(id)sender;
 - (void)buttonDeleteActionForItemText:(id)sender;
 @end
 

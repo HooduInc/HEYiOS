@@ -9,6 +9,7 @@
 #import "EditViewController.h"
 #import "SettingsViewController.h"
 #import "MessagesViewController.h"
+#import "NSString+Emoticonizer.h"
 #import "AppDelegate.h"
 #import "ModelMenu.h"
 #import "ModelSubMenu.h"
@@ -51,12 +52,17 @@ NSUserDefaults *preferances;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    //messagelistController=self;
     emoString=@"\U00002764";
     loveyouString=@"Love You";
     
     CGFloat occupiedHeight=self.pageControl.frame.origin.y+self.pageControl.frame.size.height;
     
-    messageListScrollView.frame=CGRectMake(0, occupiedHeight, self.view.frame.size.width, self.view.frame.size.height-occupiedHeight);
+    if (isIphone4)
+        messageListScrollView.frame=CGRectMake(0, occupiedHeight, self.view.frame.size.width, self.view.frame.size.height-occupiedHeight-70);
+    
+    else
+        messageListScrollView.frame=CGRectMake(0, occupiedHeight, self.view.frame.size.width, self.view.frame.size.height-occupiedHeight);
     
     messageListScrollView.contentSize = CGSizeMake(self.view.frame.size.width*4, self.messageListScrollView.frame.size.height);
     
@@ -202,12 +208,12 @@ NSUserDefaults *preferances;
     if (tableView==menulistTableFour)
         obj=[arrDisplayTableFour objectAtIndex:section];
     
-    if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+    /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
     {
         cell.txtFiled.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
     }
-    else
-        cell.txtFiled.text=obj.strMenuName;
+    else*/
+        cell.txtFiled.text=[NSString emoticonizedString:obj.strMenuName];
     
     cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
     [cell.btnHeader setTag:section];
@@ -329,8 +335,14 @@ NSUserDefaults *preferances;
     
 
     ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:indexPath.row];
-    cell.txtFiled.text=objSub.strSubMenuName;
+    cell.txtFiled.text=[NSString emoticonizedString:objSub.strSubMenuName];
     cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
+    
+    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+        cell.txtFiled.textColor = [UIColor grayColor];
+    else
+        cell.txtFiled.textColor = [UIColor whiteColor];
+    
     [cell.txtFiled setUserInteractionEnabled:NO];
     cell.btnHeader.hidden=YES;
     cell.btnSave.hidden=YES;
@@ -370,17 +382,22 @@ NSUserDefaults *preferances;
     //NSLog(@"Menu Value: %@", obj.strMenuName);
     //NSLog(@"Sub Menu Value: %@", cell.txtFiled.text);
     
+    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+        cell.txtFiled.textColor = [UIColor grayColor];
+    else
+        cell.txtFiled.textColor = [UIColor whiteColor];
+    
     if([cell.txtFiled.text containsString:@"custom message"])
     {
-        messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@  ",obj.strMenuName];
+        messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@ ",[NSString emoticonizedString:obj.strMenuName]];
     }
-    else if([[cell.txtFiled.text lowercaseString] containsString:[loveyouString lowercaseString]])
+    /*else if([[cell.txtFiled.text lowercaseString] containsString:[loveyouString lowercaseString]])
     {
         messagesView_obj.getMessageStr=[NSString stringWithFormat:@"HEY! %@ %@",cell.txtFiled.text, emoString];
-    }
+    }*/
     else
     {
-        messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@  %@",obj.strMenuName,cell.txtFiled.text];
+        messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@ %@",[NSString emoticonizedString:obj.strMenuName],[NSString emoticonizedString:cell.txtFiled.text]];
     }
     
     
@@ -422,14 +439,14 @@ NSUserDefaults *preferances;
                messagesView_obj.getMessageStr =@"HEY! ";
             }
             
-            else if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+            /*else if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
             {
                 messagesView_obj.getMessageStr=[NSString stringWithFormat:@"HEY! %@ %@",obj.strMenuName, emoString];
-            }
+            }*/
             
             else
             {
-                messagesView_obj.getMessageStr =[NSString stringWithFormat:@"HEY! %@",obj.strMenuName];
+                messagesView_obj.getMessageStr =[NSString stringWithFormat:@"HEY! %@",[NSString emoticonizedString:obj.strMenuName]];
             }
             
             messagesView_obj.quickContactsArray=[[NSMutableArray alloc] init];
@@ -454,12 +471,12 @@ NSUserDefaults *preferances;
         if (obj.arrSubMenu.count==0)
         {
             MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
-            messagesView_obj.getMessageStr =[NSString stringWithFormat:@"HEY! %@",obj.strMenuName];
+            messagesView_obj.getMessageStr =[NSString stringWithFormat:@"HEY! %@",[NSString emoticonizedString:obj.strMenuName]];
             
-            if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+            /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
             {
                 messagesView_obj.getMessageStr=[NSString stringWithFormat:@"HEY! %@ %@",obj.strMenuName, emoString];
-            }
+            }*/
             
             if(![messagesView_obj.getMessageStr containsString:@"Write or pick message using edit"])
                 [self.navigationController pushViewController:messagesView_obj animated:YES];
@@ -481,12 +498,12 @@ NSUserDefaults *preferances;
         if (obj.arrSubMenu.count==0)
         {
             MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
-            messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@",obj.strMenuName];;
+            messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@",[NSString emoticonizedString:obj.strMenuName]];
             
-            if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+            /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
             {
                 messagesView_obj.getMessageStr=[NSString stringWithFormat:@"HEY! %@ %@",obj.strMenuName, emoString];
-            }
+            }*/
             
             if(![messagesView_obj.getMessageStr containsString:@"Write or pick message using edit"])
                 [self.navigationController pushViewController:messagesView_obj animated:YES];
@@ -508,12 +525,12 @@ NSUserDefaults *preferances;
         if (obj.arrSubMenu.count==0)
         {
             MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
-            messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@",obj.strMenuName];
+            messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@",[NSString emoticonizedString:obj.strMenuName]];
             
-            if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+            /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
             {
                 messagesView_obj.getMessageStr=[NSString stringWithFormat:@"HEY! %@ %@",obj.strMenuName, emoString];
-            }
+            }*/
             
             if(![messagesView_obj.getMessageStr containsString:@"Write or pick message using edit"])
                 [self.navigationController pushViewController:messagesView_obj animated:YES];

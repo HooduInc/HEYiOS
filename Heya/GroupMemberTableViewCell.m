@@ -9,8 +9,6 @@
 #import "GroupMemberTableViewCell.h"
 
 static CGFloat const kBounceValue = 10.0f;
-
-
 @interface GroupMemberTableViewCell()<UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) UIPanGestureRecognizer *panRecognizer;
@@ -20,8 +18,6 @@ static CGFloat const kBounceValue = 10.0f;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *contentViewLeftConstraint;
 
 @end
-
-
 
 @implementation GroupMemberTableViewCell
 @synthesize groupMemberName;
@@ -33,10 +29,14 @@ static CGFloat const kBounceValue = 10.0f;
     self.profileImg.layer.cornerRadius = self.profileImg.frame.size.width / 2;
     self.profileImg.clipsToBounds = YES;
     self.profileImg.contentMode=UIViewContentModeScaleAspectFill;
+    self.profileImg.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    self.profileImg.layer.borderWidth=1.0f;
     
     self.profileImgBackground.layer.cornerRadius = self.profileImgBackground.frame.size.width / 2;
     self.profileImgBackground.clipsToBounds = YES;
     self.profileImgBackground.contentMode=UIViewContentModeScaleAspectFill;
+    self.profileImgBackground.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    self.profileImgBackground.layer.borderWidth=1.0f;
     
     self.panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panThisCell:)];
     self.panRecognizer.delegate = self;
@@ -159,7 +159,8 @@ static CGFloat const kBounceValue = 10.0f;
             else
             {
                 //Cell was closing
-                CGFloat buttonOnePlusHalfOfButton2 = CGRectGetWidth(self.deleteTextBtn.frame)/2; //4
+                //CGFloat buttonOnePlusHalfOfButton2 = CGRectGetWidth(self.deleteTextBtn.frame)/2; //4
+                CGFloat buttonOnePlusHalfOfButton2 = CGRectGetWidth(self.deleteTextBtn.frame) + (CGRectGetWidth(self.deleteTextBtn.frame) / 2);
                 
                 if (self.contentViewRightConstraint.constant >= buttonOnePlusHalfOfButton2) { //5
                     //Re-open all the way
@@ -260,8 +261,8 @@ static CGFloat const kBounceValue = 10.0f;
 {
     if (sender == self.deleteTextBtn)
     {
-        [self.delegate buttonDeleteActionForItemText:sender];
         [self resetConstraintContstantsToZero:YES notifyDelegateDidClose:YES];
+        [self.delegate buttonDeleteActionForItemText:sender];
         NSLog(@"Clicked delete button!");
     }
     else
@@ -280,8 +281,8 @@ static CGFloat const kBounceValue = 10.0f;
     _itemText = itemText;
     
     //Set the text to the custom TextField.
-    self.groupMemberName.text = _itemText;
     self.nameLabel.text = _itemText;
+    self.groupMemberName.text = _itemText;
 }
 
 - (void)setItemImage:(UIImage *)itemImage

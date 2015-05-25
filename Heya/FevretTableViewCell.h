@@ -35,10 +35,7 @@
 @property (nonatomic, strong) IBOutlet UITextField *nameLabelText;
 @property (nonatomic, strong) IBOutlet UIImageView *profileImg;
 
-
 @property (nonatomic, strong) NSString *favoriteId;
 @property (nonatomic, strong) NSString *favoriteOrder;
-
-@property (strong,nonatomic) IBOutlet NSLayoutConstraint *consLeadSpace;
 
 @end

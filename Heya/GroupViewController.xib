@@ -50,7 +50,7 @@
                     <rect key="frame" x="8" y="144" width="304" height="33"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                    <color key="textColor" red="0.36470588235294116" green="0.36470588235294116" blue="0.36470588235294116" alpha="1" colorSpace="calibratedRGB"/>
+                    <color key="textColor" red="0.47843137250000001" green="0.47843137250000001" blue="0.47843137250000001" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <tableView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" alwaysBounceVertical="YES" style="plain" separatorStyle="none" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="heT-4P-b7q">
@@ -69,8 +69,8 @@
                     <rect key="frame" x="0.0" y="0.0" width="320" height="83"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                 </imageView>
-                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hey_text.png" id="0Yc-k9-t51">
-                    <rect key="frame" x="140" y="37" width="40" height="37"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="heyText" id="0Yc-k9-t51">
+                    <rect key="frame" x="138" y="29" width="45" height="45"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 </imageView>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="HGb-3L-APh">
@@ -97,12 +97,12 @@
                     </connections>
                 </button>
             </subviews>
-            <color key="backgroundColor" red="0.87058823529411766" green="0.87058823529411766" blue="0.87058823529411766" alpha="1" colorSpace="deviceRGB"/>
+            <color key="backgroundColor" red="0.87450980392156863" green="0.87450980392156863" blue="0.87450980392156863" alpha="1" colorSpace="deviceRGB"/>
         </view>
     </objects>
     <resources>
         <image name="back_btn.png" width="57" height="20"/>
-        <image name="hey_text.png" width="40" height="37"/>
+        <image name="heyText" width="45" height="45"/>
         <image name="pic_plus_icon.png" width="50" height="50"/>
         <image name="rearrage_btn.png" width="144" height="49"/>
         <image name="top_barbg.png" width="320" height="83"/>

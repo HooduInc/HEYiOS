@@ -11,6 +11,7 @@
 #import "ModelMenu.h"
 #import "ModelSubMenu.h"
 #import "EditMsgTableViewCell.h"
+#import "NSString+Emoticonizer.h"
 
 #define IS_OS_7_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0)
 
@@ -114,12 +115,17 @@
                     
                     NSString *emoString=@"\U00002764";
                     NSString *loveyouString=@"Love You";
-                    if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+                    /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     
                     cell.msgTextField.enabled=NO;
 
@@ -155,14 +161,19 @@
                     }
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
-                    NSString *emoString=@"\U00002764";
-                    NSString *loveyouString=@"Love You";
-                    if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+                    //NSString *emoString=@"\U00002764";
+                    //NSString *loveyouString=@"Love You";
+                    /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     cell.msgTextField.enabled=NO;
                     
                     return cell;
@@ -196,14 +207,19 @@
                     }
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
-                    NSString *emoString=@"\U00002764";
-                    NSString *loveyouString=@"Love You";
-                    if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+                    //NSString *emoString=@"\U00002764";
+                    //NSString *loveyouString=@"Love You";
+                    /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     cell.msgTextField.enabled=NO;
                     
                     return cell;
@@ -237,14 +253,19 @@
                     }
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
-                    NSString *emoString=@"\U00002764";
-                    NSString *loveyouString=@"Love You";
-                    if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
+                    //NSString *emoString=@"\U00002764";
+                    //NSString *loveyouString=@"Love You";
+                    /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     cell.msgTextField.enabled=NO;
                     
                     return cell;
@@ -277,14 +298,19 @@
                     }
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
-                    NSString *emoString=@"\U00002764";
+                    /*NSString *emoString=@"\U00002764";
                     NSString *loveyouString=@"Love You";
                     if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     cell.msgTextField.enabled=NO;
                     
                     return cell;
@@ -318,14 +344,19 @@
                     }
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
-                    NSString *emoString=@"\U00002764";
+                    /*NSString *emoString=@"\U00002764";
                     NSString *loveyouString=@"Love You";
                     if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     cell.msgTextField.enabled=NO;
                     
                     return cell;
@@ -358,14 +389,19 @@
                     }
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
-                    NSString *emoString=@"\U00002764";
+                    /*NSString *emoString=@"\U00002764";
                     NSString *loveyouString=@"Love You";
                     if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     cell.msgTextField.enabled=NO;
                     
                     return cell;
@@ -399,14 +435,19 @@
                     }
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
-                    NSString *emoString=@"\U00002764";
+                    /*NSString *emoString=@"\U00002764";
                     NSString *loveyouString=@"Love You";
                     if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
                     }
+                    else*/
+                        cell.msgTextField.text=[NSString emoticonizedString:obj.strMenuName];
+                    
+                    if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                        cell.msgTextField.textColor = [UIColor grayColor];
                     else
-                        cell.msgTextField.text=obj.strMenuName;
+                        cell.msgTextField.textColor = [UIColor whiteColor];
                     cell.msgTextField.enabled=NO;
                     
                     return cell;
@@ -421,6 +462,7 @@
             }
             break;
         }
+            
         default:
             return nil;
             break;
@@ -467,6 +509,9 @@
     
     [DBManager updateMenuOrderWithMenuId:obj.strMenuId withMenuOrder:objRemove.strMenuOrder];
     [DBManager updateMenuOrderWithMenuId:objRemove.strMenuId withMenuOrder:obj.strMenuOrder];
+    
+    editMainMenuMsgArray=[DBManager fetchMenuForPageNo:pageNumber];
+    [tblView reloadData];
     
 }
 

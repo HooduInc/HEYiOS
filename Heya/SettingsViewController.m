@@ -8,7 +8,6 @@
 
 #import "SettingsViewController.h"
 #import "ThemeViewController.h"
-#import "PickFromListController.h"
 #import "Pick4mListViewController.h"
 #import "FevoriteViewController.h"
 #import "GroupViewController.h"
@@ -42,18 +41,19 @@ NSUserDefaults *preferances;
     
     CGRect mainRect=[[UIScreen mainScreen] bounds];
     
+    self.settingsProfileImage.layer.cornerRadius = self.settingsProfileImage.frame.size.width / 2;
+    self.settingsProfileImage.clipsToBounds = YES;
+    self.settingsProfileImage.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    self.settingsProfileImage.layer.borderWidth=1.0f;
+    
     if(isIphone4)
-        self.settingsScrollView.contentSize = CGSizeMake(self.settingsScrollView.frame.size.width, mainRect.size.height);
+        self.settingsScrollView.contentSize = CGSizeMake(self.settingsScrollView.frame.size.width, mainRect.size.height+80);
     else
-        self.settingsScrollView.contentSize = CGSizeMake(self.settingsScrollView.frame.size.width, mainRect.size.height-self.settingsScrollView.frame.origin.y+self.fourthView.frame.size.height);
+        self.settingsScrollView.contentSize = CGSizeMake(self.settingsScrollView.frame.size.width, mainRect.size.height-self.settingsScrollView.frame.origin.y+self.fourthView.frame.size.height+2);
 }
 
 -(void) viewWillAppear:(BOOL)animated
 {
-    self.settingsProfileImage.layer.cornerRadius = self.settingsProfileImage.frame.size.width / 2;
-    self.settingsProfileImage.clipsToBounds = YES;
-    self.settingsProfileImage.layer.borderColor=[UIColor grayColor].CGColor;
-    self.settingsProfileImage.layer.borderWidth=1.0f;
     
     [self.themeNameLabel setText:[preferances valueForKey:@"themeName"]];
     
@@ -62,13 +62,20 @@ NSUserDefaults *preferances;
     
     if(userProfile.count>0)
     {
-        ModelUserProfile *obj=[[ModelUserProfile alloc] init];
+        ModelUserProfile *obj=[userProfile objectAtIndex:0];
         
-        obj=[userProfile objectAtIndex:0];
-        self.userName.text=[NSString stringWithFormat:@"%@ %@",obj.strFirstName, obj.strLastName ];
-        self.settingsPhoneNo.text=obj.strPhoneNo;
-    
-    
+        if (obj.strFirstName.length>0 || obj.strLastName.length>0)
+            self.userName.text=[NSString stringWithFormat:@"%@ %@",obj.strFirstName, obj.strLastName];
+        else
+            self.userName.text=@"User Name";
+        
+        
+        if (obj.strPhoneNo.length>0)
+            self.settingsPhoneNo.text=obj.strPhoneNo;
+        else
+            self.settingsPhoneNo.text=@"Phone No.";
+        
+        
         if(obj.strProfileImage.length>0)
         {
             if([obj.strProfileImage isEqualToString:@"man_icon.png"])
@@ -82,6 +89,8 @@ NSUserDefaults *preferances;
                 self.settingsProfileImage.image=proImage;
             }
         }
+        else
+            self.settingsProfileImage.image = [UIImage imageNamed:@"man_icon.png"];
     }
     else
     {

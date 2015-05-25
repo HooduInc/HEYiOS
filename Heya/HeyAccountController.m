@@ -80,16 +80,16 @@
         return [totalMsgCountArray count];
     }
     else
-        return  0;
+        return 0;
     
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if(indexPath.row==4 || indexPath.row==7)
-        return 20.0f;
+        return 15.0f;
     else
-      return  45.0f;
+      return  30.0f;
     
 }
 
@@ -107,8 +107,8 @@
     [cell setPreservesSuperviewLayoutMargins:NO];
     [cell setLayoutMargins:UIEdgeInsetsZero];
     
-    UILabel *menu_lbl = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, 150, 40)];
-    menu_lbl.font = [UIFont fontWithName:@"Helvetica" size:15];
+    UILabel *menu_lbl = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, 150, 26)];
+    menu_lbl.font = [UIFont fontWithName:@"Helvetica" size:14];
     menu_lbl.textColor = [UIColor blackColor];
     menu_lbl.text =[menuArray objectAtIndex:indexPath.row];
     [menu_lbl setTextAlignment:NSTextAlignmentLeft];
@@ -119,41 +119,44 @@
         cell.backgroundColor=[UIColor clearColor];
         cell.contentView.backgroundColor=[UIColor clearColor];
     }
+    //Message Count Portion
     else if (indexPath.row<4)
     {
         cell.separatorInset=UIEdgeInsetsMake(0.0f, 0, 0.0f, 10000.0f);
         
-        UILabel *labelViewTotal = [[UILabel alloc] initWithFrame:CGRectMake(190, 0, 58, 38)];
+        UILabel *labelViewTotal = [[UILabel alloc] initWithFrame:CGRectMake(190, 0, 58, 24)];
         labelViewTotal.text=[totalMsgCountArray objectAtIndex:indexPath.row];
         labelViewTotal.textColor=[UIColor colorWithRed:128/255.0f green:128/255.0f blue:128/255.0f alpha:1.0];
         labelViewTotal.textAlignment=NSTextAlignmentCenter;
-        labelViewTotal.font=[UIFont fontWithName:@"Helvetica" size:15];
+        labelViewTotal.font=[UIFont fontWithName:@"Helvetica" size:14];
         
-        UILabel *labelViewPoints = [[UILabel alloc] initWithFrame:CGRectMake(252, 0, 58, 38)];
+        UILabel *labelViewPoints = [[UILabel alloc] initWithFrame:CGRectMake(252, 0, 58, 24)];
         labelViewPoints.text=[totalMsgCountArray objectAtIndex:indexPath.row];
         labelViewPoints.textColor=[UIColor colorWithRed:128/255.0f green:128/255.0f blue:128/255.0f alpha:1.0];
         labelViewPoints.textAlignment=NSTextAlignmentCenter;
-        labelViewPoints.font=[UIFont fontWithName:@"Helvetica" size:15];
+        labelViewPoints.font=[UIFont fontWithName:@"Helvetica" size:14];
         
         [cell addSubview:labelViewTotal];
         [cell addSubview:labelViewPoints];
         
         if(indexPath.row==3)
         {
-            UILabel *labelViewSeperator = [[UILabel alloc] initWithFrame:CGRectMake(0, 46, 320, 0.5f)];
+            UILabel *labelViewSeperator = [[UILabel alloc] initWithFrame:CGRectMake(0, 28, 320, 0.5f)];
             labelViewSeperator.backgroundColor=[UIColor colorWithRed:200/255.0f green:199/255.0f blue:204/255.0f alpha:1.0];
             [cell addSubview:labelViewSeperator];
         }
     }
     else
     {
-        UILabel *labelViewPoints = [[UILabel alloc] initWithFrame:CGRectMake(205, 0, 100, 38)];
+        UILabel *labelViewPoints = [[UILabel alloc] initWithFrame:CGRectMake(205, 0, 100, 24)];
         labelViewPoints.text=[totalMsgCountArray objectAtIndex:indexPath.row];
         labelViewPoints.textColor=[UIColor colorWithRed:128/255.0f green:128/255.0f blue:128/255.0f alpha:1.0];
         labelViewPoints.textAlignment=NSTextAlignmentRight;
-        labelViewPoints.font=[UIFont fontWithName:@"Helvetica" size:15];
+        labelViewPoints.font=[UIFont fontWithName:@"Helvetica" size:14];
         [cell addSubview:labelViewPoints];
     }
+    
+    
     return cell;
 }
 

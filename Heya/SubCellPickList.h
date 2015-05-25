@@ -16,6 +16,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *checkMarkImage;
 @property (weak, nonatomic) IBOutlet UIButton *cellEditBtn;
 @property (weak, nonatomic) IBOutlet UIButton *fullBtn;
+@property (weak, nonatomic) IBOutlet UILabel *topSeperator;
 @property (strong,nonatomic) NSIndexPath *indexPath;
 
 @end

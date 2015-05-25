@@ -10,7 +10,7 @@
 #import "MBProgressHUD.h"
 #import "DropDownCell.h"
 #import "SubCellPickList.h"
-
+#import "NSString+Emoticonizer.h"
 #import "ModelPickListMenu.h"
 #import "ModelPickListSubMenu.h"
 #import "ModelMenu.h"
@@ -60,11 +60,13 @@
     {
         editButton.hidden=NO;
         saveButton.hidden=YES;
+        editLabel.hidden=NO;
     }
     else
     {
         saveButton.hidden=YES;
         editButton.hidden=YES;
+        editLabel.hidden=YES;
     }
     
     if(MainMenuFlag)
@@ -91,6 +93,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{ // 2
             
             //Mostly UI Updates
+            editLabel.text=@"Tap Edit to customize Pick List messages.";
             [pickListTableView  reloadData];// 3
             [HUD hide:YES];
             [HUD removeFromSuperview];
@@ -205,7 +208,7 @@
         {
             cell=[[[NSBundle mainBundle] loadNibNamed:@"SubCellPickList" owner:self options:nil] objectAtIndex:0];
         }
-        
+    
         cell.fullBtn.userInteractionEnabled=YES;
         cell.fullBtn.hidden=NO;
          [cell.fullBtn addTarget:self action:@selector(cellAddPickTextBtnPressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -230,11 +233,17 @@
         {
             cell=[[[NSBundle mainBundle] loadNibNamed:@"SubCellPickList" owner:self options:nil] objectAtIndex:0];
         }
+        
+        if (indexPath.row==0)
+            cell.topSeperator.hidden=NO;
+        else
+            cell.topSeperator.hidden=YES;
+            
         ModelPickListSubMenu *objSub=[objMenu.arrPickSubMenu objectAtIndex:indexPath.row];
 
         cell.fullBtn.userInteractionEnabled=NO;
         cell.fullBtn.hidden=YES;
-        cell.subTextLabel.text = objSub.strPickSubMenuName;
+        cell.subTextLabel.text =[NSString emoticonizedString:objSub.strPickSubMenuName]; ;
         cell.subTextLabel.delegate=self;
         
         if([objSub.strPickSubMenuFlag intValue]==1)
@@ -269,7 +278,7 @@
     if (FlagFromSettings==NO)
     {
         selectedIndexPath=indexPath;
-        UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Are you sure you want to update the message from Pick List?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
+        UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Are you sure you want to update the message from Pick List?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
         confirmDialog.tag=1;
         [confirmDialog show];
     }
@@ -424,7 +433,7 @@
         NSLog(@"IndexPath: %@",indexPath);
         selectedIndexPath=indexPath;
         
-        UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Are you sure you want to delete this item from the Pick List?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
+        UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Are you sure you want to delete this item from the Pick List?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
         confirmDialog.tag=2;
         [confirmDialog show];
     }
@@ -435,6 +444,7 @@
     saveButton.hidden=NO;
     editButton.hidden=YES;
     editLabel.hidden=NO;
+    editLabel.text=@"Tap the Edit icon to edit or long press it to delete a message. Save your changes before leaving page.";
     isEditEnabled=YES;
     [pickListTableView reloadData];
 }
@@ -551,7 +561,7 @@
                 {
                     [self generatePickListArray];
                     [pickListTableView reloadData];
-                    UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Deleted successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                    UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Deleted successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                     [confirmDialog show];
                 }
             }

@@ -7,6 +7,8 @@
 //
 
 #import "OtherSettingsController.h"
+#import "SplashViewController.h"
+#import "TermsServiceViewController.h"
 
 @interface OtherSettingsController ()
 {
@@ -54,6 +56,29 @@ NSUserDefaults *pref;
         NSLog(@"Selected");
         [pref setBool:0 forKey:@"shareHey"];
     }
+}
+
+-(IBAction)termsBtnTapped:(id)sender
+{
+   TermsServiceViewController *firstSplash=[[TermsServiceViewController alloc] initWithNibName:@"TermsServiceViewController" bundle:nil];
+    [self.navigationController pushViewController:firstSplash animated:YES];
+}
+
+-(IBAction)tutorialBtnTapped:(id)sender
+{
+  // FirstSplashViewController *firstSplash=[[FirstSplashViewController alloc] initWithNibName:@"FirstSplashViewController" bundle:nil];
+    
+    
+    SplashViewController *firstSplash=[[SplashViewController alloc] init];
+    
+    if (firstSplash==nil)
+    {
+        firstSplash=[[[NSBundle mainBundle] loadNibNamed:@"FirstSplashViewController" owner:self options:nil] objectAtIndex:1];
+    }
+    
+    
+    firstSplash.comeFromOtherSettings=YES;
+    [self.navigationController pushViewController:firstSplash animated:YES];
 }
 
 - (IBAction)back:(id)sender {

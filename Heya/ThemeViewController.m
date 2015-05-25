@@ -11,29 +11,26 @@
 #import "ModelMenu.h"
 #import "ModelSubMenu.h"
 #import "AppDelegate.h"
+#import "NSString+Emoticonizer.h"
 
 @interface ThemeViewController ()
-
 {
-    NSMutableArray *arrAllPageValue,*arrDisplayTableOne,*arrDisplayTableTwo,*arrDisplayTableThree,*arrDisplayTableFour ;
+    NSMutableArray *arrAllPageValue,*arrDisplayTableOne,*arrDisplayTableTwo,*arrDisplayTableThree,*arrDisplayTableFour, *arrDisplayUponImageview;
 }
 
 @end
 
 @implementation ThemeViewController
 NSUserDefaults *preferances;
-@synthesize carousel, label, wrap, theme, themeName, selectThemeButton;
+@synthesize carousel, label, wrap, theme, themeName;
 @synthesize generatedimage,generatedView, brightArray,standardArray, oneColorArray, outLineArray, mutedArray;
 
 int globalIndex;
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
-    carousel.type = iCarouselTypeCoverFlow2;
-    carousel.scrollSpeed=0.1f;
+#pragma mark
+#pragma mark UIViewController Initialization
+#pragma mark
 
-}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -48,7 +45,7 @@ int globalIndex;
         
         standardArray= [NSArray arrayWithObjects:@"menu_btn1.png", @"menu_btn2.png",@"menu_btn4.png", @"menu_btn5.png" ,@"menu_btn6.png",@"menu_btn7.png", @"menu_btn8.png" , @"menu_btn9.png", @"menu_btn9.png", nil];
         
-        oneColorArray=[NSArray arrayWithObjects:@"red1.png", @"red2.png",@"red3.png", @"red4.png" ,@"red5.png",@"red6.png", @"red7.png" , @"red7.png", nil];
+        oneColorArray=[NSArray arrayWithObjects:@"red1.png", @"red1.png",@"red1.png", @"red1.png" ,@"red1.png",@"red1.png", @"red1.png" , @"red1.png", @"red1.png", nil];
         
         outLineArray=[NSArray arrayWithObjects:@"bar_1.png", @"bar_2.png",@"bar_3.png", @"bar_4.png" ,@"bar_5.png",@"bar_6.png", @"bar_7.png" , @"bar_8.png", @"bar_8.png", nil];
         
@@ -62,11 +59,38 @@ int globalIndex;
     }
     return self;
 }
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    preferances=[NSUserDefaults standardUserDefaults];
+    
+    carousel.delegate = self;
+    carousel.dataSource = self;
+    carousel.pageControl = self.pageControl;
+    carousel.minimumPageAlpha = 1.0f;
+    carousel.minimumPageScale = 0.9;
+}
+
+-(void) viewWillAppear:(BOOL)animated
+{
+    NSMutableArray *totalMenuArray=[[NSMutableArray alloc] init];
+    arrDisplayUponImageview=[[NSMutableArray alloc] init];
+    for (int i=1; i<=4; i++)
+    {
+        [totalMenuArray addObject:[DBManager fetchMenuForPageNo:i]];
+    }
+    globalIndex=0;
+    arrDisplayUponImageview=[totalMenuArray objectAtIndex:0];
+    [label setText:[NSString stringWithFormat:@"%@", [themeName objectAtIndex:globalIndex]]];
+}
+
 - (void)viewDidUnload
 {
     [self setLabel:nil];
     [super viewDidUnload];
-    preferances=[NSUserDefaults standardUserDefaults];
+    
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
     
@@ -77,14 +101,90 @@ int globalIndex;
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-- (IBAction)back:(id)sender{
-    
-    [self.navigationController popViewControllerAnimated:YES];
-}
-#pragma mark -
-#pragma mark iCarousel methods
 
-- (NSUInteger)numberOfItemsInCarousel:(iCarousel *)carousel
+#pragma mark -
+#pragma mark PagedFlowView Delegate
+- (CGSize)sizeForPageInFlowView:(PagedFlowView *)flowView
+{
+    return CGSizeMake(180, 320);
+}
+
+- (void)flowView:(PagedFlowView *)flowView didScrollToPageAtIndex:(NSInteger)index {
+    NSLog(@"Scrolled to page # %ld", (long)index);
+    
+    //NSLog(@"Index = %lu",(long)carousel.currentPageIndex);
+    //globalIndex=(int)carousel.currentPageIndex;
+    globalIndex=(int)index;
+    
+    [self.pageControl setCurrentPage:globalIndex];
+    [label setText:[NSString stringWithFormat:@"%@", [themeName objectAtIndex:globalIndex]]];
+    
+}
+         
+         
+
+- (void)flowView:(PagedFlowView *)flowView didTapPageAtIndex:(NSInteger)index{
+    NSLog(@"Tapped on page # %ld", (long)index);
+}
+
+#pragma mark -
+#pragma mark PagedFlowView Datasource
+//View
+- (NSInteger)numberOfPagesInFlowView:(PagedFlowView *)flowView
+{
+    return 5;
+}
+
+//View
+- (UIView *)flowView:(PagedFlowView *)flowView cellForPageAtIndex:(NSInteger)index
+{
+    UIView *bigView = (UIView *)[flowView dequeueReusableCell];
+    if (!bigView)
+        bigView = [[UIImageView alloc] init];
+    
+    switch (index)
+    {
+        case 0:
+            bigView=[self createViewWithColorArray:brightArray];
+            break;
+        case 1:
+            bigView=[self createViewWithColorArray:standardArray];
+            break;
+        case 2:
+            bigView=[self createViewWithColorArray:oneColorArray];
+            break;
+        case 3:
+            bigView=[self createViewWithColorArray:outLineArray];
+            break;
+        case 4:
+            bigView=[self createViewWithColorArray:mutedArray];
+            break;
+            
+            
+        default:
+            break;
+    }
+    
+    
+    return bigView;
+    
+}
+
+- (IBAction)pageControlValueDidChange:(id)sender
+{
+    UIPageControl *pageControl = sender;
+    [carousel scrollToPage:pageControl.currentPage];
+    NSLog(@"pageControl.currentPage: %ld",(long)pageControl.currentPage);
+    
+    globalIndex=(int)pageControl.currentPage;
+    [label setText:[NSString stringWithFormat:@"%@", [themeName objectAtIndex:globalIndex]]];
+}
+
+#pragma mark
+#pragma mark iCarousel methods
+#pragma mark
+
+/*- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
 {
     return 5;
 }
@@ -95,32 +195,41 @@ int globalIndex;
     return 5;
 }
 
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSUInteger)index
+- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
 {
+    NSMutableArray *totalMenuArray=[[NSMutableArray alloc] init];
+    arrDisplayUponImageview=[[NSMutableArray alloc] init];
+    for (int i=1; i<=4; i++) {
+        [totalMenuArray addObject:[DBManager fetchMenuForPageNo:i]];
+    }
+    
+    arrDisplayUponImageview=[totalMenuArray objectAtIndex:0];
+    
     if (index==0)
     {
         [preferances setBool:NO forKey:@"outLineThemeActive"];
-        return [self createThemeViewWithImagesBright];
+        [preferances synchronize];
+        return [self createViewWithColorArray:brightArray];
     }
     
     else if (index==1)
     {
-        return [self createThemeViewWithImagesStandard];
+        return [self createViewWithColorArray:standardArray];
     }
     
     else if (index==2)
     {
-        return [self createThemeViewWithImagesOneColor];
+        return [self createViewWithColorArray:oneColorArray];
     }
     
     else if (index==3)
     {
-        return [self createThemeViewWithImagesOutLine];
+        return [self createViewWithColorArray:outLineArray];
     }
     
     else if (index==4)
     {
-        return [self createThemeViewWithImagesMuted];
+        return [self createViewWithColorArray:mutedArray];
     }
  
     else
@@ -128,7 +237,7 @@ int globalIndex;
     
 }
 
-- (NSUInteger)numberOfPlaceholdersInCarousel:(iCarousel *)carousel
+- (NSInteger)numberOfPlaceholdersInCarousel:(iCarousel *)carousel
 {
     //note: placeholder views are only displayed on some carousels if wrapping is disabled
     return 0;
@@ -138,14 +247,66 @@ int globalIndex;
 - (CGFloat)carouselItemWidth:(iCarousel *)carousel
 {
     //usually this should be slightly wider than the item views
-    return 240;
+    return 180;
 }
+
 
 
 - (BOOL)carouselShouldWrap:(iCarousel *)carousel
 {
     //wrap all carousels
     return wrap;
+}
+
+- (CGFloat)carousel:(__unused iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
+{
+    //customize carousel display
+    switch (option)
+    {
+        case iCarouselOptionWrap:
+        {
+            //normally you would hard-code this to YES or NO
+            return YES;
+        }
+        case iCarouselOptionSpacing:
+        {
+            //add a bit of spacing between the item views
+            return value * 2.0f;
+        }
+        case iCarouselOptionFadeMax:
+        {
+            if (self.carousel.type == iCarouselTypeCustom)
+            {
+                //set opacity based on distance from camera
+                return 0.0f;
+            }
+            return value;
+        }
+        case iCarouselOptionShowBackfaces:
+        {
+            return NO;
+        }
+        case iCarouselOptionRadius:
+        case iCarouselOptionAngle:
+        case iCarouselOptionArc:
+        case iCarouselOptionTilt:
+        case iCarouselOptionCount:
+        case iCarouselOptionFadeMin:
+        case iCarouselOptionFadeMinAlpha:
+        case iCarouselOptionFadeRange:
+        case iCarouselOptionOffsetMultiplier:
+        case iCarouselOptionVisibleItems:
+        {
+            return value;
+        }
+    }
+}
+
+- (CATransform3D)carousel:(__unused iCarousel *)carousel itemTransformForOffset:(CGFloat)offset baseTransform:(CATransform3D)transform
+{
+    //implement 'flip3D' style carousel
+    transform = CATransform3DRotate(transform, M_PI / 8.0f, 0.0f, 1.0f, 0.0f);
+    return CATransform3DTranslate(transform, 0.0f, 0.0f, offset * self.carousel.itemWidth);
 }
 
 - (void)carouselDidEndScrollingAnimation:(iCarousel *)aCarousel
@@ -157,109 +318,51 @@ int globalIndex;
     [self.pageControl setCurrentPage:globalIndex];
 
     [label setText:[NSString stringWithFormat:@"%@", [themeName objectAtIndex:aCarousel.currentItemIndex]]];
-}
+}*/
 
--(UIView *) createThemeViewWithImagesBright
+#pragma mark
+#pragma mark IBActions & Methods
+#pragma mark
+
+-(UIView *) createViewWithColorArray:(NSArray*)colorArr
 {
     float imageY=15.0f;
-    UIView *newView= [[UIView alloc] initWithFrame:CGRectMake(0, 0, 204, 327)];
-    newView.backgroundColor=[UIColor colorWithRed:235/255.0f green:235/255.0f blue:235/255.0f alpha:1.0f];
-    newView.layer.borderWidth=1.0f;
-    newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
+    UIView *newView= [[UIView alloc] initWithFrame:CGRectMake(0, 0, 180, 320)];
+    newView.backgroundColor=[UIColor colorWithRed:230/255.0f green:230/255.0f blue:230/255.0f alpha:1.0f];
     
-    for(int i=0; i<brightArray.count-1; i++)
+    for(int i=0; i<colorArr.count-1; i++)
     {
-        UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
-        clImgView.image = [UIImage imageNamed:[brightArray objectAtIndex:i]];
+        UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 160, 32)];
+        clImgView.image = [UIImage imageNamed:[colorArr objectAtIndex:i]];
+        
+        UILabel *titleLabel=[[UILabel alloc] initWithFrame:CGRectMake(15.0f, 0.0f, clImgView.frame.size.width-25, clImgView.frame.size.height)];
+        ModelMenu *obj=[arrDisplayUponImageview objectAtIndex:i];
+        titleLabel.text=[NSString emoticonizedString:obj.strMenuName];
+        titleLabel.font=[UIFont boldSystemFontOfSize:12.0f];
+        
+        
+        if ([[colorArr objectAtIndex:i] isEqualToString:@"temp_white.png"])
+            titleLabel.textColor=[UIColor blackColor];
+        else if (outLineArray==colorArr)
+            titleLabel.textColor=[UIColor blackColor];
+        else
+            titleLabel.textColor=[UIColor whiteColor];
+        
+        titleLabel.textAlignment=NSTextAlignmentLeft;
+        
+        [clImgView addSubview:titleLabel];
+        
+        
         [newView addSubview:clImgView];
-        imageY=imageY+clImgView.frame.size.height+12.0f;
-    }
-    [preferances setBool:NO forKey:@"outLineThemeActive"];
-    return newView;
-}
-
-
--(UIView *) createThemeViewWithImagesStandard
-{
-    float imageY=15.0f;
-    UIView *newView= [[UIView alloc] initWithFrame:CGRectMake(0, 0, 204, 327)];
-    newView.backgroundColor=[UIColor colorWithRed:235/255.0f green:235/255.0f blue:235/255.0f alpha:1.0f];
-    newView.layer.borderWidth=1.0f;
-    newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    
-    for(int i=0; i<brightArray.count-1; i++)
-    {
-        UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
-        clImgView.image = [UIImage imageNamed:[standardArray objectAtIndex:i]];
-        [newView addSubview:clImgView];
-        imageY=imageY+clImgView.frame.size.height+12.0f;
-    }
-    
-    return newView;
-}
-
-
--(UIView *) createThemeViewWithImagesOneColor
-{
-    float imageY=15.0f;
-    UIView *newView= [[UIView alloc] initWithFrame:CGRectMake(0, 0, 204, 327)];
-    newView.backgroundColor=[UIColor colorWithRed:235/255.0f green:235/255.0f blue:235/255.0f alpha:1.0f];
-    newView.layer.borderWidth=1.0f;
-    newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    
-    for(int i=0; i<brightArray.count-1; i++)
-    {
-        UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
-        clImgView.image = [UIImage imageNamed:[oneColorArray objectAtIndex:i]];
-        [newView addSubview:clImgView];
-        imageY=imageY+clImgView.frame.size.height+12.0f;
+        imageY=imageY+clImgView.frame.size.height+4.0f;
     }
     return newView;
 }
 
--(UIView *) createThemeViewWithImagesOutLine
-{
-    float imageY=15.0f;
-    UIView *newView= [[UIView alloc] initWithFrame:CGRectMake(0, 0, 204, 327)];
-    newView.backgroundColor=[UIColor colorWithRed:235/255.0f green:235/255.0f blue:235/255.0f alpha:1.0f];
-    newView.layer.borderWidth=1.0f;
-    newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
+- (IBAction)back:(id)sender{
     
-    for(int i=0; i<brightArray.count-1; i++)
-    {
-        UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
-        clImgView.image = [UIImage imageNamed:[outLineArray objectAtIndex:i]];
-        [newView addSubview:clImgView];
-        imageY=imageY+clImgView.frame.size.height+12.0f;
-    }
-    
-    return newView;
+    [self.navigationController popViewControllerAnimated:YES];
 }
-
--(UIView *) createThemeViewWithImagesMuted
-{
-    float imageY=15.0f;
-    UIView *newView= [[UIView alloc] initWithFrame:CGRectMake(0, 0, 204, 327)];
-    newView.backgroundColor=[UIColor colorWithRed:235/255.0f green:235/255.0f blue:235/255.0f alpha:1.0f];
-    newView.layer.borderWidth=1.0f;
-    newView.layer.borderColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    newView.layer.shadowColor=([UIColor colorWithRed:204/255.0f green:204/255.0f blue:204/255.0f alpha:1.0f]).CGColor;
-    
-    for(int i=0; i<brightArray.count-1; i++)
-    {
-        UIImageView *clImgView = [[UIImageView alloc] initWithFrame:CGRectMake(10.5f, imageY, 183, 27)];
-        clImgView.image = [UIImage imageNamed:[mutedArray objectAtIndex:i]];
-        [newView addSubview:clImgView];
-        imageY=imageY+clImgView.frame.size.height+12.0f;
-    }
-    return newView;
-}
-
-
 
 - (IBAction)selectThemeButton:(id)sender
 {
@@ -271,11 +374,13 @@ int globalIndex;
     if([self.label.text isEqualToString:@"Outline"])
     {
         [preferances setBool:YES forKey:@"outLineThemeActive"];
+        
     }
     else
     {
        [preferances setBool:NO forKey:@"outLineThemeActive"];
     }
+    [preferances synchronize];
     
     NSMutableArray *colArray=[[NSMutableArray alloc] init];
     NSMutableArray *createMainArray=[[NSMutableArray alloc] init];
@@ -369,7 +474,7 @@ int globalIndex;
     [preferances setObject:self.label.text forKey:@"themeName"];
     [preferances synchronize];
     
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Theme has been saved successfully."
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Theme applied successfully."
                                                    delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
     [alert show];
 }

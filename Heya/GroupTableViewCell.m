@@ -35,10 +35,14 @@ static CGFloat const kBounceValue = 10.0f;
     self.profileImg.layer.cornerRadius = self.profileImg.frame.size.width / 2;
     self.profileImg.clipsToBounds = YES;
     self.profileImg.contentMode=UIViewContentModeScaleAspectFill;
+    self.profileImg.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    self.profileImg.layer.borderWidth=1.0f;
     
     self.profileImgBackground.layer.cornerRadius = self.profileImgBackground.frame.size.width / 2;
     self.profileImgBackground.clipsToBounds = YES;
     self.profileImgBackground.contentMode=UIViewContentModeScaleAspectFill;
+    self.profileImgBackground.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    self.profileImgBackground.layer.borderWidth=1.0f;
     
     self.panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panThisCell:)];
     self.panRecognizer.delegate = self;

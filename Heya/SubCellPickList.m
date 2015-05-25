@@ -12,10 +12,11 @@
 @synthesize subTextLabel;
 @synthesize checkMarkImage;
 @synthesize cellEditBtn;
+@synthesize topSeperator;
 @synthesize indexPath;
 
-- (void)awakeFromNib {
-    
+- (void)awakeFromNib
+{
     // Initialization code
 }
 

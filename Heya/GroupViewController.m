@@ -42,21 +42,24 @@
     selectedIndexPath=nil;
     [groupTableView setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
     
-    dispatch_queue_t myQueue = dispatch_queue_create("hey_main_group", NULL);
+    groupListArray = [DBManager fetchDetailsFromGroup];
+    [groupTableView reloadData];
+    
+    /*dispatch_queue_t myQueue = dispatch_queue_create("hey_main_group", NULL);
     
     dispatch_async(myQueue, ^{
         //stuffs to do in background thread
         [self.view addSubview:HUD];
         [HUD show:YES];
         groupListArray = [DBManager fetchDetailsFromGroup];
-        NSLog(@"Total No of Groups: %ld",(long)groupListArray.count);
+        //NSLog(@"Total No of Groups: %ld",(long)groupListArray.count);
         dispatch_async(dispatch_get_main_queue(), ^{
             //stuffs to do in foreground thread, mostly UI updates
             [groupTableView reloadData];
             [HUD hide:YES];
             [HUD removeFromSuperview];
         });
-    });
+    });*/
 }
 
 - (void)didReceiveMemoryWarning
@@ -71,7 +74,12 @@
 
 -(NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [groupListArray count];
+    if (groupListArray.count>0)
+         return [groupListArray count];
+    else
+        return 0;
+    
+    //NSLog(@"groupListArray Count is %ld",(long)groupListArray.count);
 }
 
 -(CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -105,7 +113,7 @@
     cell.groupNameLabel.text = objGroup.strGroupName;
     cell.groupNameLabel.tag=[objGroup.strGroupId intValue];
     cell.groupNameLabel.delegate=self;
-    cell.profileImg.image=[UIImage imageNamed:@"group_friends_pic.png"];
+    cell.profileImg.image=[UIImage imageNamed:@"man_group.png"];
     cell.groupIdString =objGroup.strGroupId;
     cell.groupOrderString =objGroup.strGroupOrder;
     return cell;
@@ -209,10 +217,14 @@
 
 - (IBAction)rearrangeButtonTapped:(id)sender
 {
-    RearrangeGroupViewController *rVc = [[RearrangeGroupViewController alloc] initWithNibName:@"RearrangeGroupViewController" bundle:nil];
-    rVc.groupArray=groupListArray;
+    if (self.groupListArray.count>0)
+    {
+        RearrangeGroupViewController *rVc = [[RearrangeGroupViewController alloc] initWithNibName:@"RearrangeGroupViewController" bundle:nil];
+        //rVc.groupArray=groupListArray;
+        
+        [self.navigationController pushViewController:rVc animated:YES];
+    }
     
-    [self.navigationController pushViewController:rVc animated:YES];
 }
 
 -(IBAction)saveBtnPressed:(id)sender
@@ -238,7 +250,7 @@
                     cellDeleteStatus=YES;
                     selectedIndexPath=nil;
                     
-                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                     [alert show];
                     
                     groupListArray= [DBManager fetchDetailsFromGroup];
@@ -246,13 +258,13 @@
                 }
                 else
                 {
-                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something went wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Something went wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                     [alert show];
                 }
             }
             else
             {
-                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Group name already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Group name already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
             }
             

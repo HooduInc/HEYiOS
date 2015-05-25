@@ -115,7 +115,7 @@
         [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
     
         NSString *postString = [NSString stringWithFormat:@"unique_token=%@&user_name=%@&contact_number=%@&timestamp=%@&account_started=%@",strUDID,strFullName,strContactNumber,strTimeStamp,strAccountCreated];
-        //NSLog(@"postString: %@",postString);
+        NSLog(@"postString: %@",postString);
         [request setHTTPBody:[postString dataUsingEncoding:NSUTF8StringEncoding]];
     
 
@@ -141,7 +141,7 @@
                 {
                     //OK
                     NSLog(@"Registration unsuccessfull");
-                    handler(err,YES,@"Registration unsuccessfull. User already exists.");
+                    handler(err,YES,[resultDict valueForKey:@"message"]);
                 }
             }
         }];

@@ -20,8 +20,8 @@
                     <rect key="frame" x="0.0" y="0.0" width="320" height="83"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                 </imageView>
-                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hey_text.png" id="VW9-5u-TpN">
-                    <rect key="frame" x="140" y="37" width="40" height="37"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="heyText" id="VW9-5u-TpN">
+                    <rect key="frame" x="138" y="29" width="45" height="45"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 </imageView>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="FuD-ik-aQ4">
@@ -59,10 +59,11 @@
                         <action selector="btnRearrangedPressed:" destination="-1" eventType="touchUpInside" id="AXV-ea-suq"/>
                     </connections>
                 </button>
-                <tableView clipsSubviews="YES" tag="1" contentMode="scaleToFill" bounces="NO" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="Hoa-Ev-Fem" userLabel="TableOne">
+                <tableView clipsSubviews="YES" tag="1" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" style="grouped" separatorStyle="none" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="Hoa-Ev-Fem" userLabel="TableOne">
                     <rect key="frame" x="0.0" y="110" width="320" height="458"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     <connections>
                         <outlet property="dataSource" destination="-1" id="KfY-R8-hnX"/>
                         <outlet property="delegate" destination="-1" id="7cY-Lc-dLn"/>
@@ -75,7 +76,7 @@
     </objects>
     <resources>
         <image name="back_btn.png" width="57" height="20"/>
-        <image name="hey_text.png" width="40" height="37"/>
+        <image name="heyText" width="45" height="45"/>
         <image name="rearrage_btn.png" width="144" height="49"/>
         <image name="top_barbg.png" width="320" height="83"/>
     </resources>

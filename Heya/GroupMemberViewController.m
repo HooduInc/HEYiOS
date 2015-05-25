@@ -21,6 +21,9 @@
     BOOL cellDeleteStatus;
     NSMutableArray *multipleContactNoArray;
     UIImage *contactImageFromAddressBook;
+    
+    IBOutlet UIView *groupView;
+    IBOutlet UIView *displayGroupImageView;
 }
 @end
 
@@ -41,7 +44,12 @@ NSMutableDictionary *contactInfoDict;
 {
     [super viewDidLoad];
     HUD = [[MBProgressHUD alloc] initWithView:self.view];
-    saveAlert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    saveAlert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    
+    groupView.layer.cornerRadius = groupView.frame.size.width / 2;
+    groupView.clipsToBounds = YES;
+    groupView.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    groupView.layer.borderWidth=1.0f;
 }
 
 -(void) viewWillAppear:(BOOL)animated
@@ -58,6 +66,10 @@ NSMutableDictionary *contactInfoDict;
         groupSwipeTextLabel.hidden=YES;
         groupNameTextField.userInteractionEnabled=YES;
         [groupNameTextField becomeFirstResponder];
+        
+        //displayGroupImageView.hidden=NO;
+        //groupView.hidden=YES;
+        
     }
     else
     {
@@ -87,6 +99,9 @@ NSMutableDictionary *contactInfoDict;
                     groupMemberTableView.hidden = NO;
                     groupHelpLabel.hidden = YES;
                     groupSwipeTextLabel.hidden=NO;
+                    
+                    //displayGroupImageView.hidden=YES;
+                    //groupView.hidden=NO;
                 }
                 
                 [groupMemberTableView reloadData];
@@ -124,6 +139,7 @@ NSMutableDictionary *contactInfoDict;
 
 -(UITableViewCell *) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    
     static NSString *tableIdentfier = @"GroupMemberTableCell";
     GroupMemberTableViewCell *cell = (GroupMemberTableViewCell *)[tableView dequeueReusableCellWithIdentifier:tableIdentfier];
     
@@ -320,14 +336,13 @@ NSMutableDictionary *contactInfoDict;
 
 - (void)buttonDeleteActionForItemText:(id)sender
 {
-    GroupMemberTableViewCell *cell=(GroupMemberTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
-    NSIndexPath *indexPath=[groupMemberTableView indexPathForCell:cell];
-    selectedIndexPath=indexPath;
+    GroupMemberTableViewCell *cellGroup=(GroupMemberTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
+    //NSIndexPath *indexPath=[groupMemberTableView indexPathForCell:cellGroup];
     cellDeleteStatus=YES;
     selectedIndexPath=nil;
     
-    NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cell.groupMemberName.text);
-    BOOL isDeleted=[DBManager deleteGroupMemberWithMemberId:[NSString stringWithFormat:@"%ld",(long)cell.groupMemberName.tag]];
+    NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cellGroup.groupMemberName.text);
+    BOOL isDeleted=[DBManager deleteGroupMemberWithMemberId:[NSString stringWithFormat:@"%ld",(long)cellGroup.groupMemberName.tag]];
      
      if(isDeleted)
      {
@@ -348,21 +363,23 @@ NSMutableDictionary *contactInfoDict;
     {
         NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
         
-        BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:[alertView buttonTitleAtIndex:buttonIndex] groupID:clickedGroupId];
+        [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
         
-        if(!exists)
-        {
-            [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
-            
-            [self.view addSubview:HUD];
-            [HUD show:YES];
-            [self insertGroupMember];
-        }
-        else
-        {
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
-        }
+        [self.view addSubview:HUD];
+        [HUD show:YES];
+        [self insertGroupMember];
+        
+//        BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:[alertView buttonTitleAtIndex:buttonIndex] groupID:clickedGroupId];
+//        
+//        if(!exists)
+//        {
+//            
+//        }
+//        else
+//        {
+//            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+//            [alert show];
+//        }
     }
 }
 
@@ -420,7 +437,7 @@ NSMutableDictionary *contactInfoDict;
             }
             else
             {
-                [self alertStatus:@"Group name already exists." :@"Error!" ];
+                [self alertStatus:@"Group name already exists." :nil ];
             }
         }
         else
@@ -435,7 +452,7 @@ NSMutableDictionary *contactInfoDict;
             }
             else
             {
-                [self alertStatus:@"Group name already exists." :@"Error!" ];
+                [self alertStatus:@"Group name already exists." :nil ];
             }
             
             
@@ -447,7 +464,6 @@ NSMutableDictionary *contactInfoDict;
 
 - (IBAction)addButtonTapped:(id)sender
 {
-    
     if ([groupNameTextField.text length] == 0)
     {
         [self alertStatus:@"Please enter group name to add members." :nil ];
@@ -455,7 +471,6 @@ NSMutableDictionary *contactInfoDict;
     }
     else
     {
-        
         if([clickedGroupId isEqualToString:@""] || [clickedGroupId length]==0)
         {
             //don't do anything
@@ -495,7 +510,7 @@ NSMutableDictionary *contactInfoDict;
 {
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title
                                                         message:msg
-                                                       delegate:self
+                                                       delegate:nil
                                               cancelButtonTitle:@"OK"
                                               otherButtonTitles:nil, nil];
     [alertView show];
@@ -552,28 +567,63 @@ NSMutableDictionary *contactInfoDict;
                  objMember.strHomePhone=[contactInfoDict valueForKey:@"homeNumber"];
                  objMember.strProfileImage=[contactInfoDict valueForKey:@"image"];
                  
-                 NSMutableArray *memberInsertArray=[[NSMutableArray alloc] init];
-                 [memberInsertArray addObject:objMember];
+                 BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:objMember.strMobileNumber groupID:clickedGroupId];
                  
-                 long long insertId= [DBManager insertGroupMember:memberInsertArray];
-                 [HUD hide:YES];
-                 [HUD removeFromSuperview];
-                 
-                 if (insertId!=0)
+                 if(!exists)
                  {
+                     NSMutableArray *memberInsertArray=[[NSMutableArray alloc] init];
+                     [memberInsertArray addObject:objMember];
+                 
+                     long long insertId= [DBManager insertGroupMember:memberInsertArray];
+                     [HUD hide:YES];
+                     [HUD removeFromSuperview];
                      
-                     [saveAlert show];
-                     [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
-                     
-                     groupMemberArray = [[NSMutableArray alloc] init];
-                     groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
-                     
-                     self.saveBtn.hidden=YES;
-                     groupNameTextField.userInteractionEnabled=NO;
-                     groupMemberTableView.hidden = NO;
-                     groupHelpLabel.hidden = YES;
-                     groupSwipeTextLabel.hidden=NO;
-                     [groupMemberTableView reloadData];
+                     if (insertId>0)
+                     {
+                         
+                         [saveAlert show];
+                         [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+                         
+                         groupMemberArray = [[NSMutableArray alloc] init];
+                         groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
+                         
+                         self.saveBtn.hidden=YES;
+                         groupNameTextField.userInteractionEnabled=NO;
+                         groupMemberTableView.hidden = NO;
+                         groupHelpLabel.hidden = YES;
+                         groupSwipeTextLabel.hidden=NO;
+                         [groupMemberTableView reloadData];
+                         
+                         /*if (groupMemberArray.count==1)
+                         {
+                             ModelGroupMembers *obj=[groupMemberArray objectAtIndex:0];
+                             
+                             if (obj.strProfileImage && obj.strProfileImage.length>0)
+                             {
+                                 NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
+                                 [imageUrlArr addObject:obj.strProfileImage];
+                                 [self noOfViews:imageUrlArr];
+                             }
+                         }
+                         else if (groupMemberArray.count==2)
+                         {
+                             NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
+                             for (int i=0; i<groupMemberArray.count; i++)
+                             {
+                                 ModelGroupMembers *obj=[groupMemberArray objectAtIndex:i];
+                                 
+                                 if (obj.strProfileImage && obj.strProfileImage.length>0)
+                                     [imageUrlArr addObject:obj.strProfileImage];
+                             }
+                             [self noOfViews:imageUrlArr];
+                         }*/
+                     }
+                 }
+                 else
+                 {
+                     [HUD hide:YES];
+                     [HUD removeFromSuperview];
+                     [self alertStatus:@"Already exists." :nil];
                  }
              }
          }];
@@ -592,28 +642,227 @@ NSMutableDictionary *contactInfoDict;
         objMember.strHomePhone=[contactInfoDict valueForKey:@"homeNumber"];
         objMember.strProfileImage=[contactInfoDict valueForKey:@"image"];
         
-        NSMutableArray *memberInsertArray=[[NSMutableArray alloc] init];
-        [memberInsertArray addObject:objMember];
+        BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:objMember.strMobileNumber groupID:clickedGroupId];
         
-        long long insertId= [DBManager insertGroupMember:memberInsertArray];
-        [HUD hide:YES];
-        [HUD removeFromSuperview];
-        
-        if (insertId!=0)
+        if(!exists)
         {
-            groupMemberArray = [[NSMutableArray alloc] init];
-            groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
+            NSMutableArray *memberInsertArray=[[NSMutableArray alloc] init];
+            [memberInsertArray addObject:objMember];
             
-            self.saveBtn.hidden=YES;
-            groupNameTextField.userInteractionEnabled=NO;
-            groupMemberTableView.hidden = NO;
-            groupHelpLabel.hidden = YES;
-            groupSwipeTextLabel.hidden=NO;
+            long long insertId= [DBManager insertGroupMember:memberInsertArray];
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
             
-            [groupMemberTableView reloadData];
+            if (insertId>0)
+            {
+                groupMemberArray = [[NSMutableArray alloc] init];
+                groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
+                
+                self.saveBtn.hidden=YES;
+                groupNameTextField.userInteractionEnabled=NO;
+                groupMemberTableView.hidden = NO;
+                groupHelpLabel.hidden = YES;
+                groupSwipeTextLabel.hidden=NO;
+                
+                [groupMemberTableView reloadData];
+                
+                /*if (groupMemberArray.count==1)
+                {
+                    ModelGroupMembers *obj=[groupMemberArray objectAtIndex:0];
+                    
+                    if (obj.strProfileImage && obj.strProfileImage.length>0)
+                    {
+                        NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
+                        [imageUrlArr addObject:obj.strProfileImage];
+                        [self noOfViews:imageUrlArr];
+                    }
+                }
+                else if (groupMemberArray.count==2)
+                {
+                    NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
+                    for (int i=0; i<groupMemberArray.count; i++)
+                    {
+                        ModelGroupMembers *obj=[groupMemberArray objectAtIndex:i];
+                        
+                        if (obj.strProfileImage && obj.strProfileImage.length>0)
+                            [imageUrlArr addObject:obj.strProfileImage];
+                    }
+                    [self noOfViews:imageUrlArr];
+                }*/
+            }
+        }
+        else
+        {
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+            [self alertStatus:@"Already exists." :nil];
         }
     }
 }
 
-
+-(void)noOfViews:(NSMutableArray *)imageURLArray
+{
+    int num=(int)[imageURLArray count];
+    
+    NSLog(@"imageURLArray count: %ld",(long)[imageURLArray count]);
+    
+    if (num==1)
+    {
+        UIImageView *One=[[UIImageView alloc] initWithFrame:CGRectMake(0, 0, groupView.frame.size.width, groupView.frame.size.height)];
+        [One setBackgroundColor:[UIColor grayColor]];
+        
+        NSString *imageURL=[imageURLArray objectAtIndex:0];
+        
+        NSLog(@"ImageURL :%@",imageURL);
+        if ([imageURL isEqualToString:@"man_icon.png"])
+        {
+            [One setImage:[UIImage imageNamed:@"man_icon.png"]];
+        }
+        else
+        {
+            NSURL *myAssetUrl = [NSURL URLWithString:imageURL];
+            
+            ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
+            {
+                ALAssetRepresentation *rep = [myasset defaultRepresentation];
+                @autoreleasepool {
+                    CGImageRef iref = [rep fullScreenImage];
+                    if (iref) {
+                        UIImage *image = [UIImage imageWithCGImage:iref];
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [One setImage:image];
+                            [groupView addSubview:One];
+                        });
+                        iref = nil;
+                    }
+                }
+            };
+            
+            ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
+            {
+                NSLog(@"Can't get image - %@",[myerror localizedDescription]);
+            };
+            
+            ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+            [assetslibrary assetForURL:myAssetUrl resultBlock:resultblock failureBlock:failureblock];
+            
+        }
+        
+    }
+    
+    else if (num==2)
+    {
+        UIImageView *One=[[UIImageView alloc] initWithFrame:CGRectMake(0, 0, groupView.frame.size.width, groupView.frame.size.height)];
+        [One setBackgroundColor:[UIColor grayColor]];
+        
+        NSString *imageURL1=[imageURLArray objectAtIndex:0];
+        
+        if ([imageURL1 isEqualToString:@"man_icon.png"])
+            [One setImage:[UIImage imageNamed:@"man_icon.png"]];
+        
+        else
+        {
+            NSURL *myAssetUrl = [NSURL URLWithString:imageURL1];
+            
+            ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
+            {
+                ALAssetRepresentation *rep = [myasset defaultRepresentation];
+                @autoreleasepool {
+                    CGImageRef iref = [rep fullScreenImage];
+                    if (iref) {
+                        UIImage *image = [UIImage imageWithCGImage:iref];
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [One setImage:image];
+                        });
+                        iref = nil;
+                    }
+                }
+            };
+            
+            ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
+            {
+                NSLog(@"Can't get image - %@",[myerror localizedDescription]);
+            };
+            
+            ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+            [assetslibrary assetForURL:myAssetUrl resultBlock:resultblock failureBlock:failureblock];
+        }
+        [groupView addSubview:One];
+        
+        UIImageView *Two=[[UIImageView alloc] initWithFrame:CGRectMake(groupView.frame.size.width/2, 0, groupView.frame.size.width*8, groupView.frame.size.height*8)];
+        [Two setBackgroundColor:[UIColor grayColor]];
+        
+        NSString *imageURL2=[imageURLArray objectAtIndex:1];
+        NSLog(@"imageURL2 :%@",imageURL2);
+        
+        if ([imageURL2 isEqualToString:@"man_icon.png"])
+        {
+            NSString *imagePath = [[NSBundle mainBundle] pathForResource:@"pic_man_icon" ofType:@"png"];
+            UIImage *existingImage = [[UIImage alloc] initWithContentsOfFile:imagePath];
+            
+            // Create new image context (retina safe)
+            UIGraphicsBeginImageContextWithOptions(CGSizeMake(existingImage.size.width, existingImage.size.height), NO, [UIScreen mainScreen].scale);
+            
+            // Create rect for image
+            CGRect rect = CGRectMake(0, 0, groupView.frame.size.width, groupView.frame.size.height);
+            
+            // Draw the image into the rect
+            [existingImage drawInRect:rect];
+            
+            // Saving the image, ending image context
+            UIImage * newImage = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+            
+            [Two setImage:newImage];
+            [groupView addSubview:Two];
+        }
+        else
+        {
+            NSURL *myAssetUrl = [NSURL URLWithString:imageURL2];
+            
+            ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
+            {
+                ALAssetRepresentation *rep = [myasset defaultRepresentation];
+                @autoreleasepool {
+                    CGImageRef iref = [rep fullScreenImage];
+                    if (iref) {
+                        UIImage *image = [UIImage imageWithCGImage:iref];
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            
+                            // Create new image context (retina safe)
+                            UIGraphicsBeginImageContextWithOptions(CGSizeMake(image.size.width, image.size.height), NO, [UIScreen mainScreen].scale);
+                            
+                            // Create rect for image
+                            CGRect rect = CGRectMake(0, 0, groupView.frame.size.width, groupView.frame.size.height);
+                            
+                            // Draw the image into the rect
+                            [image drawInRect:rect];
+                            
+                            // Saving the image, ending image context
+                            UIImage * newImage = UIGraphicsGetImageFromCurrentImageContext();
+                            UIGraphicsEndImageContext();
+                            
+                            [Two setImage:newImage];
+                            
+                            [groupView addSubview:Two];
+                        });
+                        iref = nil;
+                    }
+                }
+            };
+            
+            ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
+            {
+                NSLog(@"Can't get image - %@",[myerror localizedDescription]);
+            };
+            
+            ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+            [assetslibrary assetForURL:myAssetUrl resultBlock:resultblock failureBlock:failureblock];
+        }
+        
+    }
+}
 @end

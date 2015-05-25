@@ -16,6 +16,8 @@
     IBOutlet UIImageView *suggestionTick;
     IBOutlet UIImageView *problemTick;
     IBOutlet UIImageView *praiseTick;
+    IBOutlet UIButton *sendBtn;
+    IBOutlet UIView *sendView;
     CGFloat animatedDistance;
     NSString *emailSubject;
     NSString* emailBody;
@@ -41,8 +43,24 @@
     problemTick.hidden=YES;
     emailSubject=@"Suggestion";
     
-    myScrollView.frame=CGRectMake(myScrollView.frame.origin.x, myScrollView.frame.origin.y, myScrollView.frame.size.width, [[UIScreen mainScreen]bounds].size.height-myScrollView.frame.origin.y);
-    myScrollView.contentSize=CGSizeMake(myScrollView.frame.size.width, [[UIScreen mainScreen]bounds].size.height+20);
+    myScrollView.frame=CGRectMake(myScrollView.frame.origin.x, myScrollView.frame.origin.y, myScrollView.frame.size.width, myScrollView.frame.size.height);
+    
+    if (isIphone4)
+    {
+        [sendView setFrame:CGRectMake(sendView.frame.origin.x, sendView.frame.origin.y-55, sendView.frame.size.width, sendView.frame.size.height)];
+        myScrollView.contentSize=CGSizeMake(myScrollView.frame.size.width, myScrollView.frame.size.height-55);
+    }
+    else if (isIphone5)
+    {
+        [sendView setFrame:CGRectMake(sendView.frame.origin.x, sendView.frame.origin.y-20, sendView.frame.size.width, sendView.frame.size.height)];
+        
+        myScrollView.contentSize=CGSizeMake(myScrollView.frame.size.width, myScrollView.frame.size.height-20);
+    }
+    else
+    {
+        myScrollView.contentSize=CGSizeMake(myScrollView.frame.size.width, myScrollView.frame.size.height);
+    }
+    
     
     //Dismiss any Keyborad if background is tapped
     UITapGestureRecognizer* tapBackground = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard:)];
@@ -118,7 +136,7 @@
             }
             else
             {
-                [[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Please enter a valid email id." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+                [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter a valid email id." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
                 isValidate=NO;
             }
         }
@@ -176,7 +194,7 @@
                 break;
             case MFMailComposeResultSent:
             {
-                [self alertStatus:@"Thank You!" :@"Email has been sent successfully."];
+                [self alertStatus:nil :@"Email has been sent successfully."];
                 NSLog(@"Mail sent");
                 break;
             }
@@ -282,7 +300,6 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 140;
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
     [self endAnimation];
-    
 }
 
 
@@ -302,16 +319,43 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 140;
 
 -(void) textViewDidBeginEditing:(UITextView *)textView
 {
-    myScrollView.contentSize=CGSizeMake(myScrollView.frame.size.width, [[UIScreen mainScreen]bounds].size.height+emailContent.frame.size.height+myScrollView.frame.origin.y);
-    
-    CGPoint bottomOffset = CGPointMake(0, myScrollView.contentSize.height - myScrollView.bounds.size.height);
-    [myScrollView setContentOffset:bottomOffset animated:YES];
+    CGRect textViewRect = [myScrollView.window convertRect:textView.bounds fromView:textView];
+    CGRect viewRect = [myScrollView.window convertRect:myScrollView.bounds fromView:myScrollView];
+    CGFloat midline = textViewRect.origin.y + 0.5 * textViewRect.size.height;
+    CGFloat numerator = midline - viewRect.origin.y - MINIMUM_SCROLL_FRACTION * viewRect.size.height;
+    CGFloat denominator = (MAXIMUM_SCROLL_FRACTION - MINIMUM_SCROLL_FRACTION) * viewRect.size.height;
+    CGFloat heightFraction = numerator / denominator;
+    if (heightFraction < 0.0)
+    {
+        heightFraction = 0.0;
+    }
+    else if (heightFraction > 1.0)
+    {
+        heightFraction = 1.0;
+    }
+    UIInterfaceOrientation orientation =
+    [[UIApplication sharedApplication] statusBarOrientation];
+    if (orientation == UIInterfaceOrientationPortrait ||
+        orientation == UIInterfaceOrientationPortraitUpsideDown)
+    {
+        animatedDistance = floor(PORTRAIT_KEYBOARD_HEIGHT * heightFraction+40);
+    }
+    else
+    {
+        animatedDistance = floor(LANDSCAPE_KEYBOARD_HEIGHT * heightFraction);
+    }
+    CGRect viewFrame = myScrollView.frame;
+    viewFrame.origin.y -= animatedDistance;
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    [UIView setAnimationDuration:KEYBOARD_ANIMATION_DURATION];
+    [myScrollView setFrame:viewFrame];
+    [UIView commitAnimations];
 }
 
 -(void) textViewDidEndEditing:(UITextView *)textView
 {
-    myScrollView.contentSize=CGSizeMake(myScrollView.frame.size.width, [[UIScreen mainScreen]bounds].size.height+20);
-    [myScrollView setContentOffset:CGPointZero animated:YES];
+    [self endAnimation];
 }
 
 
@@ -399,7 +443,7 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 140;
 
 -(void)showNetworkErrorMessage
 {
-    [[[UIAlertView alloc] initWithTitle:@"Error" message:kNetworkErrorMessage delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] show];
+    [[[UIAlertView alloc] initWithTitle:nil message:kNetworkErrorMessage delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] show];
 }
 
 -(void) dismissKeyboard:(id)sender

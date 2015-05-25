@@ -47,6 +47,22 @@
     
     self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.frame.size.width, self.contentScrollView.frame.size.height);
     
+    [self.FirstName setValue:[UIColor colorWithRed:122/255.0 green:122/255.0 blue:122/255.0 alpha:1.0] forKeyPath:@"_placeholderLabel.textColor"];
+    [self.lastName setValue:[UIColor colorWithRed:122/255.0 green:122/255.0 blue:122/255.0 alpha:1.0] forKeyPath:@"_placeholderLabel.textColor"];
+    [self.heyName setValue:[UIColor colorWithRed:122/255.0 green:122/255.0 blue:122/255.0 alpha:1.0] forKeyPath:@"_placeholderLabel.textColor"];
+    [self.ContactNo setValue:[UIColor colorWithRed:122/255.0 green:122/255.0 blue:122/255.0 alpha:1.0] forKeyPath:@"_placeholderLabel.textColor"];
+    
+    self.profileImage.layer.cornerRadius = self.profileImage.frame.size.width / 2;
+    self.profileImage.clipsToBounds = YES;
+    self.profileImage.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    self.profileImage.layer.borderWidth=1.0f;
+    self.onlyDisplayprofileImage.layer.cornerRadius = self.profileImage.frame.size.width / 2;
+    self.onlyDisplayprofileImage.clipsToBounds = YES;
+    self.onlyDisplayprofileImage.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    self.onlyDisplayprofileImage.layer.borderWidth=1.0f;
+    
+    
+    
     //Dismiss any Keyborad if background is tapped
     UITapGestureRecognizer* tapBackground = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard:)];
     [tapBackground setNumberOfTapsRequired:1];
@@ -60,40 +76,60 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
-    self.profileImage.layer.cornerRadius = self.profileImage.frame.size.width / 2;
-    self.profileImage.clipsToBounds = YES;
-    self.onlyDisplayprofileImage.layer.cornerRadius = self.profileImage.frame.size.width / 2;
-    self.onlyDisplayprofileImage.clipsToBounds = YES;
-    
+    [super viewWillAppear:YES];
     
     NSMutableArray *userProfile=[[NSMutableArray alloc] init];
     userProfile=[DBManager fetchUserProfile];
     
     if(userProfile.count>0)
     {
-        saveBtnLabel.hidden=YES;
-        editBtnLabel.hidden=NO;
-        contentScrollView.hidden=YES;
-        self.onlyForDisplayView.hidden=NO;
+        ModelUserProfile *obj=[userProfile objectAtIndex:0];
         
-        ModelUserProfile *obj=[[ModelUserProfile alloc] init];
-        
-        obj=[userProfile objectAtIndex:0];
-        self.FirstNameDisplayLabel.text=[NSString stringWithFormat:@"%@ %@",obj.strFirstName,obj.strLastName];
-        self.HeyNameDisplayLabel.text=obj.strHeyName;
-        self.NumberDisplayLabel.text=obj.strPhoneNo;
-        
-        if(obj.strProfileImage.length>0)
+        if (obj.strDeviceUDID.length>0 && obj.strFirstName.length==0 && obj.strLastName.length==0 && obj.strPhoneNo.length==0)
         {
-            if([obj.strProfileImage isEqualToString:@"man_icon.png"])
+            contentScrollView.hidden=NO;
+            self.onlyForDisplayView.hidden=YES;
+            
+            saveBtnLabel.hidden=NO;
+            editBtnLabel.hidden=YES;
+            addContactBtnLabel.hidden=NO;
+            callIcon.hidden=YES;
+            
+            [self.FirstName setUserInteractionEnabled:YES];
+            [self.lastName setUserInteractionEnabled:YES];
+            [self.heyName setUserInteractionEnabled:YES];
+            [self.ContactNo setUserInteractionEnabled:YES];
+            
+            if(conatctNoFetchFromContactList.length>0)
             {
-                self.onlyDisplayprofileImage.image = [UIImage imageNamed:@"man_icon.png"];
+                NSLog(@"Contact: %@",conatctNoFetchFromContactList);
+                [self.ContactNo setText:conatctNoFetchFromContactList];
             }
-            else
+        }
+        else
+        {
+            saveBtnLabel.hidden=YES;
+            editBtnLabel.hidden=NO;
+            contentScrollView.hidden=YES;
+            self.onlyForDisplayView.hidden=NO;
+            
+            
+            self.FirstNameDisplayLabel.text=[NSString stringWithFormat:@"%@ %@",obj.strFirstName,obj.strLastName];
+            self.HeyNameDisplayLabel.text=obj.strHeyName;
+            self.NumberDisplayLabel.text=obj.strPhoneNo;
+            
+            if(obj.strProfileImage.length>0)
             {
-                NSData *proImageData=[[NSData alloc] initWithBase64EncodedString:obj.strProfileImage options:NSDataBase64DecodingIgnoreUnknownCharacters];
-                UIImage  *proImage = [UIImage imageWithData:proImageData];
-                self.onlyDisplayprofileImage.image=proImage;
+                if([obj.strProfileImage isEqualToString:@"man_icon.png"])
+                {
+                    self.onlyDisplayprofileImage.image = [UIImage imageNamed:@"man_icon.png"];
+                }
+                else
+                {
+                    NSData *proImageData=[[NSData alloc] initWithBase64EncodedString:obj.strProfileImage options:NSDataBase64DecodingIgnoreUnknownCharacters];
+                    UIImage  *proImage = [UIImage imageWithData:proImageData];
+                    self.onlyDisplayprofileImage.image=proImage;
+                }
             }
         }
         
@@ -107,12 +143,6 @@
         editBtnLabel.hidden=YES;
         addContactBtnLabel.hidden=NO;
         callIcon.hidden=YES;
-        
-        /*self.FirstName.text=@"";
-         self.lastName.text=@"";
-         self.heyName.text=@"";
-         self.ContactNo.text=@"";
-         self.profileImage.image = [UIImage imageNamed:@"man_icon.png"];*/
         
         [self.FirstName setUserInteractionEnabled:YES];
         [self.lastName setUserInteractionEnabled:YES];
@@ -192,7 +222,6 @@
         //NSLog(@"IMageString: %@",[profileImageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength]);
         
         #warning “Change Random No to Device UDID!!!!!”
-        
         //long long int rand_phone = (arc4random() % 900000000000000) + 100000000000000;
         //UDID=[NSString stringWithFormat:@"%ld",(long)rand_phone];
         UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
@@ -203,7 +232,6 @@
         userObj.strLastName=self.lastName.text;
         userObj.strHeyName=self.heyName.text;
         userObj.strPhoneNo=self.ContactNo.text;
-        userObj.strDeviceUDID=UDID;
         if (profileImage.length==0)
             userObj.strProfileImage=@"man_icon.png";
         else
@@ -217,24 +245,17 @@
         
         userObj.strCurrentTimeStamp=timeStamp;
         
-        NSDate *downloadDate= (NSDate*)[[NSUserDefaults standardUserDefaults] valueForKey:@"applicationInstalledDate"];
-        NSDateFormatter *formatterStart = [[NSDateFormatter alloc] init];
-        [formatterStart setDateFormat:@"dd-MM-yyyy"];
-        NSString *accountCreated = [formatter stringFromDate:downloadDate];
-        
-        userObj.strAccountCreated=accountCreated;
-        
         [arrayUser addObject:userObj];
         
-        BOOL isInserted=[DBManager addProfile:arrayUser];
+        BOOL isUpdated=[DBManager updateProfile:arrayUser];
         
-        if (isInserted)
+        if (isUpdated)
         {
             
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Successfully registered." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Successfully registered." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [alert show];
             
-            fullName=[NSString stringWithFormat:@"%@ %@",userObj.strFirstName,userObj.strLastName];
+            fullName=[NSString stringWithFormat:@"%@ %@",self.FirstName.text,self.lastName.text];
             contactNumber=self.ContactNo.text;
             
             [pref setValue:self.ContactNo.text forKey:@"ProfileContactNo"];
@@ -263,38 +284,78 @@
                 [self.view addSubview:HUD];
                 [HUD show:YES];
                 
-                [[HeyWebService service] registerWithUDID:[UDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreated WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                 {
-                     
-                     [HUD hide:YES];
-                     [HUD removeFromSuperview];
-                     if (isError)
-                         NSLog(@"Resigartion Error Message: %@",strMsg);
-                     
-                     else
-                     {   [DBManager updatedToServerForUserWithFlag:1];
-                         NSLog(@"Resigartion Success Message: %@",strMsg);
-                     }
-                     
-                 }];
+                NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                userProfile=[DBManager fetchUserProfile];
+                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+                
+                NSString *accountCreationDateStr=@"";
+                NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                {
+                    [formatter setDateFormat:@"yyyy-MM-dd"];
+                    NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
+                    [formatter setDateFormat:@"dd-MM-yyyy"];
+                    accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
+                }
+                
+                NSLog(@"isSendToServer Status: %d",modObj.isSendToServer);
+                if (modObj.isSendToServer==0)
+                {
+                    [[HeyWebService service] registerWithUDID:[UDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                     {
+                         [HUD hide:YES];
+                         [HUD removeFromSuperview];
+                         if (isError)
+                             NSLog(@"Resigartion Error Message: %@",strMsg);
+                         
+                         else
+                         {   [DBManager updatedToServerForUserWithFlag:1];
+                             NSLog(@"Resigartion Success Message: %@",strMsg);
+                             [self.navigationController popViewControllerAnimated:YES];
+                         }
+                         
+                     }];
+                    
+                }
+                else
+                {
+                    [[HeyWebService service] updateProfileWithUDID:[UDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                     {
+                         
+                         [HUD hide:YES];
+                         [HUD removeFromSuperview];
+                         if (isError)
+                             NSLog(@"Updation Error Message: %@",strMsg);
+                         
+                         else
+                         {
+                             NSLog(@"Updation Success Message: %@",strMsg);
+                             [DBManager updatedToServerForUserWithFlag:1];
+                             [self.navigationController popViewControllerAnimated:YES];
+                         }
+                         
+                     }];
+                }
+
             }
             else
             {
-                [self showNetworkErrorMessage];
+                NSLog(@"Internet Connection is not available.");
+                [self.navigationController popViewControllerAnimated:YES];
             }
             
         }
         
         else
         {
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Something wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [alert show];
         }
         
     }
     else
     {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Please insert all fields." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Please insert all fields." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alert show];
     }
 }
@@ -323,7 +384,8 @@
     [self presentViewController:picker animated:YES completion:NULL];
 }
 
-- (IBAction)getContacts:(id)sender {
+- (IBAction)getContacts:(id)sender
+{
     
     _addressBookController = [[ABPeoplePickerNavigationController alloc] init];
     [_addressBookController setPeoplePickerDelegate:self];
@@ -478,26 +540,33 @@
 
 -(void) textFieldDidBeginEditing:(UITextField *)textField
 {
-    if(textField==self.ContactNo || textField==self.heyName)
+    if (isIphone4)
     {
-        if(self.ContactNo.superview.frame.origin.y+self.ContactNo.superview.frame.size.height>keyBoardHeight)
+        if(textField==self.ContactNo)
         {
-            contentScrollView.contentSize=CGSizeMake(contentScrollView.frame.size.width,contentScrollView.frame.size.height+textField.superview.frame.origin.y);
-            
-            CGPoint Offset = CGPointMake(0,textField.superview.frame.origin.y/2);
-            [contentScrollView setContentOffset:Offset animated:YES];
+            if(self.ContactNo.superview.frame.origin.y+self.ContactNo.superview.frame.size.height>keyBoardHeight)
+            {
+                contentScrollView.contentSize=CGSizeMake(contentScrollView.frame.size.width,contentScrollView.frame.size.height+textField.superview.frame.origin.y);
+                
+                CGPoint Offset = CGPointMake(0,textField.superview.frame.origin.y/2);
+                [contentScrollView setContentOffset:Offset animated:YES];
+            }
         }
     }
+    
     
 }
 
 -(void) textFieldDidEndEditing:(UITextField *)textField
 {
-    if(textField==self.ContactNo || textField==self.heyName)
+    if (isIphone4)
     {
-        contentScrollView.contentSize=CGSizeMake(contentScrollView.frame.size.width,contentScrollView.frame.size.height);
-        [contentScrollView setContentOffset:CGPointZero animated:YES];
-        
+        if(textField==self.ContactNo)
+        {
+            contentScrollView.contentSize=CGSizeMake(contentScrollView.frame.size.width,contentScrollView.frame.size.height);
+            [contentScrollView setContentOffset:CGPointZero animated:YES];
+            
+        }
     }
     [textField resignFirstResponder];
 }
@@ -560,10 +629,6 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
 }
 
--(void)showNetworkErrorMessage
-{
-    [[[UIAlertView alloc] initWithTitle:@"Error" message:kNetworkErrorMessage delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] show];
-}
 
 
 //Called by Reachability whenever status changes.

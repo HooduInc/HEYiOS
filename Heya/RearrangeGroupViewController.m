@@ -33,13 +33,16 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self setEditing:YES animated:YES];
+    [tblView setEditing:YES animated:YES];
     // Do any additional setup after loading the view from its nib.
 }
 
 -(void) viewWillAppear:(BOOL)animated
 {
-    [self setEditing:YES animated:YES];
-    [tblView setEditing:YES animated:YES];
+    [super viewWillAppear:YES];
+    groupArray=[[NSMutableArray alloc] init];
+    groupArray = [DBManager fetchDetailsFromGroup];
     [tblView reloadData];
 }
 
@@ -180,6 +183,10 @@
     [DBManager updateGroupWithId:obj.strGroupId withTableColoum:@"groupOrder" withColoumValue:objRemove.strGroupOrder];
     
     [DBManager updateGroupWithId:objRemove.strGroupId withTableColoum:@"groupOrder" withColoumValue:obj.strGroupOrder];
+    
+    groupArray = [DBManager fetchDetailsFromGroup];
+    [tblView reloadData];
+
 }
 
 

@@ -8,7 +8,7 @@
 
 #import "AppDelegate.h"
 #import "MessagesListViewController.h"
-#import "EditViewController.h"
+#import "SplashViewController.h"
 #import "DBManager.h"
 
 
@@ -21,13 +21,25 @@ NSUserDefaults *preferances;
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    
+    [DBManager checkAndCreateDatabaseAtPath:[DBManager getDBPath]];
+    self.dbPath = [DBManager getDBPath];
+    NSLog(@"Databse Path: %@",self.dbPath);
     
     buttonArray = [[NSMutableArray alloc]init];
     preferances=[NSUserDefaults standardUserDefaults];
     NSDate *applicationInstalledDate;
+    
+    SplashViewController *splashController = [[SplashViewController alloc]initWithNibName:@"SplashViewController" bundle:nil];
+    MessagesListViewController *msgController = [[MessagesListViewController alloc]initWithNibName:@"MessagesListViewController" bundle:nil];
+    
     if (![[NSUserDefaults standardUserDefaults] boolForKey:@"HasLaunchedOnce"])
     {
         // This is the first launch ever
+        // Override point for customization after application launch.
+        navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:splashController];
+        
         [preferances setBool:YES forKey:@"HasLaunchedOnce"];
         [preferances setObject:@"Standard" forKey:@"themeName"];
          applicationInstalledDate = [NSDate date];
@@ -35,21 +47,13 @@ NSUserDefaults *preferances;
         [preferances setBool:1 forKey:@"shareHey"];
         [preferances synchronize];
     }
+    else
+    {
+        // Override point for customization after application launch.
+        navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:msgController];
+    }
     
-    
-    [DBManager checkAndCreateDatabaseAtPath:[DBManager getDBPath]];
-    self.dbPath = [DBManager getDBPath];
-    NSLog(@"Databse Path: %@",self.dbPath);
-    
-    
-     MessagesListViewController *messages_obj = [[MessagesListViewController alloc]initWithNibName:@"MessagesListViewController" bundle:nil];
-    
-    
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    // Override point for customization after application launch.
-    navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:messages_obj];
     [self.window setRootViewController:navigationcontrollar];
-    
     navigationcontrollar.navigationBarHidden = YES;
     
     self.window.backgroundColor = [UIColor whiteColor];

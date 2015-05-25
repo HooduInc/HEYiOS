@@ -7,12 +7,11 @@
 //
 
 #import "EditViewController.h"
-#import "PickFromListController.h"
 #import "Pick4mListViewController.h"
 #import "RearrangeViewController.h"
 #import "ButtonCell.h"
 #import "ChangeColorView.h"
-
+#import "NSString+Emoticonizer.h"
 #import "MenuListTableViewCell.h"
 #import "MenuListSelectedTableViewCell.h"
 #import "ModelMenu.h"
@@ -65,7 +64,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    saveAlert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    saveAlert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWasShown:)
@@ -139,17 +138,10 @@
     ModelMenu *obj;
     obj=[arrDisplay objectAtIndex:section];
     
-    
-    NSString *emoString=@"\U00002764";
-    NSString *loveyouString=@"Love You";
-    
-    if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
-        cell.txtFiled.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];
-    
-    else if ([obj.strMenuName containsString:@"Write or pick message using edit"])
+    if ([obj.strMenuName containsString:@"Write or pick message using edit"])
         cell.txtFiled.text=@"";
     else
-        cell.txtFiled.text=obj.strMenuName;
+        cell.txtFiled.text=[NSString emoticonizedString:obj.strMenuName];
     
     cell.txtFiled.tag=400+section;
     cell.txtFiled.delegate=self;
@@ -275,10 +267,23 @@
         cell.indexPath=indexPath;
         
         [cell.msg_btn addTarget:self action:@selector(btnChangeMenuText:) forControlEvents:UIControlEventTouchUpInside];
-        [cell.picklist_btn addTarget:self action:@selector(btnPickFromList:) forControlEvents:UIControlEventTouchUpInside];
-        [cell.changecolor_btn addTarget:self action:@selector(btnChangeMenuCOlor:) forControlEvents:UIControlEventTouchUpInside];
-        [cell.adddelsubmenu_btn addTarget:self action:@selector(btnAddDelSubMenu:) forControlEvents:UIControlEventTouchUpInside];
+        if (obj.isShowSaveBtn)
+            [cell.msg_btn setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
         
+        else
+            [cell.msg_btn setTitleColor:[UIColor colorWithRed:45/255.0f green:45/255.0f blue:45/255.0f alpha:1] forState:UIControlStateNormal];
+        
+        [cell.picklist_btn addTarget:self action:@selector(btnPickFromList:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.picklist_btn setTitleColor:[UIColor colorWithRed:45/255.0f green:45/255.0f blue:45/255.0f alpha:1] forState:UIControlStateNormal];
+        [cell.picklist_btn setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
+        
+        [cell.changecolor_btn addTarget:self action:@selector(btnChangeMenuCOlor:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.changecolor_btn setTitleColor:[UIColor colorWithRed:45/255.0f green:45/255.0f blue:45/255.0f alpha:1] forState:UIControlStateNormal];
+        [cell.changecolor_btn setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
+        
+        [cell.adddelsubmenu_btn addTarget:self action:@selector(btnAddDelSubMenu:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.adddelsubmenu_btn setTitleColor:[UIColor colorWithRed:45/255.0f green:45/255.0f blue:45/255.0f alpha:1] forState:UIControlStateNormal];
+        [cell.adddelsubmenu_btn setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
         cell.adddelsubmenu_btn.tag=cell.msg_btn.tag=cell.changecolor_btn.tag=cell.picklist_btn.tag=[indexPath section];
         
         
@@ -315,8 +320,18 @@
         }
         cell.btnArrow.hidden=YES;
         
-        NSAttributedString *str = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor whiteColor] }];
-        cell.txtFiled.attributedPlaceholder = str;
+        NSAttributedString *AttrStr;
+        if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+        {
+            cell.txtFiled.textColor = [UIColor grayColor];
+            AttrStr = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithRed:109/255.0f green:109/255.0f blue:109/255.0f alpha:0.7] }];
+        }
+        else
+        {
+            cell.txtFiled.textColor = [UIColor whiteColor];
+            AttrStr = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithRed:255/255.0f green:255/255.0f blue:255/255.0f alpha:0.7] }];
+        }
+        cell.txtFiled.attributedPlaceholder = AttrStr;
         
         [cell.txtFiled setUserInteractionEnabled:YES];
         
@@ -360,8 +375,18 @@
         }
         cell.btnArrow.hidden=YES;
         
-        NSAttributedString *str = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor whiteColor] }];
-        cell.txtFiled.attributedPlaceholder = str;
+        NSAttributedString *AttrStr;
+        if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+        {
+            cell.txtFiled.textColor = [UIColor grayColor];
+           AttrStr = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithRed:109/255.0f green:109/255.0f blue:109/255.0f alpha:0.7] }];
+        }
+        else
+        {
+            cell.txtFiled.textColor = [UIColor whiteColor];
+           AttrStr = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithRed:255/255.0f green:255/255.0f blue:255/255.0f alpha:0.7] }];
+        }
+        cell.txtFiled.attributedPlaceholder = AttrStr;
         
         [cell.txtFiled setUserInteractionEnabled:YES];
         
@@ -402,6 +427,19 @@
         }
         cell.btnArrow.hidden=YES;
         
+        NSAttributedString *AttrStr;
+        if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+        {
+            cell.txtFiled.textColor = [UIColor grayColor];
+            AttrStr = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithRed:109/255.0f green:109/255.0f blue:109/255.0f alpha:0.7] }];
+        }
+        else
+        {
+            cell.txtFiled.textColor = [UIColor whiteColor];
+            AttrStr = [[NSAttributedString alloc] initWithString:@"Enter your message here" attributes:@{ NSForegroundColorAttributeName : [UIColor colorWithRed:255/255.0f green:255/255.0f blue:255/255.0f alpha:0.7] }];
+        }
+        cell.txtFiled.attributedPlaceholder = AttrStr;
+        
         cell.txtFiled.text=@"Enter your message here";
         cell.txtFiled.font=[UIFont boldSystemFontOfSize:16.0f];
         [cell.txtFiled setUserInteractionEnabled:NO];
@@ -431,6 +469,12 @@
             if (cell==nil) {
                 cell=[[[NSBundle mainBundle] loadNibNamed:@"MenuListSelectedTableViewCell" owner:self options:nil] objectAtIndex:0];
             }
+            
+            if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                cell.txtField.textColor = [UIColor grayColor];
+            else
+                cell.txtField.textColor = [UIColor whiteColor];
+            
             [cell.btnClose addTarget:self action:@selector(btnClosePressed:) forControlEvents:UIControlEventTouchUpInside];
             [cell.btnSubMenu addTarget:self action:@selector(btnSubMenuTapped:) forControlEvents:UIControlEventTouchUpInside];
             
@@ -438,12 +482,17 @@
             [cell.btnSave setTag:indexPath.section];
             
             [cell.btnChangeMessage addTarget:self action:@selector(btnChangeSubMenuText:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.btnChangeMessage setTitleColor:[UIColor colorWithRed:45/255.0f green:45/255.0f blue:45/255.0f alpha:1] forState:UIControlStateNormal];
+            [cell.btnChangeMessage setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
+            
             [cell.btnPickFromList addTarget:self action:@selector(btnPickFromListSubMenu:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.btnPickFromList setTitleColor:[UIColor colorWithRed:45/255.0f green:45/255.0f blue:45/255.0f alpha:1] forState:UIControlStateNormal];
+            [cell.btnPickFromList setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
             
             //cell.btnPickFromList.tag=obj.strMenuId
             
             cell.txtField.delegate=self;
-            cell.txtField.text=objSub.strSubMenuName;
+            cell.txtField.text=[NSString emoticonizedString:objSub.strSubMenuName];
             cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
             [cell.txtField setUserInteractionEnabled:NO];
             
@@ -461,7 +510,7 @@
                 cell=[[[NSBundle mainBundle] loadNibNamed:@"MenuListTableViewCell" owner:self options:nil] objectAtIndex:0];
             }
             
-            cell.txtFiled.text=objSub.strSubMenuName;
+            cell.txtFiled.text=[NSString emoticonizedString:objSub.strSubMenuName];
             cell.imgBackground.image=[UIImage imageNamed:obj.strMenuColor];
             [cell.txtFiled setUserInteractionEnabled:NO];
             cell.btnHeader.hidden=NO;
@@ -472,6 +521,11 @@
                 cell.constraintBgImgTopSpace.constant=2.0f;
             }
             cell.btnArrow.hidden=YES;
+            
+            if([[NSUserDefaults standardUserDefaults] boolForKey:@"outLineThemeActive"] || [obj.strMenuColor isEqualToString:@"temp_white.png"])
+                cell.txtFiled.textColor = [UIColor grayColor];
+            else
+                cell.txtFiled.textColor = [UIColor whiteColor];
             
             [cell.btnClose addTarget:self action:@selector(btnClosePressed:) forControlEvents:UIControlEventTouchUpInside];
             
@@ -497,56 +551,6 @@
 }
 
 
-
-#pragma mark
-#pragma mark Helper Method
-#pragma mark
-
--(id)getSuperviewOfType:(id)superview fromView:(id)myView
-{
-    if ([myView isKindOfClass:[superview class]]) {
-        return myView;
-    }
-    else
-    {
-        id temp=[myView superview];
-        while (1) {
-            if ([temp isKindOfClass:[superview class]]) {
-                return temp;
-            }
-            temp=[temp superview];
-        }
-    }
-    return nil;
-}
-
--(void) removeAllSubMenu:(NSString *)strmenuID
-{
-    [DBManager deleteAllSubMenuWithMenuId:strmenuID];
-}
-
--(void) dismissKeyboard:(id)sender
-{
-    [self.view endEditing:YES];
-    isSubMenuEditingEnabled=NO;
-    [tblView setContentOffset:CGPointZero animated:YES];
-}
-
-- (void)keyboardWasShown:(NSNotification *)notification
-{
-    
-    CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
-    
-    //Given size may not account for screen rotation
-    keyboardHeight = MIN(keyboardSize.height,keyboardSize.width);
-}
-
-
--(void) hideAlertView
-{
-    [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
-    [warningAlert dismissWithClickedButtonIndex:0 animated:YES];
-}
 
 #pragma mark
 #pragma mark IBAction
@@ -623,7 +627,7 @@
 
 -(void)btnAddMorePressed:(id)sender
 {
-    warningAlert=[[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Please add first sub-message" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    warningAlert=[[UIAlertView alloc] initWithTitle:nil message:@"Please add first sub-message" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
     [warningAlert show];
     [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:1.0];
     
@@ -638,6 +642,9 @@
 //Add or Del Submenu
 -(void) btnAddDelSubMenu:(id)sender
 {
+    UIButton *buttonAddDel = (UIButton *)sender;
+    buttonAddDel.selected = !buttonAddDel.selected;
+    
     ButtonCell *cell=(ButtonCell*)[self getSuperviewOfType:[ButtonCell class] fromView:sender];
     
     NSIndexPath *indexPath=[tblView indexPathForCell:cell];
@@ -646,7 +653,7 @@
     
     if([DBManager checkSubmenuWithMenuText:obj.strMenuId withTableColoum:@"menuId"])
     {
-        UIAlertView *warning= [[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Do You Want to Delete All Sub Messages of This Menu?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
+        UIAlertView *warning= [[UIAlertView alloc] initWithTitle:nil message:@"Do You Want to Delete All Sub Messages of This Menu?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
         warning.tag=[obj.strMenuId intValue];
         [warning show];
     }
@@ -666,6 +673,9 @@
 //Change Menu Color
 -(void)btnChangeMenuCOlor:(id)sender
 {
+    UIButton *buttonMenuColor = (UIButton *)sender;
+    buttonMenuColor.selected = !buttonMenuColor.selected;
+    
     ModelMenu *obj=[arrDisplay objectAtIndex:[sender tag]];
     ChangeColorView *colorController = [[ChangeColorView alloc] initWithNibName:@"ChangeColorView" bundle:nil];
     colorController.changeIndex = [obj.strMenuId integerValue];
@@ -675,6 +685,8 @@
 //Pick From List for Menu
 -(void)btnPickFromList:(id)sender
 {
+    UIButton *buttonPick = (UIButton *)sender;
+    buttonPick.selected = !buttonPick.selected;
     
     ModelMenu *obj=[arrDisplay objectAtIndex:[sender tag]];
     NSString *menuDetails=[NSString stringWithFormat:@"%@,%@",obj.strMenuId,obj.strMenuName];
@@ -693,6 +705,9 @@
 //Pick From List for SubMenu
 -(void)btnPickFromListSubMenu:(id)sender
 {
+    UIButton *buttonPickSub = (UIButton *)sender;
+    buttonPickSub.selected = !buttonPickSub.selected;
+    
     UITableViewCell *cell=(UITableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
     NSIndexPath *indexPath=[tblView indexPathForCell:cell];
 
@@ -725,6 +740,7 @@
     {
         obj.isShowSaveBtn=YES;
         [tblView reloadData];
+        
     }
 }
 
@@ -736,23 +752,34 @@
     UITextField *menuTextField=(UITextField *)[self.view viewWithTag:400+menuEditingIndexPath.section];
     NSLog(@"MenuID: %@",obj.strMenuId);
     NSLog(@"Updated MenuText: %@",menuTextField.text);
-    [menuTextField setEnabled:NO];
+    
     [menuTextField resignFirstResponder];
     
     if(menuTextField.text.length>0)
+    {
+        [menuTextField setEnabled:NO];
+        
         [DBManager updatemenuWithMenuId:obj.strMenuId withMenuTitle:menuTextField.text];
     
-    menuEditingIndexPath=nil;
-    arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
-    [tblView reloadData];
-    
-    [saveAlert show];
-    [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        menuEditingIndexPath=nil;
+        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+        [tblView reloadData];
+        
+        [saveAlert show];
+        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+    }
+    else
+    {
+        [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+    }
 }
 
 //Change Message for Menu
 -(void)btnChangeSubMenuText:(id)sender
 {
+    UIButton *buttonChangeSubMenu = (UIButton *)sender;
+    buttonChangeSubMenu.selected = !buttonChangeSubMenu.selected;
+    
     UITableViewCell *cell=(UITableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
     NSIndexPath *indexPath=[tblView indexPathForCell:cell];
     
@@ -779,17 +806,26 @@
         NSLog(@"SubMenuID: %@",objSub.strSubMenuId);
         NSLog(@"Updated SubMenu: %@",cell.txtField.text);
         
+        if ([cell.txtField isFirstResponder])
+            [cell.txtField resignFirstResponder];
+        
         if(cell.txtField.text.length>0)
+        {
             [DBManager updatesubnemuWithMenuId:[NSString stringWithFormat:@"%@,%@",obj.strMenuId,objSub.strSubMenuId] withsubmenutitle:cell.txtField.text];
         
         
-        isSubMenuEditingEnabled=NO;
-        menuEditingIndexPath=nil;
-        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
-        [tblView reloadData];
-        
-        [saveAlert show];
-        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+            isSubMenuEditingEnabled=NO;
+            menuEditingIndexPath=nil;
+            arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+            [tblView reloadData];
+            
+            [saveAlert show];
+            [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+        }
     }
     
 }
@@ -799,18 +835,28 @@
     if (lastEditedIndexPath)
     {
         MenuListTableViewCell *cell=(MenuListTableViewCell*)[tblView cellForRowAtIndexPath:lastEditedIndexPath];
-        if ([cell.txtFiled isFirstResponder])
-        {
-            [cell.txtFiled resignFirstResponder];
-        }
-        ModelMenu *obj=[arrDisplay objectAtIndex:lastEditedIndexPath.section];
-        [DBManager addSubMenuWithMenuId:obj.strMenuId withSubMenuText:strTemp];
-        lastEditedIndexPath=nil;
-        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
-        [tblView reloadData];
         
-        [saveAlert show];
-        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        ModelMenu *obj=[arrDisplay objectAtIndex:lastEditedIndexPath.section];
+        
+        if ([cell.txtFiled isFirstResponder])
+            [cell.txtFiled resignFirstResponder];
+        
+        if (cell.txtFiled.text.length>0)
+        {
+            [DBManager addSubMenuWithMenuId:obj.strMenuId withSubMenuText:cell.txtFiled.text];
+            lastEditedIndexPath=nil;
+            arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+            [tblView reloadData];
+            
+            [saveAlert show];
+            [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+        }
+        
+        
     }
 }
 
@@ -839,19 +885,28 @@
             [cell.txtFiled resignFirstResponder];
         }
         ModelMenu *obj=[arrDisplay objectAtIndex:lastEditedIndexPath.section];
-        [DBManager addSubMenuWithMenuId:obj.strMenuId withSubMenuText:strTemp];
-        lastEditedIndexPath=nil;
-        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
-        [tblView reloadData];
         
-        [saveAlert show];
-        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        if (strTemp.length>0)
+        {
+            [DBManager addSubMenuWithMenuId:obj.strMenuId withSubMenuText:strTemp];
+            lastEditedIndexPath=nil;
+            arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+            [tblView reloadData];
+            
+            [saveAlert show];
+            [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+        }
+        
     }
     
     else if(menuEditingIndexPath && isSubMenuEditingEnabled)
     {
         MenuListSelectedTableViewCell *cell = (MenuListSelectedTableViewCell*)[tblView cellForRowAtIndexPath:menuEditingIndexPath];
-
+        
         ModelMenu *obj=[arrDisplay objectAtIndex:menuEditingIndexPath.section];
         ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:menuEditingIndexPath.row-1];
         NSLog(@"MenuID: %@",obj.strMenuId);
@@ -859,18 +914,25 @@
         NSLog(@"Updated SubMenu: %@",cell.txtField.text);
         
         if(cell.txtField.text.length>0)
+        {
             [DBManager updatesubnemuWithMenuId:[NSString stringWithFormat:@"%@,%@",obj.strMenuId,objSub.strSubMenuId] withsubmenutitle:cell.txtField.text];
-        
-        
-        isSubMenuEditingEnabled=NO;
-        menuEditingIndexPath=nil;
-        arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
-        [tblView reloadData];
-        
-        [saveAlert show];
-        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+            
+            
+            isSubMenuEditingEnabled=NO;
+            menuEditingIndexPath=nil;
+            arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
+            [tblView reloadData];
+            
+            [saveAlert show];
+            [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+        }
     }
 }
+
 
 -(IBAction)btnBackPressed:(id)sender
 {
@@ -909,7 +971,7 @@
     {
         /*if (!isButtonSavePressed)
          {
-         [[[UIAlertView alloc] initWithTitle:@"Warning" message:@"Press Save Button to Save the Message" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+         [[[UIAlertView alloc] initWithTitle:nil message:@"Press Save Button to Save the Message" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
          }*/
     }
     
@@ -935,6 +997,57 @@
         arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
         [tblView reloadData];
     }
+}
+
+
+#pragma mark
+#pragma mark Helper Method
+#pragma mark
+
+-(id)getSuperviewOfType:(id)superview fromView:(id)myView
+{
+    if ([myView isKindOfClass:[superview class]]) {
+        return myView;
+    }
+    else
+    {
+        id temp=[myView superview];
+        while (1) {
+            if ([temp isKindOfClass:[superview class]]) {
+                return temp;
+            }
+            temp=[temp superview];
+        }
+    }
+    return nil;
+}
+
+-(void) removeAllSubMenu:(NSString *)strmenuID
+{
+    [DBManager deleteAllSubMenuWithMenuId:strmenuID];
+}
+
+-(void) dismissKeyboard:(id)sender
+{
+    [self.view endEditing:YES];
+    isSubMenuEditingEnabled=NO;
+    [tblView setContentOffset:CGPointZero animated:YES];
+}
+
+- (void)keyboardWasShown:(NSNotification *)notification
+{
+    
+    CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+    
+    //Given size may not account for screen rotation
+    keyboardHeight = MIN(keyboardSize.height,keyboardSize.width);
+}
+
+
+-(void) hideAlertView
+{
+    [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
+    [warningAlert dismissWithClickedButtonIndex:0 animated:YES];
 }
 
 @end

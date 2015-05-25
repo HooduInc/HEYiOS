@@ -7,18 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "iCarousel.h"
+#import "PagedFlowView.h"
+
 @class AppDelegate;
-@interface ThemeViewController : UIViewController<iCarouselDataSource, iCarouselDelegate>
+@interface ThemeViewController : UIViewController<PagedFlowViewDelegate,PagedFlowViewDataSource>
 {
     AppDelegate *appDel;
+    
 }
 
 @property (strong, nonatomic) IBOutlet UIPageControl *pageControl;
-
-@property (strong, nonatomic) IBOutlet iCarousel *carousel;
+@property (strong, nonatomic) IBOutlet PagedFlowView *carousel;
 @property (strong, nonatomic) IBOutlet UILabel *label;
-@property (strong, nonatomic) IBOutlet UIButton *selectThemeButton;
 @property (nonatomic) BOOL wrap;
 
 @property (strong, nonatomic) UIView *generatedView;

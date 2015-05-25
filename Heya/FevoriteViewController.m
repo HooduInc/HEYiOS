@@ -18,8 +18,8 @@
     NSIndexPath *selectedIndexPath;
     BOOL cellEditingStatus, cellDeleteStatus;
     UIAlertView *saveAlert;
-    NSMutableArray *multipleContactNoArray;
-    
+    NSMutableArray *multipleContactNoArray, *arrDisplay;
+
     UIImage *contactImageFromAddressBook;
 }
 
@@ -51,7 +51,10 @@ NSString *urlString;
     HUD = [[MBProgressHUD alloc] initWithView:self.view];
     
     alphabetArray = [[NSMutableArray alloc]initWithObjects:@"1",@"2",@"3", nil];
-    saveAlert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    saveAlert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
+    
+    [self setEditing:YES animated:YES];// 3
+    [fevoriteList_table setEditing:YES animated:YES];
     
 }
 
@@ -62,27 +65,23 @@ NSString *urlString;
     
     [fevoriteList_table setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
     
-    
+    [self fetchAndRefresh];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
         
         //Mostly Coding Part
         [self.view addSubview:HUD];
         [HUD show:YES];
-        self.arrContactsData = [DBManager fetchFavorite];
+        
+        [self fetchAndRefresh];
         
         dispatch_async(dispatch_get_main_queue(), ^{ // 2
             
             //Mostly UI Updates
-            [self setEditing:YES animated:YES];// 3
-            [fevoriteList_table setEditing:YES animated:YES];
             [fevoriteList_table reloadData];
             [HUD hide:YES];
             [HUD removeFromSuperview];
         });
     });
-        
-    
-    
 }
 
 - (void)didReceiveMemoryWarning
@@ -238,33 +237,54 @@ NSString *urlString;
 #pragma mark - Tableview Delegate
 #pragma mark
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    if (self.arrContactsData)
-    {
-        NSLog(@"No of rows: %ld", (long)self.arrContactsData.count);
-        return self.arrContactsData.count;
-    }
-    else
-        return 0;
-}
-
 
 -(NSInteger) numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 1;
+    NSInteger count=0;
+    if (arrDisplay && arrDisplay.count>0)
+    {
+        count = arrDisplay.count;
+    }
+    return count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    NSInteger count=0;
+    if (arrDisplay && arrDisplay.count>0) {
+        count=[(NSMutableArray*)[arrDisplay objectAtIndex:section] count];
+    }
+    return count;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    return 0.0f;
+    return 20.0f;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    UILabel *titleLabel=[[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 0.0f)];
-    titleLabel.text=@"Top 5";
-    return titleLabel;
+    UIView* bg = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [self tableView:tableView heightForHeaderInSection:section]-5)];
+    bg.backgroundColor = [UIColor whiteColor];
+    
+    UILabel *titleLabel=[[UILabel alloc] initWithFrame:CGRectMake(8, 2, self.view.frame.size.width, 15.0f)];
+    titleLabel.font=[UIFont boldSystemFontOfSize:14.0f];
+    titleLabel.textColor=[UIColor colorWithRed:114/255.0f green:114/255.0f blue:114/255.0f alpha:1];
+    titleLabel.textAlignment=NSTextAlignmentLeft;
+    
+    if (section==0)
+         titleLabel.text=@"Top 5";
+    
+    else
+    {
+        long prefix=5*section;
+        long suffix=5*(section+1);
+        titleLabel.text=[NSString stringWithFormat:@"%ld-%ld",prefix,suffix];
+    }
+    
+    [bg addSubview:titleLabel];
+    
+    return bg;
 }
 
 
@@ -273,7 +293,6 @@ NSString *urlString;
     return 55.0f;
     
 }
-
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -293,12 +312,12 @@ NSString *urlString;
     
     
     ModelFevorite *favObj = [[ModelFevorite alloc] init];
-    favObj=[self.arrContactsData objectAtIndex:indexPath.row];
+    //favObj=[self.arrContactsData objectAtIndex:indexPath.row];
+    favObj=[[arrDisplay objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
     
     cell.itemText = [NSString stringWithFormat:@"%@ %@", favObj.strFirstName,favObj.strLastName];
     cell.nameLabelText.tag=[favObj.strFevoriteId intValue];
     cell.nameLabelText.delegate=self;
-    
     
     if([favObj.strProfileImage isEqualToString:@"man_icon.png"])
     {
@@ -397,8 +416,8 @@ NSString *urlString;
 - (void)buttonDeleteActionForItemText:(id)sender
 {
     FevretTableViewCell *cell=(FevretTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
-    NSIndexPath *indexPath=[fevoriteList_table indexPathForCell:cell];
-    selectedIndexPath=indexPath;
+    //NSIndexPath *indexPath=[fevoriteList_table indexPathForCell:cell];
+    //selectedIndexPath=indexPath;
     
     cellEditingStatus=NO;
     cellDeleteStatus=YES;
@@ -408,11 +427,7 @@ NSString *urlString;
     BOOL isDeleted=[DBManager deleteFavoriteDetailsWithFavoriteId:[NSString stringWithFormat:@"%ld",(long)cell.nameLabelText.tag]];
     
     if(isDeleted)
-    {
-        self.arrContactsData= [DBManager fetchFavorite];
-        [fevoriteList_table reloadData];
-    }
-    
+        [self fetchAndRefresh];
 }
 
 #pragma mark
@@ -439,9 +454,6 @@ NSString *urlString;
     if (self.arrContactsData.count>0)
     {
         RearrangeFevoriteViewController *rearrangeController=[[RearrangeFevoriteViewController alloc] initWithNibName:@"RearrangeFevoriteViewController" bundle:nil];
-    
-        rearrangeController.fevoriteArray=self.arrContactsData;
-    
         [self.navigationController pushViewController:rearrangeController animated:YES];
     }
 }
@@ -465,16 +477,16 @@ NSString *urlString;
                 cellDeleteStatus=YES;
                 selectedIndexPath=nil;
                 
-                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
                 self.saveBtn.hidden=YES;
                 
-                self.arrContactsData= [DBManager fetchFavorite];
-                [fevoriteList_table reloadData];
+                [self fetchAndRefresh];
+
             }
             else
             {
-                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Something went wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Something went wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                 [alert show];
             }
 
@@ -511,20 +523,11 @@ NSString *urlString;
     if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"])
     {
         NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
+        [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
         
-        if(![DBManager checkMobileNumExistsinFavoriteTable:[alertView buttonTitleAtIndex:buttonIndex]])
-        {
-            [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
-        
-            [self.view addSubview:HUD];
-            [HUD show:YES];
-            [self insertFavorite];
-        }
-        else
-        {
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
-        }
+        [self.view addSubview:HUD];
+        [HUD show:YES];
+        [self insertFavorite];
     }
 }
 
@@ -556,6 +559,48 @@ NSString *urlString;
     [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
 }
 
+-(void) fetchAndRefresh
+{
+    arrDisplay=[NSMutableArray array];
+    self.arrContactsData=[NSMutableArray array];
+    self.arrContactsData = [DBManager fetchFavorite];
+     NSLog(@"No of Elements: %ld",(long)self.arrContactsData.count);
+    [self updateSortedArray:^(BOOL finished) {
+        NSLog(@"Sections in arrDisplay: %ld",(long)arrDisplay.count);
+        NSLog(@"ArrDisplay Contents: %@",arrDisplay);
+        [fevoriteList_table reloadData];
+    }];
+}
+
+-(void)updateSortedArray:(void(^)(BOOL finished))myBlock
+{
+    if (self.arrContactsData.count>0)
+    {
+        int j=0;
+        BOOL flag=NO;
+        NSMutableArray *arrTemp=[NSMutableArray array];
+        for (int i=0; i<self.arrContactsData.count; i++)
+        {
+            [arrTemp addObject:self.arrContactsData[i]];
+            if (arrTemp.count==5)
+            {
+                flag=YES;
+                [arrDisplay insertObject:[NSMutableArray arrayWithArray:(NSArray*)arrTemp] atIndex:j++];
+                arrTemp=nil;
+                arrTemp=[NSMutableArray array];
+            }
+            else{
+                flag=NO;
+                continue;
+            }
+        }
+        if (!flag) {
+            [arrDisplay insertObject:arrTemp atIndex:j];
+        }
+    }
+    myBlock(YES);
+}
+
 -(void) insertFavorite
 {
     if (contactImageFromAddressBook)
@@ -582,21 +627,32 @@ NSString *urlString;
                  favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
                  favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
                  
-                 NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
-                 [favInsertArray addObject:favObj];
+                 if(![DBManager checkMobileNumExistsinFavoriteTable:favObj.strMobNumber])
+                 {
+                     NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
+                     [favInsertArray addObject:favObj];
+                     
+                     //insert to database
+                     [DBManager insertToFavoriteTable:favInsertArray];
+                     
+                     [HUD hide:YES];
+                     [HUD removeFromSuperview];
+                     contactImageFromAddressBook=nil;
+                     
+                     [self fetchAndRefresh];
+
+                     [saveAlert show];
+                     [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+                 }
+                 else
+                 {
+                     [HUD hide:YES];
+                     [HUD removeFromSuperview];
+                     UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                     [alert show];
+                 }
                  
-                 self.arrContactsData = [[NSMutableArray alloc] init];
-                 self.arrContactsData = [DBManager insertToFavoriteTable:favInsertArray];
                  
-                 [HUD hide:YES];
-                 [HUD removeFromSuperview];
-                 contactImageFromAddressBook=nil;
-                 
-                 [saveAlert show];
-                 [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
-                 
-                 // Reload the table view data.
-                 [fevoriteList_table reloadData];
              }
          }];
     }
@@ -609,20 +665,30 @@ NSString *urlString;
         favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
         favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
         
-        NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
-        [favInsertArray addObject:favObj];
-        
-        self.arrContactsData = [[NSMutableArray alloc] init];
-        self.arrContactsData = [DBManager insertToFavoriteTable:favInsertArray];
-        
-        [HUD hide:YES];
-        [HUD removeFromSuperview];
-        
-        [saveAlert show];
-        [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
-        
-        // Reload the table view data.
-        [fevoriteList_table reloadData];
+        if(![DBManager checkMobileNumExistsinFavoriteTable:favObj.strMobNumber])
+        {
+            NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
+            [favInsertArray addObject:favObj];
+            
+            //insert to database
+            [DBManager insertToFavoriteTable:favInsertArray];
+            
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+            contactImageFromAddressBook=nil;
+            
+            [self fetchAndRefresh];
+            
+            [saveAlert show];
+            [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+        }
+        else
+        {
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
+        }
     }
 }
 

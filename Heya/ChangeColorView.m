@@ -37,7 +37,7 @@ long int seletRow;
     
     standardArray= [NSArray arrayWithObjects:@"menu_btn1.png", @"menu_btn2.png",@"menu_btn4.png", @"menu_btn5.png" ,@"menu_btn6.png",@"menu_btn7.png", @"menu_btn8.png" , @"menu_btn9.png", @"menu_btn9.png", nil];
     
-    oneColorArray=[NSArray arrayWithObjects:@"red1.png", @"red2.png",@"red3.png", @"red4.png" ,@"red5.png",@"red6.png", @"red7.png" , @"red7.png", nil];
+    oneColorArray=[NSArray arrayWithObjects:@"red1.png", @"red1.png",@"red1.png", @"red1.png" ,@"red1.png",@"red1.png", @"red1.png" , @"red1.png",@"red1.png", nil];
     
     outLineArray=[NSArray arrayWithObjects:@"bar_1.png", @"bar_2.png",@"bar_3.png", @"bar_4.png" ,@"bar_5.png",@"bar_6.png", @"bar_7.png" , @"bar_8.png", @"bar_8.png", nil];
     
@@ -103,7 +103,7 @@ long int seletRow;
     
     seletRow=indexPath.row;
     
-    UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:@"Warning!" message:@"Are you sure you want to update the color?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
+    UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Are you sure you want to update the color?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
     
     [confirmDialog show];
 }

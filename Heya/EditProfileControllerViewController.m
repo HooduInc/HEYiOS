@@ -16,13 +16,14 @@
 @interface EditProfileControllerViewController ()<UITextFieldDelegate>
 {
     MBProgressHUD *HUD;
+    CGFloat animatedDistance;
+    IBOutlet UIView *innerView;
     IBOutlet UIImageView *profileImageView;
     IBOutlet UITextField *name;
     IBOutlet UITextField *phone;
     NSString *profileImageString, *strUDID;
     BOOL imageChangeFlag,isReachable;
     NSUserDefaults *pref;
-    NSMutableArray *userProfile;
 }
 
 
@@ -41,11 +42,13 @@
     pref=[NSUserDefaults standardUserDefaults];
     profileImageView.layer.cornerRadius = profileImageView.frame.size.width / 2;
     profileImageView.clipsToBounds = YES;
+    profileImageView.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
+    profileImageView.layer.borderWidth=1.0f;
 }
 
 -(void) viewWillAppear:(BOOL)animated
 {
-    userProfile=[[NSMutableArray alloc] init];
+    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
     userProfile=[DBManager fetchUserProfile];
     
     if(userProfile.count>0)
@@ -114,7 +117,7 @@
     [name resignFirstResponder];
     [phone resignFirstResponder];
     
-    NSLog(@"NAME: %@",name.text);
+    //NSLog(@"NAME: %@",name.text);
     
     if ([name.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] .length>0 && [phone.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
     {
@@ -151,7 +154,7 @@
         
         if (isUpdated)
         {
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Success!" message:@"Updated successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Updated successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
             [alert show];
         
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
@@ -174,32 +177,79 @@
             {
                 [self.view addSubview:HUD];
                 [HUD show:YES];
+
+                NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                userProfile=[DBManager fetchUserProfile];
+                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
                 
-                NSString *createFullName=[NSString stringWithFormat:@"%@ %@",userObj.strFirstName,userObj.strLastName];
+                NSString *createFullName=[NSString stringWithFormat:@"%@ %@",modObj.strFirstName,modObj.strLastName];
                 
-                [[HeyWebService service] updateProfileWithUDID:[strUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[createFullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[userObj.strPhoneNo stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                 {
-                     
-                     [HUD hide:YES];
-                     [HUD removeFromSuperview];
-                     if (isError)
-                         NSLog(@"Updation Error Message: %@",strMsg);
-                     
-                     else
+                NSString *accountCreationDateStr=@"";
+                NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                {
+                    [formatter setDateFormat:@"yyyy-MM-dd"];
+                    NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
+                    [formatter setDateFormat:@"dd-MM-yyyy"];
+                    accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
+                }
+                
+                NSLog(@"isSendToServer Status: %d",modObj.isSendToServer);
+                if (modObj.isSendToServer==0)
+                {
+                    [[HeyWebService service] registerWithUDID:[strUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[createFullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[modObj.strPhoneNo stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                      {
-                         NSLog(@"Updation Success Message: %@",strMsg);
-                         [DBManager updatedToServerForUserWithFlag:1];
-                         [self.navigationController popViewControllerAnimated:YES];
-                     }
-                     
-                 }];
+                         [HUD hide:YES];
+                         [HUD removeFromSuperview];
+                         if (isError)
+                             NSLog(@"Resigartion Error Message: %@",strMsg);
+                         
+                         else
+                         {   [DBManager updatedToServerForUserWithFlag:1];
+                             NSLog(@"Resigartion Success Message: %@",strMsg);
+                             [self.navigationController popViewControllerAnimated:YES];
+                         }
+                         
+                     }];
+                    
+                }
+                else
+                {
+                    [[HeyWebService service] updateProfileWithUDID:[strUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[createFullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[userObj.strPhoneNo stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                     {
+                         
+                         [HUD hide:YES];
+                         [HUD removeFromSuperview];
+                         if (isError)
+                             NSLog(@"Updation Error Message: %@",strMsg);
+                         
+                         else
+                         {
+                             NSLog(@"Updation Success Message: %@",strMsg);
+                             [DBManager updatedToServerForUserWithFlag:1];
+                             [self.navigationController popViewControllerAnimated:YES];
+                         }
+                         
+                     }];
+                
+                }
             }
+            else
+            {
+                NSLog(@"Internet Connection is not available.");
+                [self.navigationController popViewControllerAnimated:YES];
+            }
+        }
+        else
+        {
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Something wrong. Please try again." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
         }
     }
     
     else
     {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:@"Error!" message:@"Please provide your name and contact number." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Please provide your name and contact number." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alert show];
     }
 }
@@ -236,19 +286,83 @@
 #pragma mark UITexField Delegate Methods
 #pragma mark
 
+static const CGFloat KEYBOARD_ANIMATION_DURATION =0.3;
+static const CGFloat MINIMUM_SCROLL_FRACTION = 0.2;
+static const CGFloat MAXIMUM_SCROLL_FRACTION = 0.8;
+static const CGFloat PORTRAIT_KEYBOARD_HEIGHT = 180;
+static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 140;
+
 -(BOOL) textFieldShouldReturn:(UITextField *)textField
 {
     [textField resignFirstResponder];
     return YES;
 }
 
-
 -(void) textFieldDidBeginEditing:(UITextField *)textField
-{}
+{
+    if (isIphone4 || isIphone5)
+    {
+        if (textField==phone)
+        {
+            CGRect textFieldRect = [innerView.window convertRect:textField.bounds fromView:textField];
+            CGRect viewRect = [innerView.window convertRect:innerView.bounds fromView:innerView];
+            CGFloat midline = textFieldRect.origin.y + textFieldRect.size.height-80;
+            CGFloat numerator = midline - viewRect.origin.y - MINIMUM_SCROLL_FRACTION * viewRect.size.height;
+            CGFloat denominator = (MAXIMUM_SCROLL_FRACTION - MINIMUM_SCROLL_FRACTION) * viewRect.size.height;
+            CGFloat heightFraction = numerator / denominator;
+            if (heightFraction < 0.0)
+            {
+                heightFraction = 0.0;
+            }
+            else if (heightFraction > 1.0)
+            {
+                heightFraction = 1.0;
+            }
+            UIInterfaceOrientation orientation =
+            [[UIApplication sharedApplication] statusBarOrientation];
+            if (orientation == UIInterfaceOrientationPortrait || orientation == UIInterfaceOrientationPortraitUpsideDown)
+            {
+                animatedDistance = floor(PORTRAIT_KEYBOARD_HEIGHT * heightFraction);
+            }
+            else
+            {
+                animatedDistance = floor(LANDSCAPE_KEYBOARD_HEIGHT * heightFraction);
+            }
+            CGRect viewFrame = innerView.frame;
+            viewFrame.origin.y -= animatedDistance;
+            [UIView beginAnimations:nil context:NULL];
+            [UIView setAnimationBeginsFromCurrentState:YES];
+            [UIView setAnimationDuration:KEYBOARD_ANIMATION_DURATION];
+            [innerView setFrame:viewFrame];
+            [UIView commitAnimations];
+        }
+    }
+}
 
 -(void) textFieldDidEndEditing:(UITextField *)textField
-{}
+{
+    if (isIphone4 || isIphone5)
+    {
+        if (textField==phone)
+        {
+            [self endAnimation];
+            [textField resignFirstResponder];
+        }
+    }
+    
+}
 
+
+-(void) endAnimation
+{
+    CGRect viewFrame = innerView.frame;
+    viewFrame.origin.y += animatedDistance;
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    [UIView setAnimationDuration:KEYBOARD_ANIMATION_DURATION];
+    [innerView setFrame:viewFrame];
+    [UIView commitAnimations];
+}
 
 
 
@@ -311,6 +425,6 @@
 
 -(void)showNetworkErrorMessage
 {
-    [[[UIAlertView alloc] initWithTitle:@"Error" message:kNetworkErrorMessage delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] show];
+    [[[UIAlertView alloc] initWithTitle:nil message:kNetworkErrorMessage delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] show];
 }
 @end

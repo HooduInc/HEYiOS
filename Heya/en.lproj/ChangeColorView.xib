@@ -19,8 +19,8 @@
                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="top_barbg.png" translatesAutoresizingMaskIntoConstraints="NO" id="dZV-ap-CKQ">
                     <rect key="frame" x="0.0" y="0.0" width="320" height="83"/>
                 </imageView>
-                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="hey_text.png" translatesAutoresizingMaskIntoConstraints="NO" id="E2l-qd-P03">
-                    <rect key="frame" x="140" y="37" width="40" height="37"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="heyText" translatesAutoresizingMaskIntoConstraints="NO" id="E2l-qd-P03">
+                    <rect key="frame" x="138" y="29" width="45" height="45"/>
                 </imageView>
                 <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fJb-Q2-nag">
                     <rect key="frame" x="268" y="27" width="46" height="30"/>
@@ -59,7 +59,7 @@
     </objects>
     <resources>
         <image name="back_btn.png" width="57" height="20"/>
-        <image name="hey_text.png" width="40" height="37"/>
+        <image name="heyText" width="45" height="45"/>
         <image name="top_barbg.png" width="320" height="83"/>
     </resources>
 </document>

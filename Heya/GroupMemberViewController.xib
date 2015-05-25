@@ -9,11 +9,13 @@
             <connections>
                 <outlet property="addBtnLabel" destination="Xlb-l8-Qqe" id="Y0M-HH-XGr"/>
                 <outlet property="addNewGroupMemberLabel" destination="KgY-t5-dNh" id="ztM-HK-a21"/>
+                <outlet property="displayGroupImageView" destination="xrI-6O-Exd" id="NU8-Lp-rxh"/>
                 <outlet property="editGroupButtonLabel" destination="xBR-sc-N2Q" id="EtR-zw-112"/>
                 <outlet property="groupHelpLabel" destination="8bl-QB-gSL" id="Tq9-X6-MFd"/>
                 <outlet property="groupMemberTableView" destination="heT-4P-b7q" id="XLu-Fs-ybj"/>
                 <outlet property="groupNameTextField" destination="eCg-Z6-mJa" id="AF8-Pc-hMg"/>
                 <outlet property="groupSwipeTextLabel" destination="Zzd-Bv-4eM" id="Y8Y-OQ-loA"/>
+                <outlet property="groupView" destination="dM1-bB-etf" id="o15-fR-wsU"/>
                 <outlet property="resignEditGroupButtonLabel" destination="B7j-qG-geW" id="x7b-Ci-1o7"/>
                 <outlet property="saveBtn" destination="Upt-Mt-7NE" id="QVG-xL-YJg"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="PIi-D9-CSZ"/>
@@ -45,7 +47,12 @@
                     <rect key="frame" x="0.0" y="171" width="320" height="60"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
-                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="man_group.png" id="xrI-6O-Exd">
+                        <view hidden="YES" contentMode="scaleToFill" id="dM1-bB-etf">
+                            <rect key="frame" x="20" y="10" width="40" height="40"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        </view>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="man_group.png" id="xrI-6O-Exd" userLabel="ManGroupImageView">
                             <rect key="frame" x="20" y="10" width="40" height="40"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         </imageView>
@@ -61,7 +68,7 @@
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="xBR-sc-N2Q" userLabel="EditGroup">
                             <rect key="frame" x="286" y="16" width="30" height="28"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            <state key="normal" backgroundImage="group_name_edit.png">
+                            <state key="normal" backgroundImage="ic_edit_icon.png">
                                 <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </state>
                             <connections>
@@ -71,7 +78,7 @@
                         <button hidden="YES" opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="B7j-qG-geW" userLabel="ResignEditGroup">
                             <rect key="frame" x="286" y="16" width="30" height="28"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            <state key="normal" backgroundImage="group_name_edit.png">
+                            <state key="normal" backgroundImage="ic_edit_icon.png">
                                 <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </state>
                             <connections>
@@ -86,10 +93,17 @@
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <string key="text">There are no members added to this group yet. Tap above to add a member. Only persons in your contact database with phones can be added. Tap on the edit icon to rename group.</string>
                     <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
-                    <color key="textColor" red="0.52941176470588236" green="0.52941176470588236" blue="0.52941176470588236" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <color key="textColor" red="0.47843137250000001" green="0.47843137250000001" blue="0.47843137250000001" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" alwaysBounceVertical="YES" style="plain" separatorStyle="none" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="heT-4P-b7q">
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Swipe a name to delete a group member." lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zzd-Bv-4eM">
+                    <rect key="frame" x="43" y="151" width="234" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                    <color key="textColor" red="0.47843137250000001" green="0.47843137250000001" blue="0.47843137250000001" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" alwaysBounceVertical="YES" style="plain" separatorStyle="none" rowHeight="55" sectionHeaderHeight="22" sectionFooterHeight="22" id="heT-4P-b7q">
                     <rect key="frame" x="0.0" y="230" width="320" height="349"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -105,8 +119,8 @@
                     <rect key="frame" x="0.0" y="0.0" width="320" height="83"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                 </imageView>
-                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hey_text.png" id="0Yc-k9-t51">
-                    <rect key="frame" x="140" y="37" width="40" height="37"/>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="heyText" id="0Yc-k9-t51">
+                    <rect key="frame" x="138" y="29" width="45" height="45"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 </imageView>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="cew-hw-feR" userLabel="BackButton">
@@ -132,21 +146,14 @@
                         <action selector="saveButtonTapped:" destination="-1" eventType="touchUpInside" id="OYm-nc-5WL"/>
                     </connections>
                 </button>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Swipe a name to delete a group member." lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zzd-Bv-4eM">
-                    <rect key="frame" x="43" y="151" width="234" height="18"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="12"/>
-                    <color key="textColor" red="0.4392156862745098" green="0.4392156862745098" blue="0.4392156862745098" alpha="1" colorSpace="calibratedRGB"/>
-                    <nil key="highlightedColor"/>
-                </label>
             </subviews>
-            <color key="backgroundColor" red="0.87058830261230469" green="0.87058830261230469" blue="0.87058830261230469" alpha="1" colorSpace="deviceRGB"/>
+            <color key="backgroundColor" red="0.87450980392156863" green="0.87450980392156863" blue="0.87450980392156863" alpha="1" colorSpace="deviceRGB"/>
         </view>
     </objects>
     <resources>
         <image name="back_btn.png" width="57" height="20"/>
-        <image name="group_name_edit.png" width="30" height="27"/>
-        <image name="hey_text.png" width="40" height="37"/>
+        <image name="heyText" width="45" height="45"/>
+        <image name="ic_edit_icon.png" width="70" height="68"/>
         <image name="man_group.png" width="50" height="50"/>
         <image name="pic_plus_icon.png" width="50" height="50"/>
         <image name="top_barbg.png" width="320" height="83"/>

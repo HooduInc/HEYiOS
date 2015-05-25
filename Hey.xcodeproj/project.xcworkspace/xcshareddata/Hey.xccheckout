@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>C26A34EB-B0FF-484A-B7D4-ED545A10412E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Hey</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>14E27C645861A4C70E59BDCD2A2F5D5740F99510</key>
+		<string>https://bitbucket.org/KShee/hey.git</string>
+		<key>4f4a49d3-4cae-e741-bd16-730ce53323eb++4830</key>
+		<string>https://115.113.151.198:4142/svn/mobile/iphone/iProject/One2One/One2One04April/One2One/Utilities/JSON</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Hey.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>14E27C645861A4C70E59BDCD2A2F5D5740F99510</key>
+		<string>../..</string>
+		<key>4f4a49d3-4cae-e741-bd16-730ce53323eb++4830</key>
+		<string>../..Heya/Utilities/JSON</string>
+	</dict>
+	<key>IDESourceControlProjectRepositoryRootDictionary</key>
+	<dict>
+		<key>4f4a49d3-4cae-e741-bd16-730ce53323eb++4830</key>
+		<string>https://115.113.151.198:4142/svn/mobile</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://bitbucket.org/KShee/hey.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>14E27C645861A4C70E59BDCD2A2F5D5740F99510</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>14E27C645861A4C70E59BDCD2A2F5D5740F99510</string>
+			<key>IDESourceControlWCCName</key>
+			<string>2015_05_13</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>4f4a49d3-4cae-e741-bd16-730ce53323eb++4830</string>
+			<key>IDESourceControlWCCName</key>
+			<string>JSON</string>
+		</dict>
+	</array>
+</dict>
+</plist>
