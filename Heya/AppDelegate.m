@@ -11,6 +11,9 @@
 #import "SplashViewController.h"
 #import "DBManager.h"
 
+#import <StoreKit/StoreKit.h>
+#import "ModelInAppPurchase.h"
+
 
 
 @implementation AppDelegate
@@ -58,8 +61,44 @@ NSUserDefaults *preferances;
     
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+    
+    //Transaction Observer if User lost network connection
+    [ModelInAppPurchase sharedInstance];
+    
+    
+    
+    if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]){
+        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+        [[UIApplication sharedApplication] registerForRemoteNotifications];
+    }
+    else{
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+         (UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert)];
+    }
+    
     return YES;
 }
+
+
+- (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken
+{
+    NSLog(@"My token is: %@", deviceToken);
+    
+    NSString *token = [[deviceToken description] stringByTrimmingCharactersInSet: [NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+    pushDeviceTokenId = [token stringByReplacingOccurrencesOfString:@" " withString:@""];
+    NSLog(@"content---%@", pushDeviceTokenId);
+    
+    
+    /*My token is: <70818242 975445b9 7eb911f9 e5bf6327 ab817c60 e10606d9 0ae418c1 d3857fc5>
+     2015-06-10 14:05:56.795 Hey[233:16219] content---70818242975445b97eb911f9e5bf6327ab817c60e10606d90ae418c1d3857fc5*/
+}
+
+- (void)application:(UIApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error
+{
+    NSLog(@"Failed to get token, error: %@", error);
+}
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

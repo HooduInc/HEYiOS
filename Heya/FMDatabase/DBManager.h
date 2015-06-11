@@ -98,6 +98,7 @@
 //UserProfile
 +(BOOL) addProfile:(NSMutableArray*)profileArray;
 +(BOOL) updatedToServerForUserWithFlag:(int)isSendToServer;
++(BOOL) isRegistrationSuccessful:(int)flag;
 +(BOOL) updateProfile:(NSMutableArray*)profileArray;
 + (NSMutableArray*) fetchUserProfile;
 

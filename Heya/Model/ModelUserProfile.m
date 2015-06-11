@@ -24,6 +24,7 @@
         self.strCurrentTimeStamp=@"";
         self.strAccountCreated=@"";
         self.isSendToServer=0;
+        self.isRegistered=0;
     }
     return self;
 }

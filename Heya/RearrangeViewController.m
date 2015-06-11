@@ -113,8 +113,8 @@
                     ModelMenu *obj=[editMainMenuMsgArray objectAtIndex:indexPath.section];
                     cell.cellBgImageView.image = [UIImage imageNamed:obj.strMenuColor];
                     
-                    NSString *emoString=@"\U00002764";
-                    NSString *loveyouString=@"Love You";
+                    //NSString *emoString=@"\U00002764";
+                    //NSString *loveyouString=@"Love You";
                     /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
                     {
                         cell.msgTextField.text=[NSString stringWithFormat:@"%@ %@",obj.strMenuName, emoString];

@@ -11,6 +11,7 @@
 #import "MBProgressHUD.h"
 #import "Reachability.h"
 #import "HeyWebService.h"
+#import "ModelUserProfile.h"
 
 @interface HeyAccountController ()<MBProgressHUDDelegate>
 {
@@ -169,7 +170,11 @@
 //Fetch Profile Details from Sever
 -(void) fetchAccountDetailsFromServerORDatabase
 {
-    NSString *UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    //NSString *UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    
+    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+    userProfile=[DBManager fetchUserProfile];
+    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
     
@@ -193,7 +198,7 @@
         //[self.view addSubview:HUD];
         //[HUD show:YES];
         
-        [[HeyWebService service] fetchAccountDetailsFromServerWithUDID:UDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+        [[HeyWebService service] fetchAccountDetailsFromServerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
         {
             [HUD hide:YES];
             [HUD removeFromSuperview];
@@ -218,8 +223,8 @@
                         [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"yestarday_count"]]];
         
                     
-                    if ([resultDict valueForKey:@"month_count"])
-                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"month_count"]]];
+                    if ([resultDict valueForKey:@"mounth_count"])
+                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"mounth_count"]]];
             
                     
                     if ([resultDict valueForKey:@"year_count"])

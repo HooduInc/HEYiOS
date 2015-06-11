@@ -23,6 +23,7 @@
 #import "ModelUserProfile.h"
 #import "ModelMessageSend.h"
 #import "HeyWebService.h"
+#import <AdSupport/AdSupport.h>
 
 
 @interface MessagesViewController ()<MBProgressHUDDelegate>
@@ -1222,7 +1223,7 @@ unsigned long location;
     
     if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
     {
-        [[[UIAlertView alloc] initWithTitle:nil message:@"Sorry! Camera Not Found." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show];
+        [[[UIAlertView alloc] initWithTitle:nil message:@"Sorry! Camera Not Found." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show];
     }
     else
     {
@@ -1332,7 +1333,14 @@ unsigned long location;
                 HUD.labelText = @"Uploading";
                 [HUD show:YES];
                 
-                [[HeyWebService service] callGenerateImageURL:imageData  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
+                //NSString *strUDID=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
+                //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+                
+                NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                userProfile=[DBManager fetchUserProfile];
+                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+                
+                [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
                     
                     [HUD hide:YES];
                     [HUD removeFromSuperview];
@@ -1364,7 +1372,7 @@ unsigned long location;
     }
     else
     {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Please select a contact to send a message." delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Please select a contact to send a message." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
         [alert show];
         
     }
@@ -1379,10 +1387,10 @@ unsigned long location;
     
     if(finalMessage.length>0)
     {
-        /*
+        
         //FOR TEST
         
-        NSMutableArray *msgArray=[[NSMutableArray alloc] init];
+        /*NSMutableArray *msgArray=[[NSMutableArray alloc] init];
         NSMutableArray *userProfile=[[NSMutableArray alloc] init];
         ModelMessageSend *msgObj=[[ModelMessageSend alloc] init];
         
@@ -1445,27 +1453,117 @@ unsigned long location;
             
             if([self isNetworkAvailable])
             {
-                [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                 {
-                     
-                     if(isError)
+
+                NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                userProfile=[DBManager fetchUserProfile];
+                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+                
+                NSString *accountCreationDateStr=@"";
+                if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                {
+                    NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                    accountCreationDateStr=[NSString stringWithFormat:@"%@",modObj.strAccountCreated];
+                    NSLog(@"Account Creation Date After Formatting: %@",accountCreationDateStr);
+                }
+                
+                NSString *FullName=@"";
+                if (modObj.strFirstName && modObj.strFirstName.length>0)
+                {
+                    FullName=[NSString stringWithFormat:@"%@",modObj.strFirstName];
+                }
+                if (modObj.strLastName && modObj.strLastName.length>0)
+                {
+                    FullName=[NSString stringWithFormat:@"%@ %@",FullName, modObj.strLastName];
+                }
+                NSString *ContactNumber=@"";
+                if (modObj.strPhoneNo && modObj.strPhoneNo.length>0)
+                {
+                    ContactNumber=[NSString stringWithFormat:@"%@",modObj.strPhoneNo];
+                }
+                
+                NSDate *today=[NSDate date];
+                NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                [formatter setDateFormat:@"dd-MM-yyyy"];
+                NSString *timeStamp = [formatter stringFromDate:today];
+                
+                NSLog(@"isRegistered Status: %d",modObj.isRegistered);
+                if (modObj.isRegistered==0)
+                {
+                    [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[FullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[ContactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                      {
-                         NSLog(@"Error: %@",strMsg);
-                     }
-                     else
-                     {
-                         NSLog(@"Success: %@",strMsg);
+                         if (isError)
+                         {
+                             NSLog(@"Resigartion Error Message: %@",strMsg);
+                             
+                             if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                             {
+                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                                 
+                                 [showDialog show];
+                                 
+                                 [DBManager updatedToServerForUserWithFlag:1];
+                                 [DBManager isRegistrationSuccessful:1];
+                                 
+                             }
+                         }
                          
-                         [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%lld",msgInsertId]];
-                     }
-                 }];
+                         else
+                         {   [DBManager updatedToServerForUserWithFlag:1];
+                             [DBManager isRegistrationSuccessful:1];
+                             NSLog(@"Resigartion Success Message: %@",strMsg);
+                             
+                             if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                             {
+                                 [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                  {
+                                      NSLog(@"Push Message: %@",strMsg);
+                                  }];
+                             }
+                             
+                             [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                              {
+                                  
+                                  if(isError)
+                                  {
+                                      NSLog(@"Error: %@",strMsg);
+                                  }
+                                  else
+                                  {
+                                      NSLog(@"Success: %@",strMsg);
+                                      
+                                      [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%lld",msgInsertId]];
+                                  }
+                              }];
+                         }
+                         
+                     }];
+                    
+                }
+                else
+                {
+
+                    [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                     {
+                         
+                         if(isError)
+                         {
+                             NSLog(@"Error: %@",strMsg);
+                         }
+                         else
+                         {
+                             NSLog(@"Success: %@",strMsg);
+                             
+                             [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%lld",msgInsertId]];
+                         }
+                     }];
+                }
             }
             
         }
         else
-            NSLog(@"MessageDetails not inserted.");
+            NSLog(@"MessageDetails not inserted.");*/
         
-        //FOR TEST*/
+        //FOR TEST
         
         if([MFMessageComposeViewController canSendText])
         {
@@ -1533,11 +1631,6 @@ unsigned long location;
             {
                 NSLog(@"MessageDetails inserted.");
                 
-                [format setDateFormat:@"yyyy-MM-dd"];
-                NSDate *fecthDate=[format dateFromString:msgObj.strSendDate];
-                [format setDateFormat:@"dd-MM-yyyy"];
-                NSString *strTimeStamp = [format stringFromDate:fecthDate];
-                
                 
                 [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
                 
@@ -1558,18 +1651,111 @@ unsigned long location;
                 
                 if([self isNetworkAvailable])
                 {
-                    [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         
-                         if(isError)
+                    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                    userProfile=[DBManager fetchUserProfile];
+                    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+                    
+                    NSString *accountCreationDateStr=@"";
+                    if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                    {
+                        NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                        accountCreationDateStr=[NSString stringWithFormat:@"%@",modObj.strAccountCreated];
+                        NSLog(@"Account Creation Date After Formatting: %@",accountCreationDateStr);
+                        
+                    }
+                    
+                    NSString *FullName=@"";
+                    if (modObj.strFirstName && modObj.strFirstName.length>0)
+                    {
+                        FullName=[NSString stringWithFormat:@"%@",modObj.strFirstName];
+                    }
+                    if (modObj.strLastName && modObj.strLastName.length>0)
+                    {
+                        FullName=[NSString stringWithFormat:@"%@ %@",FullName, modObj.strLastName];
+                    }
+                    NSString *ContactNumber=@"";
+                    if (modObj.strPhoneNo && modObj.strPhoneNo.length>0)
+                    {
+                        ContactNumber=[NSString stringWithFormat:@"%@",modObj.strPhoneNo];
+                    }
+                    
+                    NSDate *today=[NSDate date];
+                    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                    [formatter setDateFormat:@"dd-MM-yyyy"];
+                    NSString *timeStamp = [formatter stringFromDate:today];
+                    
+                    NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
+                    if (modObj.isRegistered==0)
+                    {
+                        [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[FullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[ContactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                          {
-                             NSLog(@"Error: %@",strMsg);
-                         }
-                         else
+                             if (isError)
+                             {
+                                 NSLog(@"Resigartion Error Message: %@",strMsg);
+                                 if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                                 {
+                                     UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                                     
+                                     [showDialog show];
+                                     
+                                     [DBManager updatedToServerForUserWithFlag:1];
+                                     [DBManager isRegistrationSuccessful:1];
+                                     
+                                 }
+                             }
+                             
+                             else
+                             {   [DBManager updatedToServerForUserWithFlag:1];
+                                 [DBManager isRegistrationSuccessful:1];
+                                 
+                                 
+                                 if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                                 {
+                                     [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                      {
+                                          NSLog(@"Push Message: %@",strMsg);
+                                      }];
+                                 }
+                                 
+                                 
+                                 NSLog(@"Resigartion Success Message: %@",strMsg);
+                                 [[HeyWebService service] sendMessageDetailsToServerWithUDID:[msgObj.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:timeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                  {
+                                      
+                                      if(isError)
+                                      {
+                                          NSLog(@"Error: %@",strMsg);
+                                      }
+                                      else
+                                      {
+                                          NSLog(@"Success: %@",strMsg);
+                                      }
+                                  }];
+                             }
+                             
+                         }];
+                        
+                    }
+                    else
+                    {
+                        NSDate *today=[NSDate date];
+                        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                        [formatter setDateFormat:@"dd-MM-yyyy"];
+                        NSString *strTimeStamp = [formatter stringFromDate:today];
+                        
+                        [[HeyWebService service] sendMessageDetailsToServerWithUDID:[msgObj.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]   TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                          {
-                             NSLog(@"Success: %@",strMsg);
-                         }
-                     }];
+                             
+                             if(isError)
+                             {
+                                 NSLog(@"Error: %@",strMsg);
+                             }
+                             else
+                             {
+                                 NSLog(@"Success: %@",strMsg);
+                             }
+                         }];
+                    }
                 }
                 
             }
@@ -1629,8 +1815,16 @@ unsigned long location;
             HUD.delegate = self;
             HUD.labelText = @"Uploading";
             [HUD show:YES];
+
+            //NSString *strUDID=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
             
-            [[HeyWebService service] callGenerateImageURL:imageData  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
+            NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+            userProfile=[DBManager fetchUserProfile];
+            ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+            
+            //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+            
+            [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
                 
                 [HUD hide:YES];
                 [HUD removeFromSuperview];
@@ -1675,7 +1869,7 @@ unsigned long location;
     }
     else
     {
-        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:nil message:@"Your device has no WhatsApp installed." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:nil message:@"Your device has no WhatsApp installed." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
     }
 }
@@ -1912,7 +2106,7 @@ unsigned long location;
 
 -(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"])
+    if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"] || ![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"])
     {
         NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
         [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];

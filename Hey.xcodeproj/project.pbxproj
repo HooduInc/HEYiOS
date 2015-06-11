@@ -59,7 +59,6 @@
 		39AD3A3519E80C8900A32054 /* HeyaTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 39AD3A3419E80C8900A32054 /* HeyaTests.m */; };
 		39AFADB71A08D670004DF43F /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39AFADB61A08D670004DF43F /* MessageUI.framework */; };
 		39AFADB91A08D685004DF43F /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39AFADB81A08D684004DF43F /* Accounts.framework */; };
-		39AFADBB1A08D690004DF43F /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39AFADBA1A08D690004DF43F /* Twitter.framework */; };
 		39AFADBD1A08D6A2004DF43F /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39AFADBC1A08D6A2004DF43F /* MobileCoreServices.framework */; };
 		39AFADBF1A08D6BB004DF43F /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39AFADBE1A08D6BB004DF43F /* CFNetwork.framework */; };
 		39AFADC11A08D6D0004DF43F /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39AFADC01A08D6D0004DF43F /* SystemConfiguration.framework */; };
@@ -153,6 +152,11 @@
 		9F1FB9311A88F50700BAEDD9 /* libz.1.1.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F1FB92E1A88F50700BAEDD9 /* libz.1.1.3.dylib */; };
 		9F1FB9321A88F50700BAEDD9 /* libz.1.2.5.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F1FB92F1A88F50700BAEDD9 /* libz.1.2.5.dylib */; };
 		9F1FB9331A88F50700BAEDD9 /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F1FB9301A88F50700BAEDD9 /* libz.1.dylib */; };
+		9F2813B51B28199200DEE3BB /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F2813B41B28199200DEE3BB /* StoreKit.framework */; };
+		9F2813B71B281A9800DEE3BB /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F2813B61B281A9800DEE3BB /* AdSupport.framework */; };
+		9F2813BD1B281C5200DEE3BB /* InAppPurchaseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F2813BC1B281C5200DEE3BB /* InAppPurchaseHelper.m */; };
+		9F2813C01B281CA800DEE3BB /* ModelInAppPurchase.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F2813BF1B281CA800DEE3BB /* ModelInAppPurchase.m */; };
+		9F2813C21B28419E00DEE3BB /* dollar_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F2813C11B28419E00DEE3BB /* dollar_icon.png */; };
 		9F3734BB1A5BF2FB00CB4F42 /* red1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F3734B41A5BF2FB00CB4F42 /* red1.png */; };
 		9F3734CB1A5BF34F00CB4F42 /* temp_blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F3734C31A5BF34F00CB4F42 /* temp_blue.png */; };
 		9F3734CC1A5BF34F00CB4F42 /* temp_green.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F3734C41A5BF34F00CB4F42 /* temp_green.png */; };
@@ -363,7 +367,6 @@
 		39AD3A3419E80C8900A32054 /* HeyaTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HeyaTests.m; sourceTree = "<group>"; };
 		39AFADB61A08D670004DF43F /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		39AFADB81A08D684004DF43F /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
-		39AFADBA1A08D690004DF43F /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		39AFADBC1A08D6A2004DF43F /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		39AFADBE1A08D6BB004DF43F /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		39AFADC01A08D6D0004DF43F /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -482,6 +485,13 @@
 		9F1FB92E1A88F50700BAEDD9 /* libz.1.1.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.1.3.dylib; path = usr/lib/libz.1.1.3.dylib; sourceTree = SDKROOT; };
 		9F1FB92F1A88F50700BAEDD9 /* libz.1.2.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.5.dylib; path = usr/lib/libz.1.2.5.dylib; sourceTree = SDKROOT; };
 		9F1FB9301A88F50700BAEDD9 /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = usr/lib/libz.1.dylib; sourceTree = SDKROOT; };
+		9F2813B41B28199200DEE3BB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		9F2813B61B281A9800DEE3BB /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		9F2813BB1B281C5200DEE3BB /* InAppPurchaseHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InAppPurchaseHelper.h; sourceTree = "<group>"; };
+		9F2813BC1B281C5200DEE3BB /* InAppPurchaseHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InAppPurchaseHelper.m; sourceTree = "<group>"; };
+		9F2813BE1B281CA800DEE3BB /* ModelInAppPurchase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelInAppPurchase.h; sourceTree = "<group>"; };
+		9F2813BF1B281CA800DEE3BB /* ModelInAppPurchase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelInAppPurchase.m; sourceTree = "<group>"; };
+		9F2813C11B28419E00DEE3BB /* dollar_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dollar_icon.png; sourceTree = "<group>"; };
 		9F3734B41A5BF2FB00CB4F42 /* red1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red1.png; sourceTree = "<group>"; };
 		9F3734C31A5BF34F00CB4F42 /* temp_blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = temp_blue.png; sourceTree = "<group>"; };
 		9F3734C41A5BF34F00CB4F42 /* temp_green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = temp_green.png; sourceTree = "<group>"; };
@@ -659,20 +669,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				39AFADC11A08D6D0004DF43F /* SystemConfiguration.framework in Frameworks */,
 				9F1FB9311A88F50700BAEDD9 /* libz.1.1.3.dylib in Frameworks */,
 				9F1FB9321A88F50700BAEDD9 /* libz.1.2.5.dylib in Frameworks */,
 				9F1FB9331A88F50700BAEDD9 /* libz.1.dylib in Frameworks */,
 				9F1FB92D1A88F4FB00BAEDD9 /* libz.dylib in Frameworks */,
+				39BB28591A11F61400065641 /* libsqlite3.dylib in Frameworks */,
+				9F2813B71B281A9800DEE3BB /* AdSupport.framework in Frameworks */,
+				9F2813B51B28199200DEE3BB /* StoreKit.framework in Frameworks */,
+				39AFADC11A08D6D0004DF43F /* SystemConfiguration.framework in Frameworks */,
 				39AFADB71A08D670004DF43F /* MessageUI.framework in Frameworks */,
 				9FC544FE1A5700210046074B /* QuartzCore.framework in Frameworks */,
 				9F9AB9631A52842B005734E2 /* AssetsLibrary.framework in Frameworks */,
 				9F768A791A4D6A0C007D8CC5 /* AddressBookUI.framework in Frameworks */,
 				9F768A771A4D69F9007D8CC5 /* AddressBook.framework in Frameworks */,
-				39BB28591A11F61400065641 /* libsqlite3.dylib in Frameworks */,
 				39AFADBF1A08D6BB004DF43F /* CFNetwork.framework in Frameworks */,
 				39AFADBD1A08D6A2004DF43F /* MobileCoreServices.framework in Frameworks */,
-				39AFADBB1A08D690004DF43F /* Twitter.framework in Frameworks */,
 				39AFADB91A08D685004DF43F /* Accounts.framework in Frameworks */,
 				39AD3A1219E80C8800A32054 /* CoreGraphics.framework in Frameworks */,
 				39AD3A1419E80C8800A32054 /* UIKit.framework in Frameworks */,
@@ -783,6 +794,8 @@
 				9F1FB9301A88F50700BAEDD9 /* libz.1.dylib */,
 				9F1FB92C1A88F4FB00BAEDD9 /* libz.dylib */,
 				39BB28581A11F61400065641 /* libsqlite3.dylib */,
+				9F2813B61B281A9800DEE3BB /* AdSupport.framework */,
+				9F2813B41B28199200DEE3BB /* StoreKit.framework */,
 				9FC544FD1A5700210046074B /* QuartzCore.framework */,
 				9F9AB9621A52842B005734E2 /* AssetsLibrary.framework */,
 				9F768A781A4D6A0C007D8CC5 /* AddressBookUI.framework */,
@@ -790,7 +803,6 @@
 				39AFADC01A08D6D0004DF43F /* SystemConfiguration.framework */,
 				39AFADBE1A08D6BB004DF43F /* CFNetwork.framework */,
 				39AFADBC1A08D6A2004DF43F /* MobileCoreServices.framework */,
-				39AFADBA1A08D690004DF43F /* Twitter.framework */,
 				39AFADB81A08D684004DF43F /* Accounts.framework */,
 				39AFADB61A08D670004DF43F /* MessageUI.framework */,
 				39AD3A0F19E80C8800A32054 /* Foundation.framework */,
@@ -808,6 +820,7 @@
 				9FD4B36C1ADFCA310033564F /* WebService */,
 				39BB283D1A11E92F00065641 /* Database */,
 				9F8EAFDB1A8C7F0C00CE173B /* Model */,
+				9F2813BA1B281C5200DEE3BB /* InAppPurchaseHelper */,
 				9F8EAFC21A8C7EFB00CE173B /* CustomFonts */,
 				9F8EAFCD1A8C7EFB00CE173B /* iCarousel */,
 				9F8EAFA81A8C7E2400CE173B /* ImageRendering */,
@@ -1104,6 +1117,15 @@
 			name = SplashScreen;
 			sourceTree = "<group>";
 		};
+		9F2813BA1B281C5200DEE3BB /* InAppPurchaseHelper */ = {
+			isa = PBXGroup;
+			children = (
+				9F2813BB1B281C5200DEE3BB /* InAppPurchaseHelper.h */,
+				9F2813BC1B281C5200DEE3BB /* InAppPurchaseHelper.m */,
+			);
+			path = InAppPurchaseHelper;
+			sourceTree = "<group>";
+		};
 		9F3734B31A5BF2FB00CB4F42 /* OneColorTheme */ = {
 			isa = PBXGroup;
 			children = (
@@ -1285,6 +1307,8 @@
 				9F6FF0D41ACD555E00D07EDD /* ModelGroupMembers.m */,
 				9F54A8731AF76791000F1A90 /* ModelMessageSend.h */,
 				9F54A8741AF76791000F1A90 /* ModelMessageSend.m */,
+				9F2813BE1B281CA800DEE3BB /* ModelInAppPurchase.h */,
+				9F2813BF1B281CA800DEE3BB /* ModelInAppPurchase.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -1347,6 +1371,7 @@
 				9FBA0D9F1B05D7A7000908A2 /* my_hey_icon@3x.png */,
 				9FD96AFB1A5A6F8E0059C28A /* social_setting_icon.png */,
 				9F70EA421ADBE2A90004F875 /* hey_share_icon_over2.png */,
+				9F2813C11B28419E00DEE3BB /* dollar_icon.png */,
 				9F98E9F71AB1D59400986205 /* phone_icon.png */,
 				9FD96AFC1A5A6F8E0059C28A /* emoticon_set_icon.png */,
 				9F617A8A1A7F897D0088AA45 /* ic_right_icon.png */,
@@ -1416,7 +1441,7 @@
 				ORGANIZATIONNAME = "Palash Das";
 				TargetAttributes = {
 					39AD3A0B19E80C8800A32054 = {
-						DevelopmentTeam = CH3P9TJQC8;
+						DevelopmentTeam = V832NBX5Y5;
 					};
 					39AD3A2619E80C8900A32054 = {
 						TestTargetID = 39AD3A0B19E80C8800A32054;
@@ -1466,6 +1491,7 @@
 				9FBA0DA91B060812000908A2 /* edit_groups_icon.png in Resources */,
 				39B77CD119F10455007FC081 /* amber_pic@2x.png in Resources */,
 				9FF90FD31ACECA2F00346048 /* RearrangeGroupViewController.xib in Resources */,
+				9F2813C21B28419E00DEE3BB /* dollar_icon.png in Resources */,
 				9F70EA431ADBE2A90004F875 /* hey_share_icon_over2.png in Resources */,
 				39BC1AE019EBE3A700FC40B1 /* edit_icon@2x.png in Resources */,
 				39BC1AE219EBE3A700FC40B1 /* meni_icon1@2x.png in Resources */,
@@ -1653,6 +1679,7 @@
 				39BBC2611A09FF1E001E5D36 /* SBJsonBase.m in Sources */,
 				39C213471A136AAF002537CF /* FevoriteViewController.m in Sources */,
 				9F38EA291B03830C000EA5ED /* TermsServiceViewController.m in Sources */,
+				9F2813BD1B281C5200DEE3BB /* InAppPurchaseHelper.m in Sources */,
 				9FFA0C701AC161ED00453319 /* ModelFevorite.m in Sources */,
 				9FEE5C631AEE17FC00ADE682 /* Pick4mListViewController.m in Sources */,
 				9FC544BF1A56E6230046074B /* ThemeViewController.m in Sources */,
@@ -1702,6 +1729,7 @@
 				9F5599751A7A722400F4B9AE /* SocialSettingsController.m in Sources */,
 				9FF90FD21ACECA2F00346048 /* RearrangeGroupViewController.m in Sources */,
 				9F98E9F41AB1AFD800986205 /* ModelUserProfile.m in Sources */,
+				9F2813C01B281CA800DEE3BB /* ModelInAppPurchase.m in Sources */,
 				9F60AE411A9DD06800BDC472 /* ModelPickListMenu.m in Sources */,
 				39BA7E471A10CEB80083CD50 /* ButtonCell.m in Sources */,
 				9F6FF0D51ACD555E00D07EDD /* ModelGroupMembers.m in Sources */,
@@ -1784,8 +1812,8 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -1803,7 +1831,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				ONLY_ACTIVE_ARCH = YES;
-				PROVISIONING_PROFILE = "df5263af-28d3-49b2-a3bb-4a3e271a6c36";
+				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -1824,8 +1852,8 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1836,7 +1864,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
-				PROVISIONING_PROFILE = "df5263af-28d3-49b2-a3bb-4a3e271a6c36";
+				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1847,13 +1875,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Heya/Hey-Prefix.pch";
 				INFOPLIST_FILE = "Heya/Hey-Info.plist";
 				PRODUCT_NAME = Hey;
-				PROVISIONING_PROFILE = "df5263af-28d3-49b2-a3bb-4a3e271a6c36";
+				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1863,13 +1895,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Heya/Hey-Prefix.pch";
 				INFOPLIST_FILE = "Heya/Hey-Info.plist";
 				PRODUCT_NAME = Hey;
-				PROVISIONING_PROFILE = "df5263af-28d3-49b2-a3bb-4a3e271a6c36";
+				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -1878,7 +1914,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Heya.app/Heya";
-				CODE_SIGN_IDENTITY = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -1892,7 +1928,7 @@
 				);
 				INFOPLIST_FILE = "HeyaTests/HeyTests-Info.plist";
 				PRODUCT_NAME = HeyTests;
-				PROVISIONING_PROFILE = "df5263af-28d3-49b2-a3bb-4a3e271a6c36";
+				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1902,7 +1938,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Heya.app/Heya";
-				CODE_SIGN_IDENTITY = "iPhone Developer: Isabelle Thornton (35K8QN3W45)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -1912,7 +1948,7 @@
 				GCC_PREFIX_HEADER = "Heya/Heya-Prefix.pch";
 				INFOPLIST_FILE = "HeyaTests/HeyTests-Info.plist";
 				PRODUCT_NAME = HeyTests;
-				PROVISIONING_PROFILE = "df5263af-28d3-49b2-a3bb-4a3e271a6c36";
+				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
 			};

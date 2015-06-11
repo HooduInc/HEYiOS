@@ -12,6 +12,7 @@
 #import "MBProgressHUD.h"
 #import "ModelUserProfile.h"
 #import "HeyWebService.h"
+#import <AdSupport/AdSupport.h>
 
 @interface CreateProfileController ()<UIAlertViewDelegate>
 {
@@ -20,7 +21,7 @@
     NSUserDefaults *pref;
     NSMutableDictionary *contactInfoDict;
     NSString *urlString, *contactNumString;
-    NSString *UDID, *fullName, *contactNumber;
+    NSString *fullName, *contactNumber;
     
     BOOL isReachable;
     NSData *profileImageData;
@@ -221,10 +222,12 @@
         
         //NSLog(@"IMageString: %@",[profileImageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength]);
         
-        #warning “Change Random No to Device UDID!!!!!”
+        //#warning “Change Random No to Device UDID!!!!!”
         //long long int rand_phone = (arc4random() % 900000000000000) + 100000000000000;
-        //UDID=[NSString stringWithFormat:@"%ld",(long)rand_phone];
-        UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        //NSString *UDID=[NSString stringWithFormat:@"%ld",(long)rand_phone];
+        //UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        
+        //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
         
         NSMutableArray *arrayUser=[[NSMutableArray alloc] init];
         ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
@@ -265,7 +268,7 @@
             
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
             
-            NSString *remoteHostName =HostTwo;
+            NSString *remoteHostName =HeyBaseURL;
             
             self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
             [self.hostReachability startNotifier];
@@ -292,25 +295,46 @@
                 NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
                 if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
                 {
-                    [formatter setDateFormat:@"yyyy-MM-dd"];
+                    //[formatter setDateFormat:@"yyyy-MM-dd"];
                     NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
                     [formatter setDateFormat:@"dd-MM-yyyy"];
                     accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
                 }
                 
-                NSLog(@"isSendToServer Status: %d",modObj.isSendToServer);
-                if (modObj.isSendToServer==0)
+                NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
+                if (modObj.isRegistered==0)
                 {
-                    [[HeyWebService service] registerWithUDID:[UDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                    [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                      {
                          [HUD hide:YES];
                          [HUD removeFromSuperview];
                          if (isError)
+                         {
                              NSLog(@"Resigartion Error Message: %@",strMsg);
+                             if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                             {
+                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"ALready Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                                 
+                                 [showDialog show];
+                                 
+                                 [DBManager updatedToServerForUserWithFlag:1];
+                                 [DBManager isRegistrationSuccessful:1];
+                                 
+                             }
+                         }
                          
                          else
                          {   [DBManager updatedToServerForUserWithFlag:1];
+                             [DBManager isRegistrationSuccessful:1];
                              NSLog(@"Resigartion Success Message: %@",strMsg);
+                             
+                             if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                             {
+                                 [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                  {
+                                      NSLog(@"Push Message: %@",strMsg);
+                                  }];
+                             }
                              [self.navigationController popViewControllerAnimated:YES];
                          }
                          
@@ -319,7 +343,7 @@
                 }
                 else
                 {
-                    [[HeyWebService service] updateProfileWithUDID:[UDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                    [[HeyWebService service] updateProfileWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                      {
                          
                          [HUD hide:YES];

@@ -15,7 +15,9 @@ typedef void(^WebServiceCompletionHandler)(id result,BOOL isError,NSString *strM
 
 @property(strong,nonatomic) NSString *strImageURL;
 @property(strong,nonatomic) NSString *strRegisterURL;
+@property(strong,nonatomic) NSString *strRegistrationPushNotificationURL;
 @property(strong,nonatomic) NSString *strProfileUpdateURL;
 @property(strong,nonatomic) NSString *strSendMsgURL;
+@property(strong,nonatomic) NSString *strSendMsgPushNotificationURLURL;
 @property(strong,nonatomic) NSString *strFetchAccountDetailsURL;
 @end

@@ -2607,7 +2607,55 @@
             }
             else
             {
-                NSLog(@"error while inserting profile....");
+                NSLog(@"error while updating profile....");
+            }
+            
+            sqlite3_close(database);
+        }
+    }
+    
+    return isUpdated;
+}
+
++(BOOL) isRegistrationSuccessful:(int)flag
+{
+    BOOL isUpdated=NO;
+    
+    FMDatabase *database=[DBManager getDatabase];
+    if(database)
+    {
+        sqlite3 *database;
+        NSString *dbpath = [DBManager getDBPath];
+        const char* dbPath=[dbpath UTF8String];
+        
+        
+        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        {
+            NSString *stm = [NSString stringWithFormat:@"UPDATE userProfile Set isRegistrationSuccessful =%d",flag];
+            
+            NSLog(@"Profile isRegistrationSuccessful Querystring: %@", stm);
+            const char *sqlQuerry= [stm UTF8String];
+            sqlite3_stmt *querryStatement;
+            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            {
+                NSLog(@"UserProfile Updated....");
+                isUpdated=YES;
+                
+                bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                
+                if(!executeQueryResults)
+                {
+                    NSAssert1(0, @"Error while updating. '%s'", sqlite3_errmsg(database));
+                }
+                //sqlite3_reset(querryStatement);
+                
+                if (sqlite3_finalize(querryStatement) != SQLITE_OK)
+                    NSLog(@"SQL Error: %s",sqlite3_errmsg(database));
+                
+            }
+            else
+            {
+                NSLog(@"error while updating profile....");
             }
             
             sqlite3_close(database);
@@ -2653,6 +2701,7 @@
                     userObj.strAccountCreated=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text (querryStatement, 8)];
                     
                     userObj.isSendToServer=sqlite3_column_int(querryStatement, 9);
+                    userObj.isRegistered=sqlite3_column_int(querryStatement, 10);
                     
                     [arr addObject:userObj];
                     

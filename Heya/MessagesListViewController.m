@@ -14,6 +14,7 @@
 #import "ModelMenu.h"
 #import "ModelSubMenu.h"
 #import "ModelMessageSend.h"
+#import "ModelUserProfile.h"
 #import "MenuListTableViewCell.h"
 #import "Reachability.h"
 #import "HeyWebService.h"
@@ -691,32 +692,136 @@ NSUserDefaults *preferances;
         
         if([self isNetworkAvailable])
         {
-            for (ModelMessageSend *objSend in unSyncArray)
+            
+            NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+            userProfile=[DBManager fetchUserProfile];
+            ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+            
+            NSLog(@"Device UDID: %@",modObj.strDeviceUDID);
+            
+            NSString *accountCreationDateStr=@"";
+            if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
             {
-                NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                [format setDateFormat:@"yyyy-MM-dd HH:mm:zz"];
-                NSDate *fecthDate=[format dateFromString:objSend.strSendDate];
-                [format setDateFormat:@"dd-MM-yyyy"];
-                NSString *strTimeStamp = [format stringFromDate:fecthDate];
+                NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                accountCreationDateStr=[NSString stringWithFormat:@"%@",modObj.strAccountCreated];
+                NSLog(@"Account Creation Date After Formatting: %@",accountCreationDateStr);
                 
-                NSLog(@"Send TimeStamp: %@",strTimeStamp);
-                
-                
-                [[HeyWebService service] sendMessageDetailsToServerWithUDID:objSend.strDeviceId  TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                 {
-                     
-                     if(isError)
-                     {
-                         NSLog(@"Error: %@",strMsg);
-                     }
-                     else
-                     {
-                         NSLog(@"Success: %@",strMsg);
-                         
-                         [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
-                     }
-                 }];
             }
+            NSString *FullName=@"";
+            if (modObj.strFirstName && modObj.strFirstName.length>0)
+            {
+                FullName=[NSString stringWithFormat:@"%@",modObj.strFirstName];
+            }
+            if (modObj.strLastName && modObj.strLastName.length>0)
+            {
+                FullName=[NSString stringWithFormat:@"%@ %@",FullName, modObj.strLastName];
+            }
+            NSString *ContactNumber=@"";
+            if (modObj.strPhoneNo && modObj.strPhoneNo.length>0)
+            {
+                ContactNumber=[NSString stringWithFormat:@"%@",modObj.strPhoneNo];
+            }
+            
+            
+            NSDate *today=[NSDate date];
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            [formatter setDateFormat:@"dd-MM-yyyy"];
+            NSString *timeStamp = [formatter stringFromDate:today];
+            
+            NSLog(@"timeStamp: %@",timeStamp);
+            
+            NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
+            if (modObj.isRegistered==0)
+            {
+                [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[FullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[ContactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                 {
+                     if (isError)
+                     {
+                         NSLog(@"Resigartion Error Message: %@",strMsg);
+                         
+                         if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                         {
+                             UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                             
+                             [showDialog show];
+                             
+                             [DBManager updatedToServerForUserWithFlag:1];
+                             [DBManager isRegistrationSuccessful:1];
+                             
+                         }
+                     }
+                     
+                     else
+                     {   [DBManager updatedToServerForUserWithFlag:1];
+                         [DBManager isRegistrationSuccessful:1];
+                         
+                         if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                         {
+                             [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                              {
+                                  NSLog(@"Push Message: %@",strMsg);
+                              }];
+                         }
+                         
+                         
+                         NSLog(@"Resigartion Success Message: %@",strMsg);
+                         for (ModelMessageSend *objSend in unSyncArray)
+                         {
+                             NSString *strTimeStamp=@"";
+                             if (objSend.strSendDate && objSend.strSendDate.length>0)
+                             {
+                                 strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
+                                 NSLog(@"Message Send Timestamp: %@",strTimeStamp);
+                                 
+                             }
+                             
+                             [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]   TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                              {
+                                  if(isError)
+                                  {
+                                      NSLog(@"Error: %@",strMsg);
+                                  }
+                                  else
+                                  {
+                                      NSLog(@"Success: %@",strMsg);
+                                      
+                                      [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
+                                  }
+                              }];
+                         }
+                     }
+                     
+                 }];
+                
+            }
+            else
+            {
+                for (ModelMessageSend *objSend in unSyncArray)
+                {
+                    NSString *strTimeStamp=@"";
+                    if (objSend.strSendDate && objSend.strSendDate.length>0)
+                    {
+                        strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
+                        NSLog(@"Message Send Timestamp: %@",strTimeStamp);
+                        
+                    }
+                    
+                    [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                     {
+                         if(isError)
+                         {
+                             NSLog(@"Error: %@",strMsg);
+                         }
+                         else
+                         {
+                             NSLog(@"Success: %@",strMsg);
+                             
+                             [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
+                         }
+                     }];
+                }
+            }
+
         }
     }
 }

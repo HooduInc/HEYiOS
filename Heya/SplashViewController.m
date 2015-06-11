@@ -13,6 +13,7 @@
 #import "DBManager.h"
 #import "ModelUserProfile.h"
 #import "HeyWebService.h"
+#import <AdSupport/AdSupport.h>
 
 @interface SplashViewController ()<HorizontalScrollerDelegate>
 {
@@ -258,7 +259,11 @@
 
 -(void)registerDevice
 {
-    NSString *UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    //NSString *UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+    
+    //NSLog(@"UDID: %@", UDID);
+    NSLog(@"ADvertisingUDID: %@",advertisingUDID);
     
     NSMutableArray *arrayUser=[[NSMutableArray alloc] init];
     ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
@@ -266,7 +271,7 @@
     userObj.strLastName=@"";
     userObj.strHeyName=@"";
     userObj.strPhoneNo=@"";
-    userObj.strDeviceUDID=UDID;
+    userObj.strDeviceUDID=advertisingUDID;
     userObj.strProfileImage=@"";
     
     NSDate *today=[NSDate date];
@@ -293,7 +298,7 @@
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
         
-        NSString *remoteHostName =HostTwo;
+        NSString *remoteHostName =HeyBaseURL;
         
         self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
         [self.hostReachability startNotifier];
@@ -309,14 +314,37 @@
         
         if([self isNetworkAvailable])
         {
-            [[HeyWebService service] registerWithUDID:[UDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:@"" ContactNumber:@"" TimeStamp:timeStamp AccountCreated:accountCreated WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+            [[HeyWebService service] registerWithUDID:[advertisingUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:@"" ContactNumber:@"" TimeStamp:timeStamp AccountCreated:accountCreated WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
              {
                  if (isError)
+                 {
                      NSLog(@"Resigartion Error Message: %@",strMsg);
+                     
+                     if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                     {
+                         UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                         
+                         [showDialog show];
+                         
+                         [DBManager updatedToServerForUserWithFlag:1];
+                         [DBManager isRegistrationSuccessful:1];
+                         
+                     }
+                 }
                  
                  else
                  {   [DBManager updatedToServerForUserWithFlag:1];
-                     NSLog(@"Resigartion Success Message: %@",strMsg);
+                     [DBManager isRegistrationSuccessful:1];
+                     
+                     if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                     {
+                         [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[advertisingUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                          {
+                              NSLog(@"Push Message: %@",strMsg);
+                          }];
+                     }
+                     
+                     
                  }
                  
              }];

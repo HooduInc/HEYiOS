@@ -13,9 +13,9 @@
 #ifdef __OBJC__
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
+    #import<StoreKit/StoreKit.h>
     #import "DBManager.h"
 #endif
-
 
 
 #define  isIphone4  (fabs((double)[[ UIScreen mainScreen ] bounds].size.height - (double)480) < DBL_EPSILON)
@@ -29,12 +29,12 @@
 
 #define kNetworkErrorMessage @"Network is not availbale.Please try again Later."
 
-#define HostOne @"api.edhubs.com/lo"
-#define HostTwo @"qa.campusclouds.com/hey"
-#define HeyBaseURL @"https://qa.campusclouds.com/hey/"
+//#define HostOne @"hey.sulavmart.com/hey/"
+//#define HeyBaseURL @"http://hey.sulavmart.com/hey/"
+
+#define HostOne @"52.6.95.175/index.php"
+#define HeyBaseURL @"http://52.6.95.175/index.php"
 
 NSString * messageHolderString;
 BOOL addPhoneClicked;
-
-
-NSString *conatctNoFetchFromContactList, *strSelectContact;
+NSString *conatctNoFetchFromContactList, *strSelectContact, *pushDeviceTokenId;

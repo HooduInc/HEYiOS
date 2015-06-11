@@ -19,4 +19,5 @@
 @property(strong,nonatomic) NSString *strCurrentTimeStamp;
 @property(strong,nonatomic) NSString *strAccountCreated;
 @property(assign,nonatomic) int isSendToServer;
+@property(assign,nonatomic) int isRegistered;
 @end
