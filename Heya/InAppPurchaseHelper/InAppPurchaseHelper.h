@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 UIKIT_EXTERN NSString *const IAPHelperProductPurchasedNotification;
+UIKIT_EXTERN NSString *const kSubscriptionExpirationDateKey;
 
 typedef void (^RequestProductsCompletionHandler)(BOOL success, NSArray * products);
 
@@ -19,5 +20,12 @@ typedef void (^RequestProductsCompletionHandler)(BOOL success, NSArray * product
 
 - (void)buyProduct:(SKProduct *)product;
 - (BOOL)productPurchased:(NSString *)productIdentifier;
+
+
+//Non-Renewing Subscriptions
+//- (int)daysRemainingOnSubscription;
+//- (NSString *)getExpirationDateString;
+//- (NSDate *)getExpirationDateForMonths:(int)months;
+//- (void)purchaseSubscriptionWithMonths:(int)months;
 
 @end

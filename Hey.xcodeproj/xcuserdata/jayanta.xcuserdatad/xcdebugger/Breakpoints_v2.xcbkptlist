@@ -20,11 +20,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Heya/MessagesViewController.m"
-            timestampString = "455631876.478225"
+            timestampString = "455804320.409455"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1174"
-            endingLineNumber = "1174"
+            startingLineNumber = "1176"
+            endingLineNumber = "1176"
             landmarkName = "-addEmoticon:"
             landmarkType = "5">
          </BreakpointContent>
@@ -68,11 +68,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Heya/MessagesViewController.m"
-            timestampString = "455637646.612284"
+            timestampString = "455804320.409455"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "2070"
-            endingLineNumber = "2070"
+            startingLineNumber = "2124"
+            endingLineNumber = "2124"
             landmarkName = "-textViewDidChangeSelection:"
             landmarkType = "5">
          </BreakpointContent>
@@ -84,11 +84,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Heya/MessagesViewController.m"
-            timestampString = "455631876.478225"
+            timestampString = "455804320.409455"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1095"
-            endingLineNumber = "1095"
+            startingLineNumber = "1097"
+            endingLineNumber = "1097"
             landmarkName = "-showEMUJ"
             landmarkType = "5">
          </BreakpointContent>
@@ -138,6 +138,86 @@
             startingLineNumber = "222"
             endingLineNumber = "222"
             landmarkName = "-fetchAccountDetailsFromServerORDatabase"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Heya/InAppPurchaseHelper/InAppPurchaseHelper.m"
+            timestampString = "455796025.869831"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "302"
+            endingLineNumber = "302"
+            landmarkName = "@implementation InAppPurchaseHelper"
+            landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Heya/WebService/HeyWebService.m"
+            timestampString = "455785690.719697"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "484"
+            endingLineNumber = "484"
+            landmarkName = "-fetchSubscriptionDateWithUDID:WithCompletionHandler:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Heya/OtherSettingsController.m"
+            timestampString = "455802497.010155"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "236"
+            endingLineNumber = "236"
+            landmarkName = "-reload"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Heya/WebService/HeyWebService.m"
+            timestampString = "455800294.437106"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "518"
+            endingLineNumber = "518"
+            landmarkName = "-createSubscriptionWithUDID:PurchaseTime:PurchaseState:WithCompletionHandler:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Heya/WebService/HeyWebService.m"
+            timestampString = "455800297.019746"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "544"
+            endingLineNumber = "544"
+            landmarkName = "-createSubscriptionWithUDID:PurchaseTime:PurchaseState:WithCompletionHandler:"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

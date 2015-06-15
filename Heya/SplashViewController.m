@@ -13,6 +13,7 @@
 #import "DBManager.h"
 #import "ModelUserProfile.h"
 #import "HeyWebService.h"
+#import "InAppPurchaseHelper.h"
 #import <AdSupport/AdSupport.h>
 
 @interface SplashViewController ()<HorizontalScrollerDelegate>
@@ -329,6 +330,45 @@
                          [DBManager updatedToServerForUserWithFlag:1];
                          [DBManager isRegistrationSuccessful:1];
                          
+                         //store the trail period date or the subscription date in NSUserDefaults
+                         [[HeyWebService service] fetchSubscriptionDateWithUDID:advertisingUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                          {
+                              if (isError)
+                              {
+                                  NSLog(@"Subscription Fetch Failed: %@",strMsg);
+                              }
+                              else
+                              {
+                                  NSDictionary *resultDict=(id)result;
+                                  if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                                  {
+                                      if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                                      {
+                                          NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
+                                          
+                                          NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                                          
+                                          if (serverDateString.length>0)
+                                          {
+                                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                              [format setDateFormat:@"dd-MM-yyyy"];
+                                              NSDate * serverDate =[format dateFromString:serverDateString];
+                                              NSLog(@"Server Date: %@",serverDate);
+                                              if (serverDate)
+                                              {
+                                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                                  [[NSUserDefaults standardUserDefaults] synchronize];
+                                              }
+                                          }
+                                      }
+                                      
+                                      
+                                  }
+                              }
+                              
+                          }];
+                         //store the trail period date or the subscription date in NSUserDefaults
+                         
                      }
                  }
                  
@@ -336,6 +376,8 @@
                  {   [DBManager updatedToServerForUserWithFlag:1];
                      [DBManager isRegistrationSuccessful:1];
                      
+                     
+                     //send push Notification
                      if (pushDeviceTokenId && pushDeviceTokenId.length>0)
                      {
                          [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[advertisingUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
@@ -343,6 +385,46 @@
                               NSLog(@"Push Message: %@",strMsg);
                           }];
                      }
+                      //send push Notification
+                     
+                      //store the trail period date or the subscription date in NSUserDefaults
+                     [[HeyWebService service] fetchSubscriptionDateWithUDID:advertisingUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                      {
+                          if (isError)
+                          {
+                              NSLog(@"Subscription Fetch Failed: %@",strMsg);
+                          }
+                          else
+                          {
+                              NSDictionary *resultDict=(id)result;
+                              if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                              {
+                                  if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                                  {
+                                      NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
+                                      
+                                      NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                                      
+                                      if (serverDateString.length>0)
+                                      {
+                                          NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                          [format setDateFormat:@"dd-MM-yyyy"];
+                                          NSDate * serverDate =[format dateFromString:serverDateString];
+                                          NSLog(@"Server Date: %@",serverDate);
+                                          if (serverDate)
+                                          {
+                                              [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                              [[NSUserDefaults standardUserDefaults] synchronize];
+                                          }
+                                      }
+                                  }
+                                  
+                                  
+                              }
+                          }
+                          
+                      }];
+                     //store the trail period date or the subscription date in NSUserDefaults
                      
                      
                  }

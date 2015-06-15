@@ -15,7 +15,7 @@
     static ModelInAppPurchase * sharedInstance;
     dispatch_once(&once, ^{
         NSSet * productIdentifiers = [NSSet setWithObjects:
-                                      @"com.com.chosenn.battelaxe",nil];
+                                      @"HeyMessenger.HooduInc.com.180subscribe",nil];
         sharedInstance = [[self alloc] initWithProductIdentifiers:productIdentifiers];
     });
     return sharedInstance;

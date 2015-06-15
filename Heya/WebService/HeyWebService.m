@@ -25,6 +25,8 @@
         self.strSendMsgURL=@"api/user/message_send";
         self.strFetchAccountDetailsURL=@"api/user/account_details";
         self.strImageURL=@"api/user/image_path";
+        self.strCreateRenewSubsciptionURL=@"/api/user/subscription";
+        self.strFetchSubsciptionURL=@"api/user/check_app_validity";
     }
     return self;
 }
@@ -340,7 +342,7 @@
     NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
     [request addValue:contentType forHTTPHeaderField:@"Content-Type"];
     
-    NSDictionary *params = @{@"unique_token": strUDID};
+    NSDictionary *params = @{@"unique_token": strUDID, @"platform" : @"iOS"};
     
     [params enumerateKeysAndObjectsUsingBlock:^(NSString *parameterKey, NSString *parameterValue, BOOL *stop) {
         [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
@@ -431,6 +433,126 @@
             NSLog(@"resultDict for notification Details: %@",resultDict);
             
             handler(err,NO,@"Push Notofcation for Registration sent.");
+        }
+    }];
+}
+
+
+-(void) fetchSubscriptionDateWithUDID:(NSString *)strUDID WithCompletionHandler:(WebServiceCompletionHandler)handler
+{
+    NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strFetchSubsciptionURL]];
+    
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
+    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
+    
+    [request setHTTPMethod:@"POST"];
+    [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
+    [request addValue:@"appsbee" forHTTPHeaderField:@"companyID"];
+    
+    
+    NSMutableData *body = [NSMutableData data];
+    
+    NSString *boundary = @"---------------------------14737809831466499882746641479";
+    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
+    [request addValue:contentType forHTTPHeaderField:@"Content-Type"];
+    
+    NSDictionary *params = @{@"unique_token": strUDID, @"platform" : @"iOS"};
+    
+    [params enumerateKeysAndObjectsUsingBlock:^(NSString *parameterKey, NSString *parameterValue, BOOL *stop) {
+        [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\n\r\n", parameterKey] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"%@\r\n", parameterValue] dataUsingEncoding:NSUTF8StringEncoding]];
+    }];
+    
+    // close the form
+    [body appendData:[[NSString stringWithFormat:@"--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    // set request body
+    [request setHTTPBody:body];
+    
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError)
+        {
+            handler(connectionError,YES,@"Something is wrong, please try again later.");
+        }
+        else
+        {
+            NSError *err;
+            NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
+            NSLog(@"resultDict for Subscription Details: %@",resultDict);
+            
+            if ([[resultDict valueForKey:@"status"] boolValue]==false)
+            {
+                //Error
+                NSLog(@"Subscription Details not recieved.");
+                handler(err,YES,@"Subscription Details not recieved.");
+            }
+            else
+            {
+                //OK
+                NSLog(@"Subscription Recieved.");
+                handler(resultDict ,NO,@"Successfully Recieved.");
+            }
+        }
+    }];
+}
+
+-(void) createSubscriptionWithUDID:(NSString *)strUDID PurchaseTime:(NSString *)purchaseTime PurchaseState:(NSString *)purchaseState WithCompletionHandler:(WebServiceCompletionHandler)handler
+{
+    NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strCreateRenewSubsciptionURL]];
+    
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
+    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
+    
+    [request setHTTPMethod:@"POST"];
+    [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
+    [request addValue:@"appsbee" forHTTPHeaderField:@"companyID"];
+    
+    
+    NSMutableData *body = [NSMutableData data];
+    
+    NSString *boundary = @"---------------------------14737809831466499882746641479";
+    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary];
+    [request addValue:contentType forHTTPHeaderField:@"Content-Type"];
+    
+    NSDictionary *params = @{@"unique_token"     : strUDID,
+                             @"purchase_time"    : purchaseTime,
+                             @"purchase_state"   : purchaseState,
+                             @"platform" : @"iOS"};
+    
+    [params enumerateKeysAndObjectsUsingBlock:^(NSString *parameterKey, NSString *parameterValue, BOOL *stop) {
+        [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\n\r\n", parameterKey] dataUsingEncoding:NSUTF8StringEncoding]];
+        [body appendData:[[NSString stringWithFormat:@"%@\r\n", parameterValue] dataUsingEncoding:NSUTF8StringEncoding]];
+    }];
+    
+    // close the form
+    [body appendData:[[NSString stringWithFormat:@"--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
+    
+    // set request body
+    [request setHTTPBody:body];
+    
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError)
+        {
+            handler(connectionError,YES,@"Something is wrong, please try again later.");
+        }
+        else
+        {
+            NSError *err;
+            NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
+            NSLog(@"resultDict for Subscription registration: %@",resultDict);
+            
+            if ([[resultDict valueForKey:@"status"] boolValue]==false)
+            {
+                //Error
+                handler(err,YES,@"Not Subscribed.");
+            }
+            else
+            {
+                //OK
+                handler(resultDict,NO,@"Subscribed.");
+            }
         }
     }];
 }

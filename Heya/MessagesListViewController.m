@@ -18,6 +18,7 @@
 #import "MenuListTableViewCell.h"
 #import "Reachability.h"
 #import "HeyWebService.h"
+#import "InAppPurchaseHelper.h"
 
 @interface MessagesListViewController ()
 {
@@ -762,6 +763,45 @@ NSUserDefaults *preferances;
                                   NSLog(@"Push Message: %@",strMsg);
                               }];
                          }
+                         
+                         //store the trail period date or the subscription date in NSUserDefaults
+                         [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                          {
+                              if (isError)
+                              {
+                                  NSLog(@"Subscription Fetch Failed: %@",strMsg);
+                              }
+                              else
+                              {
+                                  NSDictionary *resultDict=(id)result;
+                                  if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                                  {
+                                      if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                                      {
+                                          NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
+                                          
+                                          NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                                          
+                                          if (serverDateString.length>0)
+                                          {
+                                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                              [format setDateFormat:@"dd-MM-yyyy"];
+                                              NSDate * serverDate =[format dateFromString:serverDateString];
+                                              NSLog(@"Server Date: %@",serverDate);
+                                              if (serverDate)
+                                              {
+                                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                                  [[NSUserDefaults standardUserDefaults] synchronize];
+                                              }
+                                          }
+                                      }
+                                      
+                                      
+                                  }
+                              }
+                              
+                          }];
+                         //store the trail period date or the subscription date in NSUserDefaults
                          
                          
                          NSLog(@"Resigartion Success Message: %@",strMsg);

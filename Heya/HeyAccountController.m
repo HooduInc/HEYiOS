@@ -241,7 +241,10 @@
                     [totalMsgCountArray addObject:@""];
                     [totalMsgCountArray addObject:dateDownloaded];
                     
-                    if ([resultDict valueForKey:@"my_renewal_date"])
+                    
+                    NSString *renewalDate=[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"my_renewal_date"]];
+                    
+                    if (![renewalDate isEqualToString:@"0"])
                     {
                         
                         NSString *renewalDateString=[[resultDict valueForKey:@"my_renewal_date"] stringByReplacingOccurrencesOfString:@"-" withString:@"."];
@@ -254,6 +257,14 @@
                         [totalMsgCountArray addObject:[formatter stringFromDate:renewalDate]];
                         
                         [[NSUserDefaults standardUserDefaults] setValue:[formatter stringFromDate:renewalDate] forKey:@"accountRenewalDate"];
+                         [[NSUserDefaults standardUserDefaults] synchronize];
+                    }
+                    else
+                    {
+                        [totalMsgCountArray addObject:@""];
+                        
+                        [[NSUserDefaults standardUserDefaults] setValue:@"" forKey:@"accountRenewalDate"];
+                        [[NSUserDefaults standardUserDefaults] synchronize];
                     }
                     
                     NSLog(@"totalMsgCountArray :%ld",(long)totalMsgCountArray.count);
@@ -301,7 +312,8 @@
     [totalMsgCountArray addObject:@""];
     [totalMsgCountArray addObject:dateDownloaded];
     
-    if ([[NSUserDefaults standardUserDefaults] valueForKey:@"accountRenewalDate"]) {
+    if ([[NSUserDefaults standardUserDefaults] valueForKey:@"accountRenewalDate"])
+    {
         [totalMsgCountArray addObject:[[NSUserDefaults standardUserDefaults] valueForKey:@"accountRenewalDate"]];
     }
     else

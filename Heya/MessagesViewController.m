@@ -23,6 +23,7 @@
 #import "ModelUserProfile.h"
 #import "ModelMessageSend.h"
 #import "HeyWebService.h"
+#import "InAppPurchaseHelper.h"
 #import <AdSupport/AdSupport.h>
 
 
@@ -127,6 +128,7 @@ unsigned long location;
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
+    [self CheckSubscription];
     emojiTag=9999;
     
     tickImageGroupArray =[NSMutableArray array];
@@ -1287,96 +1289,109 @@ unsigned long location;
 
 - (IBAction)sendsms:(id)sender
 {
-    if([quickContactsArray containsObject:@""])
+    NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
+    
+    NSDate *today=[NSDate date];
+    
+    if ([expireDate compare:today] == NSOrderedAscending)
     {
-        [quickContactsArray removeObject:@""];
-    }
-    
-    NSArray *arrayOfContacts= (NSArray *)quickContactsArray;
-    NSLog(@"Conatcts: %@",arrayOfContacts);
-    
-    __block NSString *finalMessage=messageTextView.text;
-    
-    //add hey fever link
-    if ([messageTextView.text containsString:@"Get HEY Fever!"])
-    {
-       finalMessage = [NSString stringWithFormat: @"%@ %@", messageTextView.text, shareHeyLink];
-    }
-    
-    if(arrayOfContacts.count>0)
-    {
-        if (imageData.length>0)
-        {
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-            
-            //Change the host name here to change the server you want to monitor.
-            NSString *remoteHostName =HeyBaseURL;
-            
-            self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-            [self.hostReachability startNotifier];
-            [self updateInterfaceWithReachability:self.hostReachability];
-            
-            self.internetReachability = [Reachability reachabilityForInternetConnection];
-            [self.internetReachability startNotifier];
-            [self updateInterfaceWithReachability:self.internetReachability];
-            
-            self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-            [self.wifiReachability startNotifier];
-            [self updateInterfaceWithReachability:self.wifiReachability];
-            
-            if([self isNetworkAvailable])
-            {
-                [self.navigationController.view addSubview:HUD];
-                //[self.view addSubview:HUD];
-                
-                HUD.delegate = self;
-                HUD.labelText = @"Uploading";
-                [HUD show:YES];
-                
-                //NSString *strUDID=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
-                //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
-                
-                NSMutableArray *userProfile=[[NSMutableArray alloc] init];
-                userProfile=[DBManager fetchUserProfile];
-                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
-                
-                [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
-                    
-                    [HUD hide:YES];
-                    [HUD removeFromSuperview];
-                    if (isError)
-                    {
-                        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                        [alert show];
-                        
-                    }
-                    else
-                    {
-                        if ([result isKindOfClass:[NSString class]])
-                        {
-                            imageURL=(NSString*)result;
-                            if(imageURL.length>0)
-                            {
-                                //add Image link
-                                NSLog(@"Image URL: %@",imageURL);
-                                finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
-                                [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
-                            }
-                        }
-                    }
-                }];
-            }
-        }
-        else
-            [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Your subscription expired. Please subscribe to send message." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
+        [alert show];
     }
     else
     {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Please select a contact to send a message." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
-        [alert show];
+        if([quickContactsArray containsObject:@""])
+        {
+            [quickContactsArray removeObject:@""];
+        }
+        
+        NSArray *arrayOfContacts= (NSArray *)quickContactsArray;
+        NSLog(@"Conatcts: %@",arrayOfContacts);
+        
+        __block NSString *finalMessage=messageTextView.text;
+        
+        //add hey fever link
+        if ([messageTextView.text containsString:@"Get HEY Fever!"])
+        {
+            finalMessage = [NSString stringWithFormat: @"%@ %@", messageTextView.text, shareHeyLink];
+        }
+        
+        if(arrayOfContacts.count>0)
+        {
+            if (imageData.length>0)
+            {
+                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+                
+                //Change the host name here to change the server you want to monitor.
+                NSString *remoteHostName =HeyBaseURL;
+                
+                self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+                [self.hostReachability startNotifier];
+                [self updateInterfaceWithReachability:self.hostReachability];
+                
+                self.internetReachability = [Reachability reachabilityForInternetConnection];
+                [self.internetReachability startNotifier];
+                [self updateInterfaceWithReachability:self.internetReachability];
+                
+                self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+                [self.wifiReachability startNotifier];
+                [self updateInterfaceWithReachability:self.wifiReachability];
+                
+                if([self isNetworkAvailable])
+                {
+                    [self.navigationController.view addSubview:HUD];
+                    //[self.view addSubview:HUD];
+                    
+                    HUD.delegate = self;
+                    HUD.labelText = @"Uploading";
+                    [HUD show:YES];
+                    
+                    //NSString *strUDID=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
+                    //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+                    
+                    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                    userProfile=[DBManager fetchUserProfile];
+                    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+                    
+                    [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
+                        
+                        [HUD hide:YES];
+                        [HUD removeFromSuperview];
+                        if (isError)
+                        {
+                            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                            [alert show];
+                            
+                        }
+                        else
+                        {
+                            if ([result isKindOfClass:[NSString class]])
+                            {
+                                imageURL=(NSString*)result;
+                                if(imageURL.length>0)
+                                {
+                                    //add Image link
+                                    NSLog(@"Image URL: %@",imageURL);
+                                    finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
+                                    [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
+                                }
+                            }
+                        }
+                    }];
+                }
+            }
+            else
+                [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
+        }
+        else
+        {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Please select a contact to send a message." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
+            [alert show];
+            
+        }
+        NSLog(@"finalMessage: %@ with length: %ld",finalMessage,(long)finalMessage.length);
         
     }
-    NSLog(@"finalMessage: %@ with length: %ld",finalMessage,(long)finalMessage.length);
 
 }
 
@@ -1716,6 +1731,45 @@ unsigned long location;
                                           NSLog(@"Push Message: %@",strMsg);
                                       }];
                                  }
+                                 
+                                 //store the trail period date or the subscription date in NSUserDefaults
+                                 [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                  {
+                                      if (isError)
+                                      {
+                                          NSLog(@"Subscription Fetch Failed: %@",strMsg);
+                                      }
+                                      else
+                                      {
+                                          NSDictionary *resultDict=(id)result;
+                                          if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                                          {
+                                              if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                                              {
+                                                  NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
+                                                  
+                                                  NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                                                  
+                                                  if (serverDateString.length>0)
+                                                  {
+                                                      NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                                      [format setDateFormat:@"dd-MM-yyyy"];
+                                                      NSDate * serverDate =[format dateFromString:serverDateString];
+                                                      NSLog(@"Server Date: %@",serverDate);
+                                                      if (serverDate)
+                                                      {
+                                                          [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                                          [[NSUserDefaults standardUserDefaults] synchronize];
+                                                      }
+                                                  }
+                                              }
+                                              
+                                              
+                                          }
+                                      }
+                                      
+                                  }];
+                                 //store the trail period date or the subscription date in NSUserDefaults
                                  
                                  
                                  NSLog(@"Resigartion Success Message: %@",strMsg);
@@ -2177,6 +2231,90 @@ unsigned long location;
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
+}
+
+
+
+-(void)CheckSubscription
+{
+    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+    userProfile=[DBManager fetchUserProfile];
+    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
+    
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+    
+    //Change the host name here to change the server you want to monitor.
+    NSString *remoteHostName =HeyBaseURL;
+    
+    self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+    [self.hostReachability startNotifier];
+    [self updateInterfaceWithReachability:self.hostReachability];
+    
+    self.internetReachability = [Reachability reachabilityForInternetConnection];
+    [self.internetReachability startNotifier];
+    [self updateInterfaceWithReachability:self.internetReachability];
+    
+    self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+    [self.wifiReachability startNotifier];
+    [self updateInterfaceWithReachability:self.wifiReachability];
+    
+    if([self isNetworkAvailable])
+    {
+    
+    [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+     {
+         if (isError)
+         {
+             NSLog(@"Subscription Fetch Failed: %@",strMsg);
+         }
+         else
+         {
+             NSDictionary *resultDict=(id)result;
+             
+             if ([[resultDict valueForKey:@"status"] boolValue]==true)
+             {
+                 if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                 {
+                     NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
+                     
+                     NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                     
+                     if (serverDateString.length>0)
+                     {
+                         NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                         [format setDateFormat:@"dd-MM-yyyy"];
+                         NSDate * serverDate =[format dateFromString:serverDateString];
+                         NSLog(@"Server Date: %@",serverDate);
+                         
+                         
+                         if (serverDate)
+                         {
+                             [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                             [[NSUserDefaults standardUserDefaults] synchronize];
+                             
+                             
+                             NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
+                             
+                             NSDate *today=[NSDate date];
+                             
+                             if ([expireDate compare:today] == NSOrderedAscending)
+                             {
+                                 self.sendMsgBtn.enabled=NO;
+                                 //self.sendMsgBtn.backgroundColor=[UIColor colorWithRed:0/255.0f green:0/255.0f blue:0/255.0f alpha:0.2];
+                             }
+                             else
+                             {
+                                 self.sendMsgBtn.enabled=YES;
+                                 //self.sendMsgBtn.backgroundColor=[UIColor clearColor];
+                             }
+                         }
+                     }
+                 }
+             }
+         }
+     }];
+    }
 }
 
 //Called by Reachability whenever status changes.

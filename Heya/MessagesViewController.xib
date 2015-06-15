@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="7531" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7520"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="MessagesViewController">
@@ -151,37 +151,27 @@
                                         <action selector="getcontacts:" destination="-1" eventType="touchUpInside" id="sRh-HP-Yd0"/>
                                     </connections>
                                 </button>
-                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="UOp-Ky-MmW" userLabel="WhatsAppButton">
-                                    <rect key="frame" x="5" y="400" width="46" height="46"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <state key="normal" image="whatsapp_icon.png">
-                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                    </state>
-                                    <connections>
-                                        <action selector="whatsApp:" destination="-1" eventType="touchUpInside" id="C6J-lt-2iy"/>
-                                    </connections>
-                                </button>
                                 <view contentMode="scaleToFill" id="eJ2-8B-Eur" userLabel="SendView">
-                                    <rect key="frame" x="62" y="400" width="253" height="45"/>
+                                    <rect key="frame" x="10" y="400" width="300" height="45"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
                                     <subviews>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="sendbtn_back.png" id="z7K-CE-WzD">
-                                            <rect key="frame" x="0.0" y="0.0" width="253" height="45"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="300" height="45"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         </imageView>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Send" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="PQ2-7x-rJZ">
-                                            <rect key="frame" x="119" y="12" width="51" height="21"/>
+                                            <rect key="frame" x="143" y="12" width="51" height="21"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="20"/>
                                             <color key="textColor" red="0.92156862750000001" green="0.92156862750000001" blue="0.92156862750000001" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="send_msg.png" id="sZF-E2-RG4">
-                                            <rect key="frame" x="82" y="5" width="35" height="35"/>
+                                            <rect key="frame" x="106" y="5" width="35" height="35"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         </imageView>
-                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="eww-4O-YWK">
-                                            <rect key="frame" x="0.0" y="0.0" width="253" height="45"/>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="eww-4O-YWK" userLabel="SendButton">
+                                            <rect key="frame" x="0.0" y="0.0" width="300" height="45"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
                                             <state key="normal">
                                                 <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -191,7 +181,7 @@
                                             </connections>
                                         </button>
                                     </subviews>
-                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
                                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="fg5-7J-Rf3" userLabel="EditingScrollView">
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="93"/>
@@ -396,7 +386,6 @@
         <image name="smile_icon.png" width="22" height="22"/>
         <image name="smile_icon_over.png" width="22" height="22"/>
         <image name="top_barbg.png" width="320" height="83"/>
-        <image name="whatsapp_icon.png" width="46" height="46"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>

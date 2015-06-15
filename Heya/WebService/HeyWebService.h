@@ -16,12 +16,18 @@
 
 -(void)registerWithUDID:(NSString*)strUDID FullName:(NSString*)strFullName ContactNumber:(NSString*)strContactNumber TimeStamp:(NSString*)strTimeStamp AccountCreated:(NSString*)strAccountCreated WithCompletionHandler:(WebServiceCompletionHandler)handler;
 
+-(void)fetchPushNotificationFromServerWithPushToken:(NSString *)pushToken UDID:(NSString*)strUDID WithCompletionHandler:(WebServiceCompletionHandler)handler;
+
 -(void)updateProfileWithUDID:(NSString*)strUDID FullName:(NSString*)strFullName ContactNumber:(NSString*)strContactNumber TimeStamp:(NSString*)strTimeStamp WithCompletionHandler:(WebServiceCompletionHandler)handler;
 
 -(void)sendMessageDetailsToServerWithUDID:(NSString*)strUDID TemplateId:(NSString*)strTemplateId MsgText:(NSString*)strMsgText TimeStamp:(NSString*)strTimeStamp From:(NSString*)strFrom To:(NSString*)strTo WithCompletionHandler:(WebServiceCompletionHandler)handler;
 
 -(void)fetchAccountDetailsFromServerWithUDID:(NSString*)strUDID WithCompletionHandler:(WebServiceCompletionHandler)handler;
 
--(void)fetchPushNotificationFromServerWithPushToken:(NSString *)pushToken UDID:(NSString*)strUDID WithCompletionHandler:(WebServiceCompletionHandler)handler;
+
+
+-(void)fetchSubscriptionDateWithUDID:(NSString*)strUDID WithCompletionHandler:(WebServiceCompletionHandler)handler;
+
+-(void)createSubscriptionWithUDID:(NSString*)strUDID PurchaseTime:(NSString*)purchaseTime PurchaseState:(NSString*)purchaseState  WithCompletionHandler:(WebServiceCompletionHandler)handler;
 
 @end

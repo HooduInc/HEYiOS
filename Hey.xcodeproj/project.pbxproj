@@ -152,6 +152,7 @@
 		9F1FB9311A88F50700BAEDD9 /* libz.1.1.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F1FB92E1A88F50700BAEDD9 /* libz.1.1.3.dylib */; };
 		9F1FB9321A88F50700BAEDD9 /* libz.1.2.5.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F1FB92F1A88F50700BAEDD9 /* libz.1.2.5.dylib */; };
 		9F1FB9331A88F50700BAEDD9 /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F1FB9301A88F50700BAEDD9 /* libz.1.dylib */; };
+		9F2396831B29828F00C2CCBD /* ModelSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F2396821B29828F00C2CCBD /* ModelSubscription.m */; };
 		9F2813B51B28199200DEE3BB /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F2813B41B28199200DEE3BB /* StoreKit.framework */; };
 		9F2813B71B281A9800DEE3BB /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F2813B61B281A9800DEE3BB /* AdSupport.framework */; };
 		9F2813BD1B281C5200DEE3BB /* InAppPurchaseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F2813BC1B281C5200DEE3BB /* InAppPurchaseHelper.m */; };
@@ -485,6 +486,8 @@
 		9F1FB92E1A88F50700BAEDD9 /* libz.1.1.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.1.3.dylib; path = usr/lib/libz.1.1.3.dylib; sourceTree = SDKROOT; };
 		9F1FB92F1A88F50700BAEDD9 /* libz.1.2.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.5.dylib; path = usr/lib/libz.1.2.5.dylib; sourceTree = SDKROOT; };
 		9F1FB9301A88F50700BAEDD9 /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = usr/lib/libz.1.dylib; sourceTree = SDKROOT; };
+		9F2396811B29828F00C2CCBD /* ModelSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelSubscription.h; sourceTree = "<group>"; };
+		9F2396821B29828F00C2CCBD /* ModelSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelSubscription.m; sourceTree = "<group>"; };
 		9F2813B41B28199200DEE3BB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		9F2813B61B281A9800DEE3BB /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		9F2813BB1B281C5200DEE3BB /* InAppPurchaseHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InAppPurchaseHelper.h; sourceTree = "<group>"; };
@@ -1307,6 +1310,8 @@
 				9F6FF0D41ACD555E00D07EDD /* ModelGroupMembers.m */,
 				9F54A8731AF76791000F1A90 /* ModelMessageSend.h */,
 				9F54A8741AF76791000F1A90 /* ModelMessageSend.m */,
+				9F2396811B29828F00C2CCBD /* ModelSubscription.h */,
+				9F2396821B29828F00C2CCBD /* ModelSubscription.m */,
 				9F2813BE1B281CA800DEE3BB /* ModelInAppPurchase.h */,
 				9F2813BF1B281CA800DEE3BB /* ModelInAppPurchase.m */,
 			);
@@ -1688,6 +1693,7 @@
 				9F8EAFE01A8C7F0C00CE173B /* ModelMenu.m in Sources */,
 				9F54A8751AF76791000F1A90 /* ModelMessageSend.m in Sources */,
 				9FABE0E81A77B92400D0B5E4 /* DropDownCell.m in Sources */,
+				9F2396831B29828F00C2CCBD /* ModelSubscription.m in Sources */,
 				9FD4B3781ADFCA310033564F /* HeyWebService.m in Sources */,
 				9FE7D1631A54085600EE41CA /* GroupMemberViewController.m in Sources */,
 				39BB284F1A11E92F00065641 /* FMResultSet.m in Sources */,
@@ -1831,7 +1837,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				ONLY_ACTIVE_ARCH = YES;
-				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
+				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -1864,7 +1870,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
-				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
+				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1885,7 +1891,7 @@
 				GCC_PREFIX_HEADER = "Heya/Hey-Prefix.pch";
 				INFOPLIST_FILE = "Heya/Hey-Info.plist";
 				PRODUCT_NAME = Hey;
-				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
+				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1905,7 +1911,7 @@
 				GCC_PREFIX_HEADER = "Heya/Hey-Prefix.pch";
 				INFOPLIST_FILE = "Heya/Hey-Info.plist";
 				PRODUCT_NAME = Hey;
-				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
+				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -1928,7 +1934,7 @@
 				);
 				INFOPLIST_FILE = "HeyaTests/HeyTests-Info.plist";
 				PRODUCT_NAME = HeyTests;
-				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
+				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1948,7 +1954,7 @@
 				GCC_PREFIX_HEADER = "Heya/Heya-Prefix.pch";
 				INFOPLIST_FILE = "HeyaTests/HeyTests-Info.plist";
 				PRODUCT_NAME = HeyTests;
-				PROVISIONING_PROFILE = "620c761e-6b2d-4d91-9174-a674dc09ae86";
+				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
 			};

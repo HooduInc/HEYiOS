@@ -19,6 +19,7 @@
 #import "ModelGroup.h"
 #import "ModelGroupMembers.h"
 #import "ModelMessageSend.h"
+#import "ModelSubscription.h"
 
 @implementation DBManager
 
@@ -3089,6 +3090,153 @@
     }
     
     return count;
+}
+
+
+#pragma mark
+#pragma mark Subscription
+#pragma mark
+
++(long long) insertSubscriptionDetails:(NSMutableArray *)msgArray
+{
+    long long lastInsertedId=0;
+    ModelSubscription *subObj=[msgArray objectAtIndex:0];
+    
+    FMDatabase *database=[DBManager getDatabase];
+    if(database)
+    {
+        sqlite3 *database;
+        NSString *dbpath = [DBManager getDBPath];
+        const char* dbPath=[dbpath UTF8String];
+        
+        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        {
+            NSString *stm = [NSString stringWithFormat:@"INSERT INTO subscription(deviceUDID,purchaseTime,purchaseState, purchaseToken) values(\"%@\", \"%@\", \"%d\",\"%@\") ",subObj.strDeviceUDID,subObj.strPurchaseTime,subObj.purchaseState,subObj.strPurchaseToken];
+            
+            NSLog(@"Subscription Insertion Querystring: %@", stm);
+            const char *sqlQuerry= [stm UTF8String];
+            sqlite3_stmt *querryStatement;
+            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            {
+                NSLog(@"Subscription Insertion successful....");
+                
+                bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                
+                if(!executeQueryResults)
+                {
+                    NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                }
+                else
+                {
+                    lastInsertedId=sqlite3_last_insert_rowid(database);
+                    NSLog(@"Subscription lastInsertedId: %lld",lastInsertedId);
+                }
+                sqlite3_reset(querryStatement);
+            }
+            else
+            {
+                NSLog(@"error while inserting Subscription....");
+            }
+            sqlite3_close(database);
+        }
+    }
+    
+    return lastInsertedId;
+}
+
+
++(BOOL) updateSubscriptionDetailsWithPurchaseTime:(NSString*)strPurchaseTime PurchaseState:(int)purchaseState UDID: (NSString*)strUDID
+{
+    BOOL isUpdated=NO;
+    
+    FMDatabase *database=[DBManager getDatabase];
+    if(database)
+    {
+        sqlite3 *database;
+        NSString *dbpath = [DBManager getDBPath];
+        const char* dbPath=[dbpath UTF8String];
+        
+        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        {
+            NSString *stm = [NSString stringWithFormat:@"UPDATE subscription Set purchaseTime ='%@', purchaseState=%d where  deviceUDID ='%@'",strPurchaseTime,purchaseState, strUDID];
+            NSLog(@"Update Message Details Querystring: %@", stm);
+            
+            const char *sqlQuerry= [stm UTF8String];
+            sqlite3_stmt *querryStatement;
+            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            {
+                NSLog(@"subscription Updation successful....");
+                
+                bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                
+                if(!executeQueryResults)
+                {
+                    NSAssert1(0, @"Error while updating. '%s'", sqlite3_errmsg(database));
+                    isUpdated=NO;
+                }
+                else
+                    isUpdated=YES;
+                
+                sqlite3_reset(querryStatement);
+                
+                if (sqlite3_finalize(querryStatement) != SQLITE_OK)
+                {
+                    NSLog(@"SQL Error: %s",sqlite3_errmsg(database));
+                }
+            }
+            else
+            {
+                NSLog(@"error while subscription updation....");
+            }
+            sqlite3_close(database);
+        }
+    }
+    return  isUpdated;
+    
+}
+
++(NSMutableArray*)fetchSubscriptionDetails
+{
+    
+    NSMutableArray *arr = [[NSMutableArray alloc]init];
+    FMDatabase *database=[DBManager getDatabase];
+    if(database)
+    {
+        sqlite3 *database;
+        NSString *dbpath = [DBManager getDBPath];
+        const char* dbPath=[dbpath UTF8String];
+        
+        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        {
+            NSString *stm = @"SELECT * FROM subscription ORDER BY DESC LIMIT 0,1";
+            
+            NSLog(@"Select subscription Query: %@",stm);
+            const char *sqlQuerry= [stm UTF8String];
+            sqlite3_stmt *querryStatement;
+            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            {
+                NSLog(@"conversion successful....");
+                while (sqlite3_step(querryStatement)==SQLITE_ROW)
+                {
+                    ModelSubscription *objSub = [[ModelSubscription alloc]init];
+                    
+                    objSub.strSubscriptionId=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 0)];
+                    objSub.strDeviceUDID=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 1)] ;
+                    objSub.strPurchaseTime=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 2)];
+                    objSub.purchaseState=sqlite3_column_int(querryStatement, 3);
+                    objSub.strPurchaseToken=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 4)];
+                    
+                    [arr addObject:objSub];
+                }
+                sqlite3_finalize(querryStatement);
+            }
+            else {
+                NSLog(@"error while conversion....");
+            }
+            sqlite3_close(database);
+        }
+    }
+    return arr;
 }
 
 

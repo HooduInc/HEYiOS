@@ -115,7 +115,10 @@
 +(long)fetchMessageDetailsWithLifeTime;
 
 
+//Local Database Subscription
++(long long) insertSubscriptionDetails:(NSMutableArray*)msgArray;
++(BOOL)updateSubscriptionDetailsWithPurchaseTime:(NSString*)strPurchaseTime PurchaseState:(int)purchaseState UDID: (NSString*)strUDID;
++(NSMutableArray*)fetchSubscriptionDetails;
+
 ////////////////////////////////////////////////////////////////////////////////////
-
-
 @end

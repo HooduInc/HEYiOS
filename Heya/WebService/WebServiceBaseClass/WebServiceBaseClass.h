@@ -20,4 +20,6 @@ typedef void(^WebServiceCompletionHandler)(id result,BOOL isError,NSString *strM
 @property(strong,nonatomic) NSString *strSendMsgURL;
 @property(strong,nonatomic) NSString *strSendMsgPushNotificationURLURL;
 @property(strong,nonatomic) NSString *strFetchAccountDetailsURL;
+@property(strong,nonatomic) NSString *strFetchSubsciptionURL;
+@property(strong,nonatomic) NSString *strCreateRenewSubsciptionURL;
 @end

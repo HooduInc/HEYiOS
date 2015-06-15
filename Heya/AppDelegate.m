@@ -46,6 +46,7 @@ NSUserDefaults *preferances;
         [preferances setBool:YES forKey:@"HasLaunchedOnce"];
         [preferances setObject:@"Standard" forKey:@"themeName"];
          applicationInstalledDate = [NSDate date];
+        NSLog(@"Application Installation Dtae: %@",applicationInstalledDate);
         [preferances setValue: applicationInstalledDate forKey:@"applicationInstalledDate"];
         [preferances setBool:1 forKey:@"shareHey"];
         [preferances synchronize];
