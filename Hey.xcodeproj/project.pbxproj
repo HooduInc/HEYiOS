@@ -184,6 +184,8 @@
 		9F3D04701B048D9C00C8B950 /* iCarousel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3D046F1B048D9C00C8B950 /* iCarousel.m */; };
 		9F3D04731B04BAAC00C8B950 /* PagedFlowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3D04721B04BAAC00C8B950 /* PagedFlowView.m */; };
 		9F42463A1A89D2DD001DA7A6 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F4246391A89D2DD001DA7A6 /* MBProgressHUD.m */; };
+		9F4A02981B4687960017F6E4 /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9F4A02971B4687960017F6E4 /* Entitlements.plist */; };
+		9F53D4991B44029000CECDB6 /* Heydatabase.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 9F53D4981B44029000CECDB6 /* Heydatabase.sqlite */; };
 		9F54A8751AF76791000F1A90 /* ModelMessageSend.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F54A8741AF76791000F1A90 /* ModelMessageSend.m */; };
 		9F54E67E1ACC0F58003CBB6A /* rearrage_btn.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F54E67D1ACC0F58003CBB6A /* rearrage_btn.png */; };
 		9F5599751A7A722400F4B9AE /* SocialSettingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F5599731A7A722400F4B9AE /* SocialSettingsController.m */; };
@@ -235,6 +237,8 @@
 		9F9AB96C1A5300F9005734E2 /* group_friends_pic@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F9AB96B1A5300F9005734E2 /* group_friends_pic@2x.png */; };
 		9F9AB9701A53069A005734E2 /* GroupTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F9AB96E1A53069A005734E2 /* GroupTableViewCell.m */; };
 		9F9AB9711A53069A005734E2 /* GroupTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9F9AB96F1A53069A005734E2 /* GroupTableViewCell.xib */; };
+		9FA4D6401B3A849100681019 /* muted_blue.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA4D63E1B3A849100681019 /* muted_blue.png */; };
+		9FA4D6411B3A849100681019 /* muted_violet.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA4D63F1B3A849100681019 /* muted_violet.png */; };
 		9FABE0E11A77A04C00D0B5E4 /* work_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FABE0DD1A77A04C00D0B5E4 /* work_icon.png */; };
 		9FABE0E21A77A04C00D0B5E4 /* practical.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FABE0DE1A77A04C00D0B5E4 /* practical.png */; };
 		9FABE0E31A77A04C00D0B5E4 /* among_friends_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FABE0DF1A77A04C00D0B5E4 /* among_friends_icon.png */; };
@@ -285,7 +289,6 @@
 		9FF90FD31ACECA2F00346048 /* RearrangeGroupViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FF90FD11ACECA2F00346048 /* RearrangeGroupViewController.xib */; };
 		9FF90FD71ACECA5300346048 /* RearrangeGroupTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FF90FD51ACECA5300346048 /* RearrangeGroupTableViewCell.m */; };
 		9FF90FD81ACECA5300346048 /* RearrangeGroupTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FF90FD61ACECA5300346048 /* RearrangeGroupTableViewCell.xib */; };
-		9FF94D561A9361C300E16209 /* Heydatabase.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 9FF94D551A9361C300E16209 /* Heydatabase.sqlite */; };
 		9FFA0C6C1AC156FF00453319 /* RearrangeFevoriteViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFA0C6A1AC156FF00453319 /* RearrangeFevoriteViewController.m */; };
 		9FFA0C6D1AC156FF00453319 /* RearrangeFevoriteViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FFA0C6B1AC156FF00453319 /* RearrangeFevoriteViewController.xib */; };
 		9FFA0C701AC161ED00453319 /* ModelFevorite.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFA0C6F1AC161ED00453319 /* ModelFevorite.m */; };
@@ -526,6 +529,8 @@
 		9F3D04721B04BAAC00C8B950 /* PagedFlowView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PagedFlowView.m; sourceTree = "<group>"; };
 		9F4246381A89D2DD001DA7A6 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBProgressHUD.h; path = Loader/MBProgressHUD.h; sourceTree = "<group>"; };
 		9F4246391A89D2DD001DA7A6 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBProgressHUD.m; path = Loader/MBProgressHUD.m; sourceTree = "<group>"; };
+		9F4A02971B4687960017F6E4 /* Entitlements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
+		9F53D4981B44029000CECDB6 /* Heydatabase.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Heydatabase.sqlite; sourceTree = "<group>"; };
 		9F54A8731AF76791000F1A90 /* ModelMessageSend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelMessageSend.h; sourceTree = "<group>"; };
 		9F54A8741AF76791000F1A90 /* ModelMessageSend.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelMessageSend.m; sourceTree = "<group>"; };
 		9F54E67D1ACC0F58003CBB6A /* rearrage_btn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rearrage_btn.png; sourceTree = "<group>"; };
@@ -593,6 +598,8 @@
 		9F9AB96D1A53069A005734E2 /* GroupTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupTableViewCell.h; sourceTree = "<group>"; };
 		9F9AB96E1A53069A005734E2 /* GroupTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupTableViewCell.m; sourceTree = "<group>"; };
 		9F9AB96F1A53069A005734E2 /* GroupTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GroupTableViewCell.xib; sourceTree = "<group>"; };
+		9FA4D63E1B3A849100681019 /* muted_blue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = muted_blue.png; sourceTree = "<group>"; };
+		9FA4D63F1B3A849100681019 /* muted_violet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = muted_violet.png; sourceTree = "<group>"; };
 		9FABE0DD1A77A04C00D0B5E4 /* work_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = work_icon.png; sourceTree = "<group>"; };
 		9FABE0DE1A77A04C00D0B5E4 /* practical.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = practical.png; sourceTree = "<group>"; };
 		9FABE0DF1A77A04C00D0B5E4 /* among_friends_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = among_friends_icon.png; sourceTree = "<group>"; };
@@ -657,7 +664,6 @@
 		9FF90FD41ACECA5300346048 /* RearrangeGroupTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RearrangeGroupTableViewCell.h; sourceTree = "<group>"; };
 		9FF90FD51ACECA5300346048 /* RearrangeGroupTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RearrangeGroupTableViewCell.m; sourceTree = "<group>"; };
 		9FF90FD61ACECA5300346048 /* RearrangeGroupTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RearrangeGroupTableViewCell.xib; sourceTree = "<group>"; };
-		9FF94D551A9361C300E16209 /* Heydatabase.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Heydatabase.sqlite; sourceTree = "<group>"; };
 		9FFA0C691AC156FF00453319 /* RearrangeFevoriteViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RearrangeFevoriteViewController.h; sourceTree = "<group>"; };
 		9FFA0C6A1AC156FF00453319 /* RearrangeFevoriteViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RearrangeFevoriteViewController.m; sourceTree = "<group>"; };
 		9FFA0C6B1AC156FF00453319 /* RearrangeFevoriteViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RearrangeFevoriteViewController.xib; sourceTree = "<group>"; };
@@ -846,6 +852,7 @@
 		39AD3A1619E80C8800A32054 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9F4A02971B4687960017F6E4 /* Entitlements.plist */,
 				39AD3A1719E80C8800A32054 /* Hey-Info.plist */,
 				39AD3A1819E80C8900A32054 /* InfoPlist.strings */,
 				39AD3A1B19E80C8900A32054 /* main.m */,
@@ -974,7 +981,7 @@
 		39BB283D1A11E92F00065641 /* Database */ = {
 			isa = PBXGroup;
 			children = (
-				9FF94D551A9361C300E16209 /* Heydatabase.sqlite */,
+				9F53D4981B44029000CECDB6 /* Heydatabase.sqlite */,
 				39BB283E1A11E92F00065641 /* DBManager.h */,
 				39BB283F1A11E92F00065641 /* DBManager.m */,
 				39BB28421A11E92F00065641 /* FMDatabase.h */,
@@ -1140,6 +1147,8 @@
 		9F3734C21A5BF34F00CB4F42 /* BrightColor */ = {
 			isa = PBXGroup;
 			children = (
+				9FA4D63E1B3A849100681019 /* muted_blue.png */,
+				9FA4D63F1B3A849100681019 /* muted_violet.png */,
 				9F3734E41A5C261500CB4F42 /* muted_7.png */,
 				9F3734E51A5C261500CB4F42 /* muted_5.png */,
 				9F3734C31A5BF34F00CB4F42 /* temp_blue.png */,
@@ -1499,6 +1508,7 @@
 				9F2813C21B28419E00DEE3BB /* dollar_icon.png in Resources */,
 				9F70EA431ADBE2A90004F875 /* hey_share_icon_over2.png in Resources */,
 				39BC1AE019EBE3A700FC40B1 /* edit_icon@2x.png in Resources */,
+				9FA4D6401B3A849100681019 /* muted_blue.png in Resources */,
 				39BC1AE219EBE3A700FC40B1 /* meni_icon1@2x.png in Resources */,
 				9F3734E61A5C261500CB4F42 /* muted_7.png in Resources */,
 				39AD3A2219E80C8900A32054 /* Images.xcassets in Resources */,
@@ -1523,6 +1533,7 @@
 				9F5599851A7A858900F4B9AE /* ic_services_icon.png in Resources */,
 				39A11F1819F0080200CBE41B /* loader@2x.png in Resources */,
 				39AAF70219EE73AF00525824 /* menu_btn7@2x.png in Resources */,
+				9F4A02981B4687960017F6E4 /* Entitlements.plist in Resources */,
 				9F3734DF1A5C1D9800CB4F42 /* bar_4.png in Resources */,
 				39BC1AEA19EBE3A700FC40B1 /* top_barbg@2x.png in Resources */,
 				39B3DB3419ED5BFE0077EA62 /* EditViewController.xib in Resources */,
@@ -1602,10 +1613,12 @@
 				39BB28641A120F7100065641 /* pick_from_list_hover@2x.png in Resources */,
 				9FABE0E41A77A04C00D0B5E4 /* personal_icon.png in Resources */,
 				39B77CD519F10455007FC081 /* vincent_pic@2x.png in Resources */,
+				9FA4D6411B3A849100681019 /* muted_violet.png in Resources */,
 				39B77CED19F10F27007FC081 /* hey_share_icon@2x.png in Resources */,
 				39B77CC219F10081007FC081 /* parents@2x.png in Resources */,
 				9F0BDECA1AFA240100D80480 /* SplashViewController.xib in Resources */,
 				9F9AB9711A53069A005734E2 /* GroupTableViewCell.xib in Resources */,
+				9F53D4991B44029000CECDB6 /* Heydatabase.sqlite in Resources */,
 				9F3734CD1A5BF34F00CB4F42 /* temp_orange.png in Resources */,
 				39B77CBA19F0FDFF007FC081 /* facebook_icon@2x.png in Resources */,
 				9FC544BB1A56A2E60046074B /* close_btn.png in Resources */,
@@ -1630,7 +1643,6 @@
 				9F8EAFD11A8C7EFB00CE173B /* OpenSans-BoldItalic.ttf in Resources */,
 				39BA7E481A10CEB80083CD50 /* ButtonCell.xib in Resources */,
 				9F1509B51A80A26500D09A02 /* RearrangeViewController.xib in Resources */,
-				9FF94D561A9361C300E16209 /* Heydatabase.sqlite in Resources */,
 				9FE338BF1A78C3D900244204 /* down.png in Resources */,
 				9F3734D01A5BF34F00CB4F42 /* temp_sky.png in Resources */,
 				39AAF6F419EE588C00525824 /* pick_from_list@2x.png in Resources */,
@@ -1818,8 +1830,8 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -1837,7 +1849,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				ONLY_ACTIVE_ARCH = YES;
-				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
+				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -1858,8 +1870,8 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1870,7 +1882,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
-				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
+				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1881,8 +1893,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -1891,7 +1903,7 @@
 				GCC_PREFIX_HEADER = "Heya/Hey-Prefix.pch";
 				INFOPLIST_FILE = "Heya/Hey-Info.plist";
 				PRODUCT_NAME = Hey;
-				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
+				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1901,8 +1913,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -1911,7 +1923,7 @@
 				GCC_PREFIX_HEADER = "Heya/Hey-Prefix.pch";
 				INFOPLIST_FILE = "Heya/Hey-Info.plist";
 				PRODUCT_NAME = Hey;
-				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
+				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -1920,7 +1932,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Heya.app/Heya";
-				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -1934,7 +1946,7 @@
 				);
 				INFOPLIST_FILE = "HeyaTests/HeyTests-Info.plist";
 				PRODUCT_NAME = HeyTests;
-				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
+				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1944,7 +1956,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Heya.app/Heya";
-				CODE_SIGN_IDENTITY = "iPhone Developer: Patrick Partridge (VK7WWP3P99)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Hoodu Inc. (V832NBX5Y5)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -1954,7 +1966,7 @@
 				GCC_PREFIX_HEADER = "Heya/Heya-Prefix.pch";
 				INFOPLIST_FILE = "HeyaTests/HeyTests-Info.plist";
 				PRODUCT_NAME = HeyTests;
-				PROVISIONING_PROFILE = "e5eb3104-d5cf-47be-8740-d875c2c38660";
+				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
 			};

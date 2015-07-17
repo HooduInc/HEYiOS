@@ -244,7 +244,7 @@
         
         NSDate *today=[NSDate date];
         NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        [formatter setDateFormat:@"dd-MM-yyyy"];
+        [formatter setDateFormat:@"yyyy-MM-dd"];
         NSString *timeStamp = [formatter stringFromDate:today];
         
         userObj.strCurrentTimeStamp=timeStamp;
@@ -298,7 +298,7 @@
                 {
                     //[formatter setDateFormat:@"yyyy-MM-dd"];
                     NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
-                    [formatter setDateFormat:@"dd-MM-yyyy"];
+                    [formatter setDateFormat:@"yyyy-MM-dd"];
                     accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
                 }
                 
@@ -314,7 +314,7 @@
                              NSLog(@"Resigartion Error Message: %@",strMsg);
                              if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
                              {
-                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"ALready Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                                  
                                  [showDialog show];
                                  
@@ -349,27 +349,20 @@
                                       NSDictionary *resultDict=(id)result;
                                       if ([[resultDict valueForKey:@"status"] boolValue]==true)
                                       {
-                                          if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                                          NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                                          
+                                          if (serverDateString && serverDateString.length>0)
                                           {
-                                              NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
-                                              
-                                              NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                                              
-                                              if (serverDateString.length>0)
+                                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                              [format setDateFormat:@"MM.dd.yyyy"];
+                                              NSDate * serverDate =[format dateFromString:serverDateString];
+                                              NSLog(@"Server Date: %@",serverDate);
+                                              if (serverDate)
                                               {
-                                                  NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                                                  [format setDateFormat:@"dd-MM-yyyy"];
-                                                  NSDate * serverDate =[format dateFromString:serverDateString];
-                                                  NSLog(@"Server Date: %@",serverDate);
-                                                  if (serverDate)
-                                                  {
-                                                      [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                                      [[NSUserDefaults standardUserDefaults] synchronize];
-                                                  }
+                                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                                  [[NSUserDefaults standardUserDefaults] synchronize];
                                               }
                                           }
-                                          
-                                          
                                       }
                                   }
                                   

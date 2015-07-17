@@ -6,6 +6,8 @@
 
 #import <Availability.h>
 
+#warning "Always make the buid in XCODE 6.1
+
 #ifndef __IPHONE_3_0
 #warning "This project uses features only available in iOS SDK 3.0 and later."
 #endif
@@ -32,8 +34,11 @@
 //#define HostOne @"hey.sulavmart.com/hey/"
 //#define HeyBaseURL @"http://hey.sulavmart.com/hey/"
 
-#define HostOne @"52.6.95.175/index.php"
-#define HeyBaseURL @"http://52.6.95.175/index.php"
+//#define HostOne @"52.6.95.175/index.php"
+//#define HeyBaseURL @"http://52.6.95.175/index.php"
+
+#define HostOne @"api.getheyfever.com/index.php"
+#define HeyBaseURL @"http://api.getheyfever.com/index.php/"
 
 NSString * messageHolderString;
 BOOL addPhoneClicked;

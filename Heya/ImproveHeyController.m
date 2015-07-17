@@ -164,7 +164,9 @@
                 else
                     [mailViewController setMessageBody:nil isHTML:NO];
                 
-                 [mailViewController setToRecipients:[NSArray arrayWithObjects:@"patpartridge1248@gmail.com", @"tlanpher@msn.com", nil]];
+                 //[mailViewController setToRecipients:[NSArray arrayWithObjects:@"patpartridge1248@gmail.com", @"tlanpher@msn.com", nil]];
+                
+                [mailViewController setToRecipients:[NSArray arrayWithObjects:@"support@getheyfever.com", nil]];
                 
                 
                 [mailViewController.navigationBar setTintColor:[UIColor greenColor]];
@@ -188,9 +190,11 @@
         {
             case MFMailComposeResultCancelled:
                 NSLog(@"Mail cancelled");
+                [self alertStatus:nil :@"Email has been cancelled."];
                 break;
             case MFMailComposeResultSaved:
                 NSLog(@"Mail saved");
+                [self alertStatus:nil :@"Email has been saved."];
                 break;
             case MFMailComposeResultSent:
             {
@@ -200,6 +204,7 @@
             }
             case MFMailComposeResultFailed:
                 NSLog(@"Mail sent failure: %@", [error localizedDescription]);
+                [self alertStatus:nil :@"Failed to send the email."];
                 break;
             default:
                 break;
@@ -210,6 +215,8 @@
         NSLog(@"Error : %@",error);
     }
     [self dismissViewControllerAnimated:YES completion:nil];
+    [self.navigationController popViewControllerAnimated:YES];
+    
     
 }
 

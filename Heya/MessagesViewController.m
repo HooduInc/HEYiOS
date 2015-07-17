@@ -122,7 +122,13 @@ unsigned long location;
     [self.view addSubview:self.tag];
     
     shareHeyTextString=@"\nGet HEY Fever!";
-    shareHeyLink=@"- http://www.n2nservices.com/hey/";
+    shareHeyLink=@"- http://www.getheyfever.com/";
+    
+    
+    UIButton *bigFavBtn=[[UIButton alloc] initWithFrame:CGRectMake(6, 250, 114, 30)];
+    bigFavBtn.backgroundColor=[UIColor clearColor];
+    [bigFavBtn addTarget:self action:@selector(gotoFevoriteViewController:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view insertSubview:bigFavBtn atIndex:9999];
 }
 
 - (void) viewWillAppear:(BOOL)animated
@@ -141,7 +147,7 @@ unsigned long location;
     if([preferances valueForKey:@"ProfileContactNo"])
     {
         phoneTextString=[preferances valueForKey:@"ProfileContactNo"];
-        insertPhoneString=[NSString stringWithFormat:@" %@",phoneTextString];
+        insertPhoneString=[NSString stringWithFormat:@"%@",phoneTextString];
     }
     else
         phoneTextString=@"";
@@ -154,7 +160,7 @@ unsigned long location;
         {
             [messageTextView becomeFirstResponder];
         }
-        messageHolderString=getMessageStr;
+        messageHolderString=[NSString stringWithFormat:@"%@  ",getMessageStr];
         
         NSMutableAttributedString *wholeMsg=[[NSMutableAttributedString alloc] initWithString:messageHolderString];
         [wholeMsg addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0,4)];
@@ -884,116 +890,165 @@ unsigned long location;
     
     // Get the phone numbers as a multi-value property.
     ABMultiValueRef phonesRef = ABRecordCopyValue(person, kABPersonPhoneProperty);
-    for (int i=0; i<ABMultiValueGetCount(phonesRef); i++) {
-        CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
-        CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
-        
-        if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABPersonPhoneMainLabel
-        if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-        if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        
-        //If Phone Number doesn't exists in kABPersonIPhoneLabel
-        if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABHomeLabel
-        if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABWorkLabel
-        if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        CFRelease(currentPhoneLabel);
-        CFRelease(currentPhoneValue);
-    }
-    
-    CFRelease(phonesRef);
-    
-    // If the contact has an image then get it too.
-    if (ABPersonHasImageData(person))
+    if (phonesRef)
     {
+        //NSLog(@"isFacebook %d", [self isPersonFacebookContact:person]);
         
-        NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
+        if([self isPersonFacebookContact:person])
+        {
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"This contact information synced from facebook to your addressbook. Contact picture may not appear in here." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
+        }
         
-        UIImage  *img = [UIImage imageWithData:contactImageData];
+        for (int i=0; i<ABMultiValueGetCount(phonesRef); i++)
+        {
+            CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
+            CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
+            
+            if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABPersonPhoneMainLabel
+            if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
+            if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            
+            //If Phone Number doesn't exists in kABPersonIPhoneLabel
+            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABHomeLabel
+            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABWorkLabel
+            if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            CFRelease(currentPhoneLabel);
+            CFRelease(currentPhoneValue);
+        }
         
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        [library writeImageToSavedPhotosAlbum:[img CGImage] orientation:(ALAssetOrientation)[img imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error){
-            if (error) {
-                NSLog(@"error");
+        CFRelease(phonesRef);
+        
+        // If the contact has an image then get it too.
+        if (ABPersonHasImageData(person))
+        {
+            
+            NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
+            
+            UIImage  *img = [UIImage imageWithData:contactImageData];
+            
+            ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+            [library writeImageToSavedPhotosAlbum:[img CGImage] orientation:(ALAssetOrientation)[img imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error){
+                if (error) {
+                    NSLog(@"error");
+                }
+                else
+                {
+                    
+                    urlString = [assetURL absoluteString];
+                    NSLog(@"url %@", urlString);
+                    [contactInfoDict setObject:urlString forKey:@"image"];
+                }
+            }];
+            
+            if (multipleContactNoArray.count>1)
+            {
+                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+                
+                for(NSString *buttonTitle in multipleContactNoArray)
+                    [alertContactDialog addButtonWithTitle:buttonTitle];
+                [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
+                [alertContactDialog show];
+            }
+            else if(multipleContactNoArray.count!=0)
+            {
+                [self insertIntoToField];
+            }
+            
+        }
+        
+        else
+        {
+            [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
+            
+            if (multipleContactNoArray.count>1)
+            {
+                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+                
+                for(NSString *buttonTitle in multipleContactNoArray)
+                    [alertContactDialog addButtonWithTitle:buttonTitle];
+                [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
+                [alertContactDialog show];
             }
             else
-            {
-                
-                urlString = [assetURL absoluteString];
-                NSLog(@"url %@", urlString);
-                [contactInfoDict setObject:urlString forKey:@"image"];
-            }
-        }];
-        
-        if (multipleContactNoArray.count>1)
-        {
-            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-            
-            for(NSString *buttonTitle in multipleContactNoArray)
-                [alertContactDialog addButtonWithTitle:buttonTitle];
-            [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-            [alertContactDialog show];
+                [self insertIntoToField];
         }
-        else
-            [self insertIntoToField];
     }
     
     else
     {
-        [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
-        
-        if (multipleContactNoArray.count>1)
-        {
-            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-            
-            for(NSString *buttonTitle in multipleContactNoArray)
-                [alertContactDialog addButtonWithTitle:buttonTitle];
-            [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-            [alertContactDialog show];
-        }
-        else
-            [self insertIntoToField];
+        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Sorry. Contact number doesn't exist." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        [alert show];
     }
 
-    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
+    //[self.addressBookController dismissViewControllerAnimated:YES completion:nil];
     
 }
 
 -(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker{
-    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
+    [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (BOOL)isPersonFacebookContact:(ABRecordRef)person
+{
+    ABMultiValueRef instantMessage = ABRecordCopyValue(person, kABPersonInstantMessageProperty);
+    
+    BOOL returnValue = NO;
+    
+    if (instantMessage)
+    {
+        for (NSInteger i=0 ; i < ABMultiValueGetCount(instantMessage); i++)
+        {
+            CFDictionaryRef instantMessageValue = ABMultiValueCopyValueAtIndex(instantMessage, i);
+            CFStringRef instantMessageString = CFDictionaryGetValue(instantMessageValue, kABPersonInstantMessageServiceKey);
+            
+            if (CFStringCompare(instantMessageString, kABPersonInstantMessageServiceFacebook, 0) == kCFCompareEqualTo)
+            {
+                returnValue = YES;
+            }
+            
+            CFRelease(instantMessageString);
+            CFRelease(instantMessageValue);
+        }
+    }
+    
+    //CFRelease(instantMessage);
+    
+    return returnValue;
 }
 
 
@@ -1402,8 +1457,7 @@ unsigned long location;
     
     if(finalMessage.length>0)
     {
-        
-        //FOR TEST
+        //For Test
         
         /*NSMutableArray *msgArray=[[NSMutableArray alloc] init];
         NSMutableArray *userProfile=[[NSMutableArray alloc] init];
@@ -1412,13 +1466,11 @@ unsigned long location;
         userProfile=[DBManager fetchUserProfile];
         
         NSString *toPhoneNo=@"";
-        if(userProfile.count>0)
-        {
-            ModelUserProfile *obj=[userProfile objectAtIndex:0];
-            toPhoneNo=obj.strPhoneNo;
-        }
         
-        msgObj.strDeviceId=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        ModelUserProfile *obj=[userProfile objectAtIndex:0];
+        toPhoneNo=obj.strPhoneNo;
+        
+        msgObj.strDeviceId=obj.strDeviceUDID;
         msgObj.strtemplateId=@"1";
         msgObj.strMessageText=finalMessage;
         
@@ -1438,148 +1490,13 @@ unsigned long location;
         [msgArray addObject:msgObj];
         
         long long msgInsertId=[DBManager insertMessageDetails:msgArray];
+        
         if (msgInsertId!=0)
-        {
             NSLog(@"MessageDetails inserted.");
-            
-            [format setDateFormat:@"yyyy-MM-dd"];
-            NSDate *fecthDate=[format dateFromString:msgObj.strSendDate];
-            [format setDateFormat:@"dd-MM-yyyy"];
-            NSString *strTimeStamp = [format stringFromDate:fecthDate];
-            
-            NSLog(@"Send TimeStamp: %@",strTimeStamp);
-            
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-            
-            //Change the host name here to change the server you want to monitor.
-            NSString *remoteHostName =HeyBaseURL;
-            
-            self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-            [self.hostReachability startNotifier];
-            [self updateInterfaceWithReachability:self.hostReachability];
-            
-            self.internetReachability = [Reachability reachabilityForInternetConnection];
-            [self.internetReachability startNotifier];
-            [self updateInterfaceWithReachability:self.internetReachability];
-            
-            self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-            [self.wifiReachability startNotifier];
-            [self updateInterfaceWithReachability:self.wifiReachability];
-            
-            if([self isNetworkAvailable])
-            {
-
-                NSMutableArray *userProfile=[[NSMutableArray alloc] init];
-                userProfile=[DBManager fetchUserProfile];
-                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
-                
-                NSString *accountCreationDateStr=@"";
-                if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
-                {
-                    NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
-                    accountCreationDateStr=[NSString stringWithFormat:@"%@",modObj.strAccountCreated];
-                    NSLog(@"Account Creation Date After Formatting: %@",accountCreationDateStr);
-                }
-                
-                NSString *FullName=@"";
-                if (modObj.strFirstName && modObj.strFirstName.length>0)
-                {
-                    FullName=[NSString stringWithFormat:@"%@",modObj.strFirstName];
-                }
-                if (modObj.strLastName && modObj.strLastName.length>0)
-                {
-                    FullName=[NSString stringWithFormat:@"%@ %@",FullName, modObj.strLastName];
-                }
-                NSString *ContactNumber=@"";
-                if (modObj.strPhoneNo && modObj.strPhoneNo.length>0)
-                {
-                    ContactNumber=[NSString stringWithFormat:@"%@",modObj.strPhoneNo];
-                }
-                
-                NSDate *today=[NSDate date];
-                NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-                [formatter setDateFormat:@"dd-MM-yyyy"];
-                NSString *timeStamp = [formatter stringFromDate:today];
-                
-                NSLog(@"isRegistered Status: %d",modObj.isRegistered);
-                if (modObj.isRegistered==0)
-                {
-                    [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[FullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[ContactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         if (isError)
-                         {
-                             NSLog(@"Resigartion Error Message: %@",strMsg);
-                             
-                             if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
-                             {
-                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                                 
-                                 [showDialog show];
-                                 
-                                 [DBManager updatedToServerForUserWithFlag:1];
-                                 [DBManager isRegistrationSuccessful:1];
-                                 
-                             }
-                         }
-                         
-                         else
-                         {   [DBManager updatedToServerForUserWithFlag:1];
-                             [DBManager isRegistrationSuccessful:1];
-                             NSLog(@"Resigartion Success Message: %@",strMsg);
-                             
-                             if (pushDeviceTokenId && pushDeviceTokenId.length>0)
-                             {
-                                 [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                                  {
-                                      NSLog(@"Push Message: %@",strMsg);
-                                  }];
-                             }
-                             
-                             [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                              {
-                                  
-                                  if(isError)
-                                  {
-                                      NSLog(@"Error: %@",strMsg);
-                                  }
-                                  else
-                                  {
-                                      NSLog(@"Success: %@",strMsg);
-                                      
-                                      [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%lld",msgInsertId]];
-                                  }
-                              }];
-                         }
-                         
-                     }];
-                    
-                }
-                else
-                {
-
-                    [[HeyWebService service] sendMessageDetailsToServerWithUDID:msgObj.strDeviceId  TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         
-                         if(isError)
-                         {
-                             NSLog(@"Error: %@",strMsg);
-                         }
-                         else
-                         {
-                             NSLog(@"Success: %@",strMsg);
-                             
-                             [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%lld",msgInsertId]];
-                         }
-                     }];
-                }
-            }
-            
-        }
         else
             NSLog(@"MessageDetails not inserted.");*/
         
-        //FOR TEST
-        
+        //For Test
         if([MFMessageComposeViewController canSendText])
         {
             afterMsgSendString=finalMessage;
@@ -1616,13 +1533,11 @@ unsigned long location;
             userProfile=[DBManager fetchUserProfile];
             
             NSString *toPhoneNo=@"";
-            if(userProfile.count>0)
-            {
-                ModelUserProfile *obj=[userProfile objectAtIndex:0];
-                toPhoneNo=obj.strPhoneNo;
-            }
+    
+            ModelUserProfile *obj=[userProfile objectAtIndex:0];
+            toPhoneNo=obj.strPhoneNo;
             
-            msgObj.strDeviceId=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
+            msgObj.strDeviceId=obj.strDeviceUDID;
             msgObj.strtemplateId=@"1";
             msgObj.strMessageText=afterMsgSendString;
             
@@ -1642,177 +1557,9 @@ unsigned long location;
             [msgArray addObject:msgObj];
             
             long long msgInsertId=[DBManager insertMessageDetails:msgArray];
+            
             if (msgInsertId!=0)
-            {
                 NSLog(@"MessageDetails inserted.");
-                
-                
-                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-                
-                //Change the host name here to change the server you want to monitor.
-                NSString *remoteHostName =HeyBaseURL;
-                
-                self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-                [self.hostReachability startNotifier];
-                [self updateInterfaceWithReachability:self.hostReachability];
-                
-                self.internetReachability = [Reachability reachabilityForInternetConnection];
-                [self.internetReachability startNotifier];
-                [self updateInterfaceWithReachability:self.internetReachability];
-                
-                self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-                [self.wifiReachability startNotifier];
-                [self updateInterfaceWithReachability:self.wifiReachability];
-                
-                if([self isNetworkAvailable])
-                {
-                    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
-                    userProfile=[DBManager fetchUserProfile];
-                    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
-                    
-                    NSString *accountCreationDateStr=@"";
-                    if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
-                    {
-                        NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
-                        accountCreationDateStr=[NSString stringWithFormat:@"%@",modObj.strAccountCreated];
-                        NSLog(@"Account Creation Date After Formatting: %@",accountCreationDateStr);
-                        
-                    }
-                    
-                    NSString *FullName=@"";
-                    if (modObj.strFirstName && modObj.strFirstName.length>0)
-                    {
-                        FullName=[NSString stringWithFormat:@"%@",modObj.strFirstName];
-                    }
-                    if (modObj.strLastName && modObj.strLastName.length>0)
-                    {
-                        FullName=[NSString stringWithFormat:@"%@ %@",FullName, modObj.strLastName];
-                    }
-                    NSString *ContactNumber=@"";
-                    if (modObj.strPhoneNo && modObj.strPhoneNo.length>0)
-                    {
-                        ContactNumber=[NSString stringWithFormat:@"%@",modObj.strPhoneNo];
-                    }
-                    
-                    NSDate *today=[NSDate date];
-                    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-                    [formatter setDateFormat:@"dd-MM-yyyy"];
-                    NSString *timeStamp = [formatter stringFromDate:today];
-                    
-                    NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
-                    if (modObj.isRegistered==0)
-                    {
-                        [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[FullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[ContactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                         {
-                             if (isError)
-                             {
-                                 NSLog(@"Resigartion Error Message: %@",strMsg);
-                                 if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
-                                 {
-                                     UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                                     
-                                     [showDialog show];
-                                     
-                                     [DBManager updatedToServerForUserWithFlag:1];
-                                     [DBManager isRegistrationSuccessful:1];
-                                     
-                                 }
-                             }
-                             
-                             else
-                             {   [DBManager updatedToServerForUserWithFlag:1];
-                                 [DBManager isRegistrationSuccessful:1];
-                                 
-                                 
-                                 if (pushDeviceTokenId && pushDeviceTokenId.length>0)
-                                 {
-                                     [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                                      {
-                                          NSLog(@"Push Message: %@",strMsg);
-                                      }];
-                                 }
-                                 
-                                 //store the trail period date or the subscription date in NSUserDefaults
-                                 [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                                  {
-                                      if (isError)
-                                      {
-                                          NSLog(@"Subscription Fetch Failed: %@",strMsg);
-                                      }
-                                      else
-                                      {
-                                          NSDictionary *resultDict=(id)result;
-                                          if ([[resultDict valueForKey:@"status"] boolValue]==true)
-                                          {
-                                              if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
-                                              {
-                                                  NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
-                                                  
-                                                  NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                                                  
-                                                  if (serverDateString.length>0)
-                                                  {
-                                                      NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                                                      [format setDateFormat:@"dd-MM-yyyy"];
-                                                      NSDate * serverDate =[format dateFromString:serverDateString];
-                                                      NSLog(@"Server Date: %@",serverDate);
-                                                      if (serverDate)
-                                                      {
-                                                          [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                                          [[NSUserDefaults standardUserDefaults] synchronize];
-                                                      }
-                                                  }
-                                              }
-                                              
-                                              
-                                          }
-                                      }
-                                      
-                                  }];
-                                 //store the trail period date or the subscription date in NSUserDefaults
-                                 
-                                 
-                                 NSLog(@"Resigartion Success Message: %@",strMsg);
-                                 [[HeyWebService service] sendMessageDetailsToServerWithUDID:[msgObj.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:timeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                                  {
-                                      
-                                      if(isError)
-                                      {
-                                          NSLog(@"Error: %@",strMsg);
-                                      }
-                                      else
-                                      {
-                                          NSLog(@"Success: %@",strMsg);
-                                      }
-                                  }];
-                             }
-                             
-                         }];
-                        
-                    }
-                    else
-                    {
-                        NSDate *today=[NSDate date];
-                        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-                        [formatter setDateFormat:@"dd-MM-yyyy"];
-                        NSString *strTimeStamp = [formatter stringFromDate:today];
-                        
-                        [[HeyWebService service] sendMessageDetailsToServerWithUDID:[msgObj.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]   TemplateId:msgObj.strtemplateId MsgText:msgObj.strMessageText TimeStamp:strTimeStamp From:msgObj.strTo To:msgObj.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                         {
-                             
-                             if(isError)
-                             {
-                                 NSLog(@"Error: %@",strMsg);
-                             }
-                             else
-                             {
-                                 NSLog(@"Success: %@",strMsg);
-                             }
-                         }];
-                    }
-                }
-                
-            }
             else
                 NSLog(@"MessageDetails not inserted.");
             
@@ -1982,15 +1729,32 @@ unsigned long location;
 
 -(void) addRemovePhone
 {
+    NSMutableAttributedString *attributeHEYString = [[NSMutableAttributedString alloc] initWithString:shareHeyTextString];
+    [attributeHEYString addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInt:1] range:NSMakeRange(0,[attributeHEYString length])];
+    [attributeHEYString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0,[attributeHEYString length])];
+    
+    
     if(phoneTextString.length>0)
     {
         NSMutableAttributedString *newString =[[NSMutableAttributedString alloc] initWithAttributedString:messageTextView.attributedText];
         
-        
-        
         if(![messageTextView.text containsString:insertPhoneString])
         {
-            [newString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@", insertPhoneString]]];
+            if([[newString string] containsString:[attributeHEYString string]])
+            {
+                [[newString mutableString] replaceOccurrencesOfString:[NSString stringWithFormat:@"%@", [attributeHEYString string]] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, newString.string.length)];
+                
+                
+                [newString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@", insertPhoneString]]];
+                
+                [newString appendAttributedString: attributeHEYString];
+                
+            }
+            
+            else
+            {
+                [newString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@", insertPhoneString]]];
+            }
             
             [_addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon_over.png"] forState:UIControlStateNormal];
             
@@ -1998,8 +1762,8 @@ unsigned long location;
         }
         else
         {
-
-            [[newString mutableString] replaceOccurrencesOfString:insertPhoneString withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, newString.string.length)];
+            
+            [[newString mutableString] replaceOccurrencesOfString:[NSString stringWithFormat:@" %@",insertPhoneString] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, newString.string.length)];
             
             [_addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon.png"] forState:UIControlStateNormal];
             
@@ -2042,16 +1806,18 @@ unsigned long location;
         if(phoneTextString.length>0 && [[textViewAttrString string] containsString:phoneTextString])
         {
             //if "get hey fever" and phoneTextString exists
-            [[textViewAttrString mutableString] replaceOccurrencesOfString:[NSString stringWithFormat:@"%@ %@", [attributeHEYString string],phoneTextString] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
+            [[textViewAttrString mutableString] replaceOccurrencesOfString:[NSString stringWithFormat:@" %@", phoneTextString] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
             
+            [[textViewAttrString mutableString] replaceOccurrencesOfString:[NSString stringWithFormat:@"%@", [attributeHEYString string]] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
             
             messageTextView.attributedText=textViewAttrString;
-            location=location-[attributeHEYString length]-[phoneTextString length]-1;
+            //location=location-[attributeHEYString length]-[phoneTextString length]-1;
             [self.addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon.png"] forState:UIControlStateNormal];
             
             
-            [textViewAttrString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@", insertPhoneString]]];
+            [textViewAttrString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@", insertPhoneString]]];
             messageTextView.attributedText=textViewAttrString;
+            
             
             [_addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon_over.png"] forState:UIControlStateNormal];
         }
@@ -2061,26 +1827,29 @@ unsigned long location;
             [[textViewAttrString mutableString] replaceOccurrencesOfString:[attributeHEYString string] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
             
             messageTextView.attributedText=textViewAttrString;
-            location=location-[attributeHEYString length];
+            //location=location-[attributeHEYString length];
             NSLog(@"AFTER REMOVING HEY TEXT: %@",messageTextView.text);
         }
         
         messageHolderString=messageTextView.text;
         [_share_btn setImage:[UIImage imageNamed:@"hey_share_icon.png"] forState:UIControlStateNormal];
     }
+    
     else
     {
         NSLog(@"HEY String Does Not Exists & Current Location: %lu",location);
         
         if(phoneTextString.length>0 && [[textViewAttrString string] containsString:phoneTextString])
         {
-             [[textViewAttrString mutableString] replaceOccurrencesOfString:insertPhoneString withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
+             [[textViewAttrString mutableString] replaceOccurrencesOfString:[NSString stringWithFormat:@" %@",insertPhoneString] withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, textViewAttrString.string.length)];
+            
+            [textViewAttrString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@", insertPhoneString]]];
             
             [textViewAttrString appendAttributedString: attributeHEYString];
             
-            [textViewAttrString appendAttributedString: [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@", insertPhoneString]]];
-            
             messageTextView.attributedText = textViewAttrString;
+            
+            //location=location-[attributeHEYString length]-[phoneTextString length]-1;
             
             [_addPhone_btn setImage:[UIImage imageNamed:@"mobile_icon_over.png"] forState:UIControlStateNormal];
         }
@@ -2133,16 +1902,24 @@ unsigned long location;
     location=textView.text.length;
     NSLog(@"Location: %ld",location);
 
-    if ([textView.text containsString:shareHeyTextString])
+    if ([textView.text containsString:shareHeyTextString] && ![textView.text containsString:phoneTextString])
     {
         textView.selectedRange = NSMakeRange([textView.text rangeOfString:shareHeyTextString].location, 0);
         
+        NSLog(@"Cursor Position: %ld",(long)[textView.text rangeOfString:shareHeyTextString].location);
     }
     
-    if ([textView.text containsString:phoneTextString] && ![textView.text containsString:shareHeyTextString])
+    else if ([textView.text containsString:phoneTextString] && ![textView.text containsString:shareHeyTextString])
     {
-        textView.selectedRange = NSMakeRange([textView.text rangeOfString:insertPhoneString].location, 0);
+        textView.selectedRange = NSMakeRange([textView.text rangeOfString:insertPhoneString].location-1, 0);
     }
+    
+    else if ([textView.text containsString:phoneTextString] && [textView.text containsString:shareHeyTextString])
+    {
+        textView.selectedRange = NSMakeRange([textView.text rangeOfString:[NSString stringWithFormat:@"%@%@",phoneTextString,shareHeyTextString]].location-1, 0);
+    }
+
+    
     messageHolderString=textView.text;
     NSLog(@"textViewDidChangeSelection-> Updated Message: %@", messageHolderString=textView.text);
 }
@@ -2274,44 +2051,40 @@ unsigned long location;
              
              if ([[resultDict valueForKey:@"status"] boolValue]==true)
              {
-                 if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                 
+                 NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                 
+                 if (serverDateString && serverDateString.length>0)
                  {
-                     NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
+                     NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                     [format setDateFormat:@"MM.dd.yyyy"];
+                     NSDate * serverDate =[format dateFromString:serverDateString];
+                     NSLog(@"Server Date: %@",serverDate);
                      
-                     NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                     
-                     if (serverDateString.length>0)
+                     if (serverDate)
                      {
-                         NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                         [format setDateFormat:@"dd-MM-yyyy"];
-                         NSDate * serverDate =[format dateFromString:serverDateString];
-                         NSLog(@"Server Date: %@",serverDate);
+                         [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                         [[NSUserDefaults standardUserDefaults] synchronize];
                          
                          
-                         if (serverDate)
+                         NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
+                         
+                         NSDate *today=[NSDate date];
+                         
+                         if ([expireDate compare:today] == NSOrderedAscending)
                          {
-                             [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                             [[NSUserDefaults standardUserDefaults] synchronize];
-                             
-                             
-                             NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
-                             
-                             NSDate *today=[NSDate date];
-                             
-                             if ([expireDate compare:today] == NSOrderedAscending)
-                             {
-                                 self.sendMsgBtn.enabled=NO;
-                                 //self.sendMsgBtn.backgroundColor=[UIColor colorWithRed:0/255.0f green:0/255.0f blue:0/255.0f alpha:0.2];
-                             }
-                             else
-                             {
-                                 self.sendMsgBtn.enabled=YES;
-                                 //self.sendMsgBtn.backgroundColor=[UIColor clearColor];
-                             }
+                             self.sendMsgBtn.enabled=NO;
+                             //self.sendMsgBtn.backgroundColor=[UIColor colorWithRed:0/255.0f green:0/255.0f blue:0/255.0f alpha:0.2];
+                         }
+                         else
+                         {
+                             self.sendMsgBtn.enabled=YES;
+                             //self.sendMsgBtn.backgroundColor=[UIColor clearColor];
                          }
                      }
                  }
-             }
+                 
+            }
          }
      }];
     }

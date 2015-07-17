@@ -229,8 +229,20 @@ withCloseButtonColor:(UIColor *)closeColor
     else
     {
         [self.tLabelColor set];
+        
+        
+        #ifdef __IPHONE_7_0
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
+        paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
+        paragraphStyle.alignment = NSTextAlignmentCenter;
+        [self.tTitle drawInRect:CGRectMake(tagHeight + tagMargin, ([self getTagSize].height / 2.0f) - ([self getTagSize].height / 2.0f), [self getTagSize].width, [self getTagSize].height) withAttributes: @{NSFontAttributeName: [UIFont fontWithName:self.tFontName size:[self.tFontSize floatValue]],
+                                                                                                                                                                                                              NSParagraphStyleAttributeName: paragraphStyle }];
+        #else
         [self.tTitle drawInRect:CGRectMake(tagHeight + tagMargin, ([self getTagSize].height / 2.0f) - ([self getTagSize].height / 2.0f), [self getTagSize].width, [self getTagSize].height)
                        withFont:[UIFont fontWithName:self.tFontName size:[self.tFontSize floatValue]] lineBreakMode:NSLineBreakByWordWrapping];
+        #endif
+        
+        
     }
     
     AOTagCloseButton *close = [[AOTagCloseButton alloc] initWithFrame:CGRectMake([self getTagSize].width - tagHeight, 0.0, tagHeight, tagHeight)

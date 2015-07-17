@@ -8,6 +8,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HeyAccountController">
             <connections>
                 <outlet property="myAccountTableView" destination="oE4-X0-EZE" id="NPr-N1-TFN"/>
+                <outlet property="renewBtn" destination="72l-J8-qme" id="8KU-kM-jnL"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
@@ -35,7 +36,7 @@
                         <action selector="back:" destination="-1" eventType="touchUpInside" id="xjQ-kj-4Fl"/>
                     </connections>
                 </button>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Help Us to Improve Hey!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qss-7u-2Ek">
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Hey! Account" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qss-7u-2Ek">
                     <rect key="frame" x="52" y="91" width="216" height="21"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="18"/>
@@ -78,17 +79,28 @@
                     </subviews>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                 </view>
-                <tableView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" style="grouped" allowsSelection="NO" rowHeight="30" sectionHeaderHeight="10" sectionFooterHeight="10" id="oE4-X0-EZE">
-                    <rect key="frame" x="0.0" y="158" width="600" height="426"/>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" bounces="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" style="grouped" allowsSelection="NO" rowHeight="30" sectionHeaderHeight="10" sectionFooterHeight="1" id="oE4-X0-EZE">
+                    <rect key="frame" x="0.0" y="158" width="600" height="290"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     <inset key="contentInset" minX="0.0" minY="-35" maxX="0.0" maxY="0.0"/>
                     <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                    <color key="sectionIndexBackgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     <connections>
                         <outlet property="dataSource" destination="-1" id="zab-fN-Adi"/>
                         <outlet property="delegate" destination="-1" id="rsG-qS-9ii"/>
                     </connections>
                 </tableView>
+                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="72l-J8-qme">
+                    <rect key="frame" x="85" y="448" width="150" height="30"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="18"/>
+                    <state key="normal" title="Renew Now" backgroundImage="sendbtn_back.png"/>
+                    <connections>
+                        <action selector="subscriptionBtnTapped:" destination="-1" eventType="touchUpInside" id="J3j-pH-3se"/>
+                    </connections>
+                </button>
             </subviews>
             <color key="backgroundColor" red="0.92156862745098034" green="0.92156862745098034" blue="0.92156862745098034" alpha="1" colorSpace="calibratedRGB"/>
             <point key="canvasLocation" x="381" y="337"/>
@@ -97,6 +109,7 @@
     <resources>
         <image name="back_btn.png" width="57" height="20"/>
         <image name="heyText" width="45" height="45"/>
+        <image name="sendbtn_back.png" width="604" height="136"/>
         <image name="top_barbg.png" width="320" height="83"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

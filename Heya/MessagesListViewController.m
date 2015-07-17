@@ -195,6 +195,7 @@ NSUserDefaults *preferances;
     if (cell==nil) {
         cell=[[[NSBundle mainBundle] loadNibNamed:@"MenuListTableViewCell" owner:self options:nil] objectAtIndex:0];
     }
+    
     [cell.btnClose setHidden:YES];
     ModelMenu *obj;
     
@@ -252,13 +253,13 @@ NSUserDefaults *preferances;
         cell.btnArrow.transform=CGAffineTransformMakeRotation(M_PI*2);
     }
     
-    
     return cell;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (selectedSection==-1) {
+    if (selectedSection==-1)
+    {
         return 0;
     }
     else
@@ -726,7 +727,7 @@ NSUserDefaults *preferances;
             
             NSDate *today=[NSDate date];
             NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateFormat:@"dd-MM-yyyy"];
+            [formatter setDateFormat:@"yyyy-MM-dd"];
             NSString *timeStamp = [formatter stringFromDate:today];
             
             NSLog(@"timeStamp: %@",timeStamp);
@@ -742,7 +743,7 @@ NSUserDefaults *preferances;
                          
                          if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
                          {
-                             UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registerd." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                             UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                              
                              [showDialog show];
                              
@@ -774,28 +775,23 @@ NSUserDefaults *preferances;
                               else
                               {
                                   NSDictionary *resultDict=(id)result;
+                                  
                                   if ([[resultDict valueForKey:@"status"] boolValue]==true)
                                   {
-                                      if ([[resultDict valueForKey:@"error"] containsString:@"expire on"])
+                                      NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                                      
+                                      if (serverDateString && serverDateString.length>0)
                                       {
-                                          NSArray* mainMsgArrayString = [[resultDict valueForKey:@"error"] componentsSeparatedByString: @"expire on"];
-                                          
-                                          NSString *serverDateString=[[mainMsgArrayString objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                                          
-                                          if (serverDateString.length>0)
+                                          NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                          [format setDateFormat:@"MM.dd.yyyy"];
+                                          NSDate * serverDate =[format dateFromString:serverDateString];
+                                          NSLog(@"Server Date: %@",serverDate);
+                                          if (serverDate)
                                           {
-                                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                                              [format setDateFormat:@"dd-MM-yyyy"];
-                                              NSDate * serverDate =[format dateFromString:serverDateString];
-                                              NSLog(@"Server Date: %@",serverDate);
-                                              if (serverDate)
-                                              {
-                                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                                  [[NSUserDefaults standardUserDefaults] synchronize];
-                                              }
+                                              [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                              [[NSUserDefaults standardUserDefaults] synchronize];
                                           }
                                       }
-                                      
                                       
                                   }
                               }
@@ -813,9 +809,17 @@ NSUserDefaults *preferances;
                                  strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
                                  NSLog(@"Message Send Timestamp: %@",strTimeStamp);
                                  
+                                 
+                                 /*NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                                 [formatter setDateFormat:@"yyyy-mm-dd"];
+                                 NSDate *sendTimeStamp = [formatter dateFromString:strTimeStamp];
+                                 [formatter setDateFormat:@"MM.dd.yyyy"];
+                                 NSString *strSendTime=[formatter stringFromDate:sendTimeStamp];
+                                 NSLog(@"Timestamp send to server: %@",strSendTime);*/
+                                 
                              }
                              
-                             [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]   TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                             [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                               {
                                   if(isError)
                                   {
@@ -843,6 +847,13 @@ NSUserDefaults *preferances;
                     {
                         strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
                         NSLog(@"Message Send Timestamp: %@",strTimeStamp);
+                        
+                        /*NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                        [formatter setDateFormat:@"yyyy-mm-dd"];
+                        NSDate *sendTimeStamp = [formatter dateFromString:strTimeStamp];
+                        [formatter setDateFormat:@"MM.dd.yyyy"];
+                        NSString *strSendTime=[formatter stringFromDate:sendTimeStamp];
+                        NSLog(@"Timestamp send to server: %@",strSendTime);*/
                         
                     }
                     

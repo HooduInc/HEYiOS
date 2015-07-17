@@ -231,103 +231,158 @@ NSMutableDictionary *contactInfoDict;
     
     // Get the phone numbers as a multi-value property.
     ABMultiValueRef phonesRef = ABRecordCopyValue(person, kABPersonPhoneProperty);
-    for (int i=0; i<ABMultiValueGetCount(phonesRef); i++) {
-        CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
-        CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
-        
-        if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABPersonPhoneMainLabel
-        if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-        if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        
-        //If Phone Number doesn't exists in kABPersonIPhoneLabel
-        if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABHomeLabel
-        if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        //If Phone Number doesn't exists in kABWorkLabel
-        if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-        {
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-        }
-        
-        
-        
-        CFRelease(currentPhoneLabel);
-        CFRelease(currentPhoneValue);
-    }
     
-    NSLog(@"Contact Dictionary: %@", contactInfoDict);
-    CFRelease(phonesRef);
-    
-    
-    
-    // If the contact has an image then get it too.
-    if (ABPersonHasImageData(person))
+    if (phonesRef)
     {
         
-        NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-        contactImageFromAddressBook = [UIImage imageWithData:contactImageData];
+        //NSLog(@"isFacebook %d", [self isPersonFacebookContact:person]);
         
-        if (multipleContactNoArray.count>1)
+        if([self isPersonFacebookContact:person])
         {
-            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"This contact information synced from facebook to your addressbook. Contact picture may not appear in the groups." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
+        }
+        
+        for (int i=0; i<ABMultiValueGetCount(phonesRef); i++)
+        {
+            CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
+            CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
             
-            for(NSString *buttonTitle in multipleContactNoArray)
-                [alertContactDialog addButtonWithTitle:buttonTitle];
-            [addressBookController dismissViewControllerAnimated:YES completion:nil];
-            [alertContactDialog show];
+            if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABPersonPhoneMainLabel
+            if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
+            if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            
+            //If Phone Number doesn't exists in kABPersonIPhoneLabel
+            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABHomeLabel
+            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            //If Phone Number doesn't exists in kABWorkLabel
+            if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
+            {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            
+            
+            CFRelease(currentPhoneLabel);
+            CFRelease(currentPhoneValue);
+        }
+        
+        NSLog(@"Contact Dictionary: %@", contactInfoDict);
+        CFRelease(phonesRef);
+        
+        
+        
+        // If the contact has an image then get it too.
+        if (ABPersonHasImageData(person))
+        {
+            
+            NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
+            contactImageFromAddressBook = [UIImage imageWithData:contactImageData];
+            
+            if (multipleContactNoArray.count>1)
+            {
+                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+                
+                for(NSString *buttonTitle in multipleContactNoArray)
+                    [alertContactDialog addButtonWithTitle:buttonTitle];
+                [addressBookController dismissViewControllerAnimated:YES completion:nil];
+                [alertContactDialog show];
+                
+            }
+            else if(multipleContactNoArray.count!=0)
+                [self insertGroupMember];
             
         }
-        else
-            [self insertGroupMember];
         
+        else
+        {
+            contactImageFromAddressBook=nil;
+            [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
+            
+            if (multipleContactNoArray.count>1)
+            {
+                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+                
+                for(NSString *buttonTitle in multipleContactNoArray)
+                    [alertContactDialog addButtonWithTitle:buttonTitle];
+                [addressBookController dismissViewControllerAnimated:YES completion:nil];
+                [alertContactDialog show];
+            }
+            else
+                [self insertGroupMember];
+        }
     }
     
     else
     {
-        contactImageFromAddressBook=nil;
-        [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
-        
-        if (multipleContactNoArray.count>1)
-        {
-            UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-            
-            for(NSString *buttonTitle in multipleContactNoArray)
-                [alertContactDialog addButtonWithTitle:buttonTitle];
-            [addressBookController dismissViewControllerAnimated:YES completion:nil];
-            [alertContactDialog show];
-        }
-        else
-            [self insertGroupMember];
+        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Sorry. Contact number doesn't exist." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        [alert show];
     }
     
+    //[addressBookController dismissViewControllerAnimated:YES completion:nil];
+    
+}
+
+-(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker
+{
+    [addressBookController dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (BOOL)isPersonFacebookContact:(ABRecordRef)person
+{
+    ABMultiValueRef instantMessage = ABRecordCopyValue(person, kABPersonInstantMessageProperty);
+    
+    BOOL returnValue = NO;
+    
+    if (instantMessage)
+    {
+        for (NSInteger i=0 ; i < ABMultiValueGetCount(instantMessage); i++)
+        {
+            CFDictionaryRef instantMessageValue = ABMultiValueCopyValueAtIndex(instantMessage, i);
+            CFStringRef instantMessageString = CFDictionaryGetValue(instantMessageValue, kABPersonInstantMessageServiceKey);
+            
+            if (CFStringCompare(instantMessageString, kABPersonInstantMessageServiceFacebook, 0) == kCFCompareEqualTo)
+            {
+                returnValue = YES;
+            }
+            
+            CFRelease(instantMessageString);
+            CFRelease(instantMessageValue);
+        }
+    }
+    
+    //CFRelease(instantMessage);
+    
+    return returnValue;
 }
 
 #pragma mark

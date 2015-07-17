@@ -109,6 +109,7 @@
 +(BOOL) deleteMessageWithDate:(NSString*)strDate;
 
 +(NSMutableArray*)fetchUnSyncMessageDetailsWithisPushedToServer:(int) flag;
++(long)fetchMessageDetailsWithTodayDate;
 +(long)fetchMessageDetailsWithYestadayDate;
 +(long)fetchMessageDetailsWithCurrentMonth;
 +(long)fetchMessageDetailsWithCurrentYear;

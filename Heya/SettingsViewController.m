@@ -101,6 +101,11 @@ NSUserDefaults *preferances;
     
 }
 
+- (BOOL) prefersStatusBarHidden
+{
+    return YES;
+}
+
 - (IBAction)selectThemeButtonTapped:(id)sender {
     
     ThemeViewController *tVc = [[ThemeViewController alloc] initWithNibName:@"ThemeViewController" bundle:nil];

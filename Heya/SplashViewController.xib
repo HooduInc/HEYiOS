@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="7531" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7520"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
@@ -652,7 +652,7 @@
                             <rect key="frame" x="98" y="31" width="55" height="54"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="VUl-hd-NIs" secondAttribute="height" multiplier="37:35" id="Avy-gw-V4e">
-                                    <variation key="heightClass=regular-widthClass=compact" constant="-1.0571428571428569"/>
+                                    <variation key="heightClass=regular-widthClass=compact" constant="-2.1142857142857139"/>
                                 </constraint>
                             </constraints>
                             <variation key="default">
@@ -685,7 +685,7 @@
                                 </mask>
                             </variation>
                         </label>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Just touch one of your Favorite(s) or a Group and touch SEND." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="1nf-Og-Fo8">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Just touch one of your Favorite(s) or a Group and touch SEND." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" preferredMaxLayoutWidth="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="1nf-Og-Fo8">
                             <rect key="frame" x="15" y="250" width="221" height="100"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="1nf-Og-Fo8" secondAttribute="height" multiplier="209:50" id="Hqo-Wc-x1C"/>
@@ -698,8 +698,7 @@
                                     <exclude reference="Hqo-Wc-x1C"/>
                                 </mask>
                             </variation>
-                            <variation key="heightClass=regular-widthClass=compact" misplaced="YES">
-                                <rect key="frame" x="27" y="158" width="219" height="55"/>
+                            <variation key="heightClass=regular-widthClass=compact">
                                 <mask key="constraints">
                                     <exclude reference="Hqo-Wc-x1C"/>
                                 </mask>
@@ -740,7 +739,9 @@
                     <constraints>
                         <constraint firstAttribute="width" secondItem="njq-aN-CcX" secondAttribute="height" multiplier="71:18" id="4ap-SM-QtN"/>
                         <constraint firstAttribute="centerX" secondItem="VUl-hd-NIs" secondAttribute="centerX" constant="-0.5" id="8sl-fP-LTO"/>
-                        <constraint firstItem="1nf-Og-Fo8" firstAttribute="top" secondItem="njq-aN-CcX" secondAttribute="bottom" constant="8" id="9jM-aG-Gom"/>
+                        <constraint firstItem="1nf-Og-Fo8" firstAttribute="top" secondItem="njq-aN-CcX" secondAttribute="bottom" constant="8" id="9jM-aG-Gom">
+                            <variation key="heightClass=regular-widthClass=compact" constant="7"/>
+                        </constraint>
                         <constraint firstItem="njq-aN-CcX" firstAttribute="top" secondItem="VUl-hd-NIs" secondAttribute="bottom" constant="16" id="Do8-Jo-ki9"/>
                         <constraint firstAttribute="centerX" secondItem="1nf-Og-Fo8" secondAttribute="centerX" constant="5.5" id="G1K-SL-ItE"/>
                         <constraint firstAttribute="trailing" secondItem="447-Sy-ADB" secondAttribute="trailing" id="I9A-Ks-3EQ">
@@ -754,7 +755,7 @@
                             <variation key="heightClass=regular-widthClass=compact" constant="27"/>
                         </constraint>
                         <constraint firstItem="1nf-Og-Fo8" firstAttribute="width" secondItem="ngc-CR-eu0" secondAttribute="height" multiplier="209:239" id="dqu-UA-odJ">
-                            <variation key="heightClass=regular-widthClass=compact" constant="10.125523012552293"/>
+                            <variation key="heightClass=regular-widthClass=compact" constant="9.1255230125522928"/>
                         </constraint>
                         <constraint firstAttribute="centerX" secondItem="njq-aN-CcX" secondAttribute="centerX" constant="5.5" id="ezl-It-1qg"/>
                         <constraint firstItem="VUl-hd-NIs" firstAttribute="width" secondItem="ngc-CR-eu0" secondAttribute="height" multiplier="37:240" id="fD8-FC-7ik"/>
@@ -1159,7 +1160,7 @@
                                 <action selector="closeBtnTapped:" destination="-1" eventType="touchUpInside" id="6Uf-SS-fO3"/>
                             </connections>
                         </button>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Super Easy Writing" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="11" translatesAutoresizingMaskIntoConstraints="NO" id="Ctk-f0-8rK">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Super Easy Editing" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="11" translatesAutoresizingMaskIntoConstraints="NO" id="Ctk-f0-8rK">
                             <rect key="frame" x="29" y="107" width="193" height="26"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="Ctk-f0-8rK" secondAttribute="height" multiplier="149:41" id="jkO-1h-4r3">
@@ -1569,14 +1570,14 @@
                                 </mask>
                             </variation>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Change the color theme. Five free choice!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" preferredMaxLayoutWidth="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="iYZ-pW-WP7">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Change the color theme. Five free choices!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" preferredMaxLayoutWidth="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="iYZ-pW-WP7">
                             <rect key="frame" x="15" y="250" width="221" height="100"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="iYZ-pW-WP7" secondAttribute="height" multiplier="209:50" id="jEj-kD-Aug">
                                     <variation key="heightClass=regular-widthClass=compact" constant="-65.799999999999983"/>
                                 </constraint>
                             </constraints>
-                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                             <nil key="highlightedColor"/>
                             <variation key="default">
@@ -1627,7 +1628,7 @@
                                     <variation key="heightClass=regular-widthClass=compact" constant="0.0"/>
                                 </constraint>
                             </constraints>
-                            <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                             <nil key="highlightedColor"/>
                             <variation key="default">
@@ -1645,10 +1646,10 @@
                             <rect key="frame" x="29" y="107" width="193" height="26"/>
                             <constraints>
                                 <constraint firstAttribute="width" secondItem="tji-o1-Twj" secondAttribute="height" multiplier="191:78" id="HxP-GK-J9n">
-                                    <variation key="heightClass=regular-widthClass=compact" constant="1"/>
+                                    <variation key="heightClass=regular-widthClass=compact" constant="12.307692307692292"/>
                                 </constraint>
                             </constraints>
-                            <fontDescription key="fontDescription" type="boldSystem" pointSize="21"/>
+                            <fontDescription key="fontDescription" type="boldSystem" pointSize="19"/>
                             <color key="textColor" red="0.85490196080000003" green="0.098039215690000001" blue="0.10980392160000001" alpha="1" colorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
                             <variation key="default">
@@ -1678,20 +1679,26 @@
                         </constraint>
                         <constraint firstAttribute="centerX" secondItem="tji-o1-Twj" secondAttribute="leading" multiplier="3.5" id="IQV-D8-4fr"/>
                         <constraint firstAttribute="width" secondItem="lxm-jI-gqx" secondAttribute="height" multiplier="3:4" id="Jcv-57-2HB">
-                            <variation key="heightClass=regular-widthClass=compact" constant="-1.75"/>
+                            <variation key="heightClass=regular-widthClass=compact" constant="48.75"/>
                         </constraint>
                         <constraint firstAttribute="centerX" secondItem="NdD-Nc-pvc" secondAttribute="leading" multiplier="3.5" id="Jo1-FX-3yQ">
                             <variation key="heightClass=regular-widthClass=compact" constant="34.5"/>
                         </constraint>
                         <constraint firstItem="NdD-Nc-pvc" firstAttribute="width" secondItem="lxm-jI-gqx" secondAttribute="height" multiplier="240:403" id="V2N-4P-QyP">
-                            <variation key="heightClass=regular-widthClass=compact" constant="0.0"/>
+                            <variation key="heightClass=regular-widthClass=compact" constant="40.49627791563276"/>
                         </constraint>
-                        <constraint firstAttribute="centerY" secondItem="tji-o1-Twj" secondAttribute="bottom" id="bhT-Bl-RfP"/>
-                        <constraint firstAttribute="bottom" secondItem="NdD-Nc-pvc" secondAttribute="bottom" multiplier="1.1" id="hRF-bW-kE7"/>
+                        <constraint firstAttribute="centerY" secondItem="tji-o1-Twj" secondAttribute="bottom" id="bhT-Bl-RfP">
+                            <variation key="heightClass=regular-widthClass=compact" constant="-12.5"/>
+                        </constraint>
+                        <constraint firstAttribute="bottom" secondItem="NdD-Nc-pvc" secondAttribute="bottom" multiplier="1.1" id="hRF-bW-kE7">
+                            <variation key="heightClass=regular-widthClass=compact" constant="-3.8000000000000114"/>
+                        </constraint>
                         <constraint firstItem="7Sb-h8-eDd" firstAttribute="top" secondItem="lxm-jI-gqx" secondAttribute="top" constant="14" id="meH-90-hPC">
                             <variation key="heightClass=regular-widthClass=compact" constant="9"/>
                         </constraint>
-                        <constraint firstItem="iYZ-pW-WP7" firstAttribute="top" secondItem="tji-o1-Twj" secondAttribute="bottom" constant="26" id="rVS-BP-MFu"/>
+                        <constraint firstItem="iYZ-pW-WP7" firstAttribute="top" secondItem="tji-o1-Twj" secondAttribute="bottom" id="rVS-BP-MFu">
+                            <variation key="heightClass=regular-widthClass=compact" constant="0.0"/>
+                        </constraint>
                         <constraint firstItem="b8q-lb-gaL" firstAttribute="top" secondItem="lxm-jI-gqx" secondAttribute="top" constant="33" id="slT-eg-fjv"/>
                     </constraints>
                     <userDefinedRuntimeAttributes>
@@ -1765,7 +1772,7 @@
                 </constraint>
                 <constraint firstAttribute="trailing" secondItem="1YE-xk-aBt" secondAttribute="trailing" id="tpH-Qg-6fQ"/>
                 <constraint firstAttribute="centerY" secondItem="lxm-jI-gqx" secondAttribute="top" multiplier="5.25" id="uyl-uF-ZKC">
-                    <variation key="heightClass=regular-widthClass=compact" constant="0.0"/>
+                    <variation key="heightClass=regular-widthClass=compact" constant="1"/>
                 </constraint>
                 <constraint firstItem="1YE-xk-aBt" firstAttribute="width" secondItem="8F3-3M-1r6" secondAttribute="width" id="wrx-sj-wei"/>
             </constraints>

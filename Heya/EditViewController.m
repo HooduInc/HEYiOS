@@ -105,6 +105,8 @@
     // Dispose of any resources that can be recreated.
 }
 
+
+
 #pragma mark
 #pragma mark TableViewDelegate
 #pragma mark
@@ -112,16 +114,14 @@
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     if(pageNumber==0)
-    {
         return arrDisplay.count-1;
-    }
     else
         return arrDisplay.count;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    return 54.0f;
+    return 44.0f;
 }
 
 -(UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
@@ -190,7 +190,7 @@
         CGPoint point=tblView.contentOffset;
         CGRect textFieldRect=cell.txtFiled.frame;
         
-        NSLog(@"KeyBoardHeight: %d", keyboardHeight);
+        //NSLog(@"KeyBoardHeight: %d", keyboardHeight);
         
         if (rectOfCellInTableView.origin.y+textFieldRect.origin.y+textFieldRect.size.height+textFieldRect.size.height>keyboardHeight)
         {
@@ -199,12 +199,7 @@
         
     }
     
-    
-    
-    UIView *headerView = [[UIView alloc] initWithFrame:[cell frame]];
-    [headerView addSubview:cell];
-    
-    return headerView;
+    return cell;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section

@@ -36,14 +36,14 @@
                     </connections>
                 </button>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Turn on Share Hey! to share Hey! with friends and earn points." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="QfC-oH-IzJ">
-                    <rect key="frame" x="8" y="90" width="304" height="26"/>
+                    <rect key="frame" x="0.0" y="90" width="320" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                    <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="11"/>
                     <color key="textColor" red="0.47843137250000001" green="0.47843137250000001" blue="0.47843137250000001" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <view contentMode="scaleToFill" id="qhV-Fo-Wpz">
-                    <rect key="frame" x="0.0" y="115" width="320" height="184"/>
+                    <rect key="frame" x="0.0" y="115" width="320" height="138"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <view contentMode="scaleToFill" id="yci-3C-bWq">
@@ -163,7 +163,7 @@
                                         <action selector="tutorialBtnTapped:" destination="-1" eventType="touchUpInside" id="nsw-sE-GLx"/>
                                     </connections>
                                 </button>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="YAs-Yd-ggs" userLabel="MarginDividerLabel">
+                                <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="YAs-Yd-ggs" userLabel="MarginDividerLabel">
                                     <rect key="frame" x="45" y="45" width="275" height="1"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <color key="backgroundColor" red="0.7843137255" green="0.78039215689999997" blue="0.80000000000000004" alpha="1" colorSpace="calibratedRGB"/>
@@ -171,34 +171,6 @@
                                     <color key="textColor" red="0.92156862750000001" green="0.92156862750000001" blue="0.92156862750000001" alpha="1" colorSpace="calibratedRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                            </subviews>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                        </view>
-                        <view contentMode="scaleToFill" id="VMQ-gX-HhO">
-                            <rect key="frame" x="0.0" y="140" width="320" height="46"/>
-                            <autoresizingMask key="autoresizingMask"/>
-                            <subviews>
-                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dollar_icon.png" id="L2m-Gm-ylR">
-                                    <rect key="frame" x="16" y="8" width="30" height="30"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                </imageView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Subscription" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="GPm-hx-4Va">
-                                    <rect key="frame" x="60" y="13" width="149" height="21"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
-                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="axO-dt-5Pl" userLabel="subscriptionButton">
-                                    <rect key="frame" x="0.0" y="4" width="320" height="40"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <state key="normal">
-                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                    </state>
-                                    <connections>
-                                        <action selector="subscriptionBtnTapped:" destination="-1" eventType="touchUpInside" id="e5Z-uQ-tEt"/>
-                                    </connections>
-                                </button>
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         </view>
@@ -212,7 +184,6 @@
     </objects>
     <resources>
         <image name="back_btn.png" width="57" height="20"/>
-        <image name="dollar_icon.png" width="90" height="90"/>
         <image name="heyText" width="45" height="45"/>
         <image name="hey_original.png" width="80" height="80"/>
         <image name="hey_share_icon_over2.png" width="69" height="69"/>

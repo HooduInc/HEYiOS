@@ -49,7 +49,7 @@ int globalIndex;
         
         outLineArray=[NSArray arrayWithObjects:@"bar_1.png", @"bar_2.png",@"bar_3.png", @"bar_4.png" ,@"bar_5.png",@"bar_6.png", @"bar_7.png" , @"bar_8.png", @"bar_8.png", nil];
         
-        mutedArray=[NSArray arrayWithObjects:@"red1.png", @"menu_btn8.png",@"temp_orange.png", @"menu_btn5.png" ,@"muted_5.png",@"menu_btn9.png", @"muted_7.png" , @"temp_pink.png", @"temp_pink.png", nil];
+        mutedArray=[NSArray arrayWithObjects:@"red1.png", @"menu_btn8.png",@"temp_orange.png", @"menu_btn5.png" ,@"muted_5.png",@"menu_btn9.png", @"muted_7.png" , @"muted_violet.png", @"muted_violet.png", nil];
         
         [theme addObject:brightArray];
         [theme addObject:standardArray];

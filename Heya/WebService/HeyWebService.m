@@ -25,7 +25,7 @@
         self.strSendMsgURL=@"api/user/message_send";
         self.strFetchAccountDetailsURL=@"api/user/account_details";
         self.strImageURL=@"api/user/image_path";
-        self.strCreateRenewSubsciptionURL=@"/api/user/subscription";
+        self.strCreateRenewSubsciptionURL=@"api/user/subscription";
         self.strFetchSubsciptionURL=@"api/user/check_app_validity";
     }
     return self;
@@ -44,7 +44,7 @@
 -(void)callGenerateImageURL:(NSData*)imageData UDID:(NSString*)strUDID WithCompletionHandler:(WebServiceCompletionHandler)handler
 {
     NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strImageURL]];
-    NSLog(@"ImageUpload URL: %@",url);
+    NSLog(@"Image Upload URL: %@",url);
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:120.0];
     [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
@@ -432,7 +432,7 @@
             NSDictionary *resultDict=[NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
             NSLog(@"resultDict for notification Details: %@",resultDict);
             
-            handler(err,NO,@"Push Notofcation for Registration sent.");
+            handler(err,NO,@"Push Notifcation for Registration sent.");
         }
     }];
 }

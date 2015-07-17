@@ -2900,7 +2900,7 @@
                     
                     objSend.strFrom=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 4)];
                     objSend.strTo=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 5)];
-                    objSend.strSendDate=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 6)];
+                    objSend.strSendDate=[[NSString alloc] initWithUTF8String:(const char *)sqlite3_column_text(querryStatement, 7)];
                     
                     [arr addObject:objSend];
                 }
@@ -2913,6 +2913,51 @@
         }
     }
     return arr;
+}
+
++ (long)fetchMessageDetailsWithTodayDate
+{
+    int count=0;
+    
+    NSDate *currentDate = [NSDate date];
+    
+    
+    NSDateFormatter *format=[[NSDateFormatter alloc] init];
+    [format setDateFormat:@"yyyy-MM-dd"];
+    NSString *strTodayDate=[format stringFromDate:currentDate];
+    
+    FMDatabase *database=[DBManager getDatabase];
+    if(database)
+    {
+        sqlite3 *database;
+        NSString *dbpath = [DBManager getDBPath];
+        const char* dbPath=[dbpath UTF8String];
+        
+        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        {
+            NSString *stm = [NSString stringWithFormat:@"Select COUNT(*) from messageCounter where sendDate='%@'",strTodayDate];
+            
+            NSLog(@"FetchYestarday Count Query: %@",stm);
+            const char *sqlQuerry= [stm UTF8String];
+            sqlite3_stmt *querryStatement;
+            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            {
+                NSLog(@"conversion successful....");
+                while (sqlite3_step(querryStatement)==SQLITE_ROW)
+                {
+                    count = sqlite3_column_int(querryStatement, 0);
+                    
+                }
+                sqlite3_finalize(querryStatement);
+            }
+            else {
+                NSLog(@"error while conversion....");
+            }
+            sqlite3_close(database);
+        }
+    }
+    
+    return count;
 }
 
 
