@@ -51,6 +51,7 @@
     [priceFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
     
     
+    
     menuArray=[NSArray arrayWithObjects:@"Today",@"This Month",@"This Year",@"Lifetime",@"",@"Version",@"Date Downloaded",@"",@"Account Started",@"My Renewal Date", nil];
     
     CGFloat currentBundleVersion = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] floatValue];
@@ -452,6 +453,11 @@
                        product.productIdentifier,
                        product.localizedTitle,
                        product.price.floatValue);
+                 [priceFormatter setLocale:product.priceLocale];
+                 NSLocale* storeLocale = product.priceLocale;
+                 NSString *storeCountry = (NSString*)CFLocaleGetValue((CFLocaleRef)storeLocale, kCFLocaleCountryCode);
+                 NSLog(@"Store Counrty: %@",storeCountry);
+                 
                  
                  NSMutableArray *userProfile=[[NSMutableArray alloc] init];
                  userProfile=[DBManager fetchUserProfile];
@@ -474,9 +480,6 @@
                       }
                       else
                       {
-                          
-                          
-                          
                           if ([[resultDict valueForKey:@"status"] boolValue]==true)
                           {
                               NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
@@ -507,6 +510,7 @@
                               
                               else if ([[[resultDict valueForKey:@"error"] valueForKey:@"response"] containsString:@"Your trial period has expired."])
                               {
+                                  
                                   UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:product.localizedTitle message:[NSString stringWithFormat:@"%@ %@ \nPrice: %@",[[resultDict valueForKey:@"error"] valueForKey:@"response"],product.localizedDescription,[priceFormatter stringFromNumber:product.price]] delegate:self cancelButtonTitle:@"Renew Now" otherButtonTitles:@"Later",nil];
                                   
                                   buyAlert.tag=0;

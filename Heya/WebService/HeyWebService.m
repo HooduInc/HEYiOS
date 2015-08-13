@@ -9,8 +9,6 @@
 #import "HeyWebService.h"
 
 @interface NSURLRequest (DummyInterface)
-+ (BOOL)allowsAnyHTTPSCertificateForHost:(NSString*)host;
-+ (void)setAllowsAnyHTTPSCertificate:(BOOL)allow forHost:(NSString*)host;
 @end
 
 @implementation HeyWebService
@@ -47,7 +45,6 @@
     NSLog(@"Image Upload URL: %@",url);
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:120.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
@@ -119,7 +116,6 @@
     NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strRegisterURL]];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
@@ -192,7 +188,7 @@
     NSLog(@"Update url: %@",url);
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
+    
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
@@ -257,7 +253,7 @@
     NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strSendMsgURL]];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
+    
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
@@ -329,7 +325,7 @@
     NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strFetchAccountDetailsURL]];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
+    
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
@@ -394,7 +390,6 @@
     NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strRegistrationPushNotificationURL]];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
@@ -443,7 +438,7 @@
     NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strFetchSubsciptionURL]];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
+
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
@@ -502,7 +497,7 @@
     NSURL *url=[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",HeyBaseURL,self.strCreateRenewSubsciptionURL]];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:60.0];
-    [NSURLRequest setAllowsAnyHTTPSCertificate:YES forHost:HostOne];
+
     
     [request setHTTPMethod:@"POST"];
     [request addValue:@"hey" forHTTPHeaderField:@"Authorization"];
