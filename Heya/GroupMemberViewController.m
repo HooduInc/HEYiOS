@@ -82,11 +82,13 @@ NSMutableDictionary *contactInfoDict;
         ModelGroup *objGroup=[groupDetailsArray objectAtIndex:0];
         self.groupNameTextField.text = objGroup.strGroupName;
         
+        [self.view addSubview:HUD];
+        [HUD show:YES];
+        
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
             
             //Mostly Coding Part
-            [self.view addSubview:HUD];
-            [HUD show:YES];
+            
             groupMemberArray = [[NSMutableArray alloc]init];
             groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
             dispatch_async(dispatch_get_main_queue(), ^{ // 2
@@ -286,6 +288,15 @@ NSMutableDictionary *contactInfoDict;
             //If Phone Number doesn't exists in kABWorkLabel
             if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
             {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            
+            else
+            {
+                NSString *localLabel =(__bridge NSString*) ABAddressBookCopyLocalizedLabel(currentPhoneLabel);
+                NSLog(@"localLabel: %@",localLabel);
+                
                 [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
                 [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
             }

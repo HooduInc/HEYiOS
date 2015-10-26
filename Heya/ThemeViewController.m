@@ -22,7 +22,7 @@
 
 @implementation ThemeViewController
 NSUserDefaults *preferances;
-@synthesize carousel, label, wrap, theme, themeName;
+@synthesize carousel, label,selectTheme,selectThemeOnly4s, wrap, theme, themeName;
 @synthesize generatedimage,generatedView, brightArray,standardArray, oneColorArray, outLineArray, mutedArray;
 
 int globalIndex;
@@ -71,6 +71,12 @@ int globalIndex;
     carousel.pageControl = self.pageControl;
     carousel.minimumPageAlpha = 1.0f;
     carousel.minimumPageScale = 0.9;
+    
+    if(isIphone4)
+    {
+        selectTheme.hidden=YES;
+        selectThemeOnly4s.hidden=NO;
+    }
 }
 
 -(void) viewWillAppear:(BOOL)animated

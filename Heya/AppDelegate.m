@@ -17,11 +17,16 @@
 
 #import "InAppPurchaseHelper.h"
 #import "ModelInAppPurchase.h"
+#import "KeychainItemWrapper.h"
+
+#import <Fabric/Fabric.h>
+#import <Crashlytics/Crashlytics.h>
 
 BOOL isReachable;
 
 @implementation AppDelegate
 
+@synthesize uniqueIdentifierStr;
 @synthesize navigationcontrollar,EMOJI_arr,buttonArray,imageArray;
 @synthesize hostReachability,internetReachability,wifiReachability;
 
@@ -50,6 +55,28 @@ NSUserDefaults *preferances;
     
     buttonArray = [[NSMutableArray alloc]init];
     preferances=[NSUserDefaults standardUserDefaults];
+    
+   #pragma mark - KeyChainUDID Access Start
+    
+    #warning "Change it to HeyMessagingAppKeyLive before make it live
+    keychain = [[KeychainItemWrapper alloc] initWithIdentifier:@"HeyMessagingAppKeyLive" accessGroup:nil];
+    
+    // Get UDID from keychain (if it exists)
+    uniqueIdentifierStr=[keychain objectForKey:(__bridge id)(kSecValueData)];
+    
+    NSLog(@"KeyChainUDID: %@",uniqueIdentifierStr);
+    
+    NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+    NSLog(@"AdvertisingUDID: %@",advertisingUDID);
+    
+    if (uniqueIdentifierStr.length==0)
+    {
+        [keychain setObject:advertisingUDID forKey:(__bridge id)(kSecValueData)];
+        uniqueIdentifierStr=[keychain objectForKey:(__bridge id)(kSecValueData)];
+        NSLog(@"KeyChainUDID Added: %@",uniqueIdentifierStr);
+    }
+    
+   #pragma mark - KeyChainUDID Access End
     
     SplashViewController *splashController = [[SplashViewController alloc]initWithNibName:@"SplashViewController" bundle:nil];
     MessagesListViewController *msgController = [[MessagesListViewController alloc]initWithNibName:@"MessagesListViewController" bundle:nil];
@@ -82,6 +109,10 @@ NSUserDefaults *preferances;
     
     //Transaction Observer if User lost network connection
     [ModelInAppPurchase sharedInstance];
+    
+    
+    //Crashlytics
+    [Fabric with:@[[Crashlytics class]]];
     
     return YES;
 }
@@ -168,11 +199,6 @@ NSUserDefaults *preferances;
 
 -(void)registerDevice
 {
-    //NSString *UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-    NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
-    
-    //NSLog(@"UDID: %@", UDID);
-    NSLog(@"ADvertisingUDID: %@",advertisingUDID);
     
     NSMutableArray *arrayUser=[[NSMutableArray alloc] init];
     ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
@@ -180,7 +206,7 @@ NSUserDefaults *preferances;
     userObj.strLastName=@"";
     userObj.strHeyName=@"";
     userObj.strPhoneNo=@"";
-    userObj.strDeviceUDID=advertisingUDID;
+    userObj.strDeviceUDID=uniqueIdentifierStr;
     userObj.strProfileImage=@"";
     
     NSDate *today=[NSDate date];
@@ -223,7 +249,7 @@ NSUserDefaults *preferances;
         
         if([self isNetworkAvailable])
         {
-            [[HeyWebService service] registerWithUDID:[advertisingUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:@"" ContactNumber:@"" TimeStamp:timeStamp AccountCreated:accountCreated WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+            [[HeyWebService service] registerWithUDID:[uniqueIdentifierStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:@"" ContactNumber:@"" TimeStamp:timeStamp AccountCreated:accountCreated WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
              {
                  if (isError)
                  {
@@ -239,7 +265,7 @@ NSUserDefaults *preferances;
                          [DBManager isRegistrationSuccessful:1];
                          
                          //store the trail period date or the subscription date in NSUserDefaults
-                         [[HeyWebService service] fetchSubscriptionDateWithUDID:advertisingUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                         [[HeyWebService service] fetchSubscriptionDateWithUDID:uniqueIdentifierStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                           {
                               if (isError)
                               {
@@ -282,7 +308,7 @@ NSUserDefaults *preferances;
                      //send push Notification
                      if (pushDeviceTokenId && pushDeviceTokenId.length>0)
                      {
-                         [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[advertisingUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                         [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[uniqueIdentifierStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                           {
                               NSLog(@"Push Message: %@",strMsg);
                           }];
@@ -290,7 +316,7 @@ NSUserDefaults *preferances;
                      //send push Notification
                      
                      //store the trail period date or the subscription date in NSUserDefaults
-                     [[HeyWebService service] fetchSubscriptionDateWithUDID:advertisingUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                     [[HeyWebService service] fetchSubscriptionDateWithUDID:uniqueIdentifierStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                       {
                           if (isError)
                           {
@@ -402,5 +428,7 @@ NSUserDefaults *preferances;
 {
     [[[UIAlertView alloc] initWithTitle:nil message:kNetworkErrorMessage delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] show];
 }
+
+
 
 @end

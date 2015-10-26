@@ -162,7 +162,7 @@
                     [mailViewController setMessageBody:emailBody isHTML:NO];
                 
                 else
-                    [mailViewController setMessageBody:nil isHTML:NO];
+                    [mailViewController setMessageBody:@"" isHTML:NO];
                 
                  //[mailViewController setToRecipients:[NSArray arrayWithObjects:@"patpartridge1248@gmail.com", @"tlanpher@msn.com", nil]];
                 

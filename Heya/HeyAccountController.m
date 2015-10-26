@@ -54,7 +54,7 @@
     
     menuArray=[NSArray arrayWithObjects:@"Today",@"This Month",@"This Year",@"Lifetime",@"",@"Version",@"Date Downloaded",@"",@"Account Started",@"My Renewal Date", nil];
     
-    CGFloat currentBundleVersion = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] floatValue];
+    CGFloat currentBundleVersion = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] floatValue];
     appVersion=[NSString stringWithFormat:@"%.01f",currentBundleVersion];
     
     NSDate *downloadDate= (NSDate*)[[NSUserDefaults standardUserDefaults] objectForKey:@"applicationInstalledDate"];
@@ -73,12 +73,16 @@
     NSTimeInterval timeint=[[NSDate date] timeIntervalSince1970];
     NSLog(@"MiliSeconds: %f",timeint*1000);
     
+    
+    
+    [self.view addSubview:HUD];
+    [HUD show:YES];
+    
     dispatch_queue_t myQueue = dispatch_queue_create("hey_account_details", NULL);
     
     dispatch_async(myQueue, ^{
         //stuffs to do in background thread
-        [self.view addSubview:HUD];
-        [HUD show:YES];
+       
         [self fetchAccountDetailsFromServerORDatabase];
          
         dispatch_async(dispatch_get_main_queue(), ^{

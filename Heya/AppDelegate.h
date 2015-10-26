@@ -9,9 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "Reachability.h"
 
+@class KeychainItemWrapper;
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
-{}
-
+{
+    KeychainItemWrapper *keychain;
+}
+@property (nonatomic, retain) NSString *uniqueIdentifierStr;
 @property (nonatomic, retain) NSString *dbPath;
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic, strong) UINavigationController *navigationcontrollar;

@@ -1,0 +1,32 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "14E27C645861A4C70E59BDCD2A2F5D5740F99510",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "4f4a49d3-4cae-e741-bd16-730ce53323eb++4830" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "14E27C645861A4C70E59BDCD2A2F5D5740F99510" : 0,
+    "4f4a49d3-4cae-e741-bd16-730ce53323eb++4830" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "C26A34EB-B0FF-484A-B7D4-ED545A10412E",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "14E27C645861A4C70E59BDCD2A2F5D5740F99510" : "2015_06_26",
+    "4f4a49d3-4cae-e741-bd16-730ce53323eb++4830" : "2015_06_26Heya\/Utilities\/JSON"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Hey",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Hey.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/bitbucket.org\/KShee\/hey.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "14E27C645861A4C70E59BDCD2A2F5D5740F99510"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/115.113.151.198:4142\/svn\/mobile",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "4f4a49d3-4cae-e741-bd16-730ce53323eb++4830"
+    }
+  ]
+}

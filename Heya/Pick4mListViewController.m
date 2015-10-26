@@ -83,11 +83,14 @@
         SubMenuName = [subStrings objectAtIndex:2];
     }
     
+    
+    [self.view addSubview:HUD];
+    [HUD show:YES];
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
         
         //Mostly Coding Part
-        [self.view addSubview:HUD];
-        [HUD show:YES];
+        
         [self generatePickListArray];
         
         dispatch_async(dispatch_get_main_queue(), ^{ // 2

@@ -6,7 +6,7 @@
 
 #import <Availability.h>
 
-#warning "Always make the buid in XCODE 6.1
+#warning "Always make the buid in XCODE 6.1 or 7 but not with 6.4
 
 #ifndef __IPHONE_3_0
 #warning "This project uses features only available in iOS SDK 3.0 and later."

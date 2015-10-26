@@ -19,6 +19,8 @@
 @property (strong, nonatomic) IBOutlet UIPageControl *pageControl;
 @property (strong, nonatomic) IBOutlet PagedFlowView *carousel;
 @property (strong, nonatomic) IBOutlet UILabel *label;
+@property (strong, nonatomic) IBOutlet UIButton *selectTheme;
+@property (strong, nonatomic) IBOutlet UIButton *selectThemeOnly4s;
 @property (nonatomic) BOOL wrap;
 
 @property (strong, nonatomic) UIView *generatedView;

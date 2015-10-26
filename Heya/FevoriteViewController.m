@@ -67,11 +67,14 @@ NSString *urlString;
     [fevoriteList_table setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
     
     [self fetchAndRefresh];
+    
+    [self.view addSubview:HUD];
+    [HUD show:YES];
+
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
         
         //Mostly Coding Part
-        [self.view addSubview:HUD];
-        [HUD show:YES];
         
         [self fetchAndRefresh];
         
@@ -187,6 +190,14 @@ NSString *urlString;
             //If Phone Number doesn't exists in kABWorkLabel
             if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
             {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            else
+            {
+                NSString *localLabel =(__bridge NSString*) ABAddressBookCopyLocalizedLabel(currentPhoneLabel);
+                NSLog(@"localLabel: %@",localLabel);
+                
                 [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
                 [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
             }

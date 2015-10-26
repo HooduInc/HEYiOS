@@ -19,10 +19,16 @@
 #import "Reachability.h"
 #import "HeyWebService.h"
 #import "InAppPurchaseHelper.h"
+#import "MBProgressHUD.h"
+
+#import <Crashlytics/Crashlytics.h>
+
 
 @interface MessagesListViewController ()
 {
     BOOL isReachable;
+    MBProgressHUD *HUD;
+    
     NSMutableArray *arrAllPageValue;
     NSMutableArray *arrDisplayTableOne, *arrDisplayTableTwo, *arrDisplayTableThree, *arrDisplayTableFour;
     NSInteger pageNumber;
@@ -54,10 +60,23 @@ NSUserDefaults *preferances;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    //messagelistController=self;
+    
+    
+    //Force Crash
+    /*UIButton* button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    button.frame = CGRectMake(20, 50, 100, 30);
+    [button setTitle:@"Crash" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(crashButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];*/
+
+    
+    HUD = [[MBProgressHUD alloc] initWithView:self.view];
+    HUD.labelText=@"Loading";
+    
     emoString=@"\U00002764";
     loveyouString=@"Love You";
     
+
     CGFloat occupiedHeight=self.pageControl.frame.origin.y+self.pageControl.frame.size.height;
     
     if (isIphone4)
@@ -97,22 +116,36 @@ NSUserDefaults *preferances;
     [preferances setBool:0 forKey:@"addPhoneClicked"];
     [preferances synchronize];
     
-    arrAllPageValue=[[NSMutableArray alloc] init];
-    for (int i=1; i<=4; i++) {
-        [arrAllPageValue addObject:[DBManager fetchMenuForPageNo:i]];
-    }
+    [self.view addSubview:HUD];
+    [HUD show:YES];
     
-    arrDisplayTableOne=[arrAllPageValue objectAtIndex:0];
-    arrDisplayTableTwo=[arrAllPageValue objectAtIndex:1];
-    arrDisplayTableThree=[arrAllPageValue objectAtIndex:2];
-    arrDisplayTableFour=[arrAllPageValue objectAtIndex:3];
-    
-    selectedSection=-1;
-    
-    [menulistTable reloadData];
-    [menulistTableTwo reloadData];
-    [menulistTableThree reloadData];
-    [menulistTableFour reloadData];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
+        
+        //Mostly Coding Part
+        
+        arrAllPageValue=[NSMutableArray array];
+        for (int i=1; i<=4; i++)
+        {
+            [arrAllPageValue addObject:[DBManager fetchMenuForPageNo:i]];
+        }
+        
+        arrDisplayTableOne=[arrAllPageValue objectAtIndex:0];
+        arrDisplayTableTwo=[arrAllPageValue objectAtIndex:1];
+        arrDisplayTableThree=[arrAllPageValue objectAtIndex:2];
+        arrDisplayTableFour=[arrAllPageValue objectAtIndex:3];
+        selectedSection=-1;
+        
+        dispatch_async(dispatch_get_main_queue(), ^{ // 2
+            
+            //Mostly UI Updates
+            [menulistTable reloadData];
+            [menulistTableTwo reloadData];
+            [menulistTableThree reloadData];
+            [menulistTableFour reloadData];
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+        });
+    });
     
     
     dispatch_queue_t myQueue = dispatch_queue_create("hey_push_account_details_to_server", NULL);
@@ -876,5 +909,10 @@ NSUserDefaults *preferances;
         }
     }
 }
+
+//- (IBAction)crashButtonTapped:(id)sender {
+//    [[Crashlytics sharedInstance] crash];
+//}
+
 
 @end

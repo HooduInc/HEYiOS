@@ -134,6 +134,19 @@ unsigned long location;
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
+    
+    if (![preferances boolForKey:@"hasAlertedFirstTime"])
+    {
+        UIAlertView *alertFavoriteAdd = [[UIAlertView alloc] initWithTitle:nil message:@"You have no Favorites yet. Please add Favorites now." delegate:self cancelButtonTitle:nil otherButtonTitles:@"Add Now",@"Later", nil];
+        
+        alertFavoriteAdd.tag=2;
+        [alertFavoriteAdd show];
+        [preferances setBool:YES forKey:@"hasAlertedFirstTime"];
+        [preferances synchronize];
+    }
+
+    
+    
     [self CheckSubscription];
     emojiTag=9999;
     
@@ -905,6 +918,7 @@ unsigned long location;
             CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
             CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
             
+            
             if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
             {
                 [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
@@ -943,6 +957,14 @@ unsigned long location;
             //If Phone Number doesn't exists in kABWorkLabel
             if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
             {
+                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
+                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
+            }
+            else
+            {
+                NSString *localLabel =(__bridge NSString*) ABAddressBookCopyLocalizedLabel(currentPhoneLabel);
+                NSLog(@"localLabel: %@",localLabel);
+
                 [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
                 [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
             }
@@ -1696,6 +1718,11 @@ unsigned long location;
 
 - (IBAction)gotoFevoriteViewController:(id)sender{
     
+    [self goFavViewController];
+}
+
+-(void)goFavViewController
+{
     FevoriteViewController *obj = [[FevoriteViewController alloc]initWithNibName:@"FevoriteViewController" bundle:nil];
     [self.navigationController pushViewController:obj animated:YES];
 }
@@ -1781,7 +1808,7 @@ unsigned long location;
 
 - (IBAction)shareHey:(id)sender
 {
-    slideMenuView.hidden = YES ;
+    slideMenuView.hidden = YES;
     
     [_take_photo_btn setImage:[UIImage imageNamed:@"camera_icon.png"] forState:UIControlStateNormal];
     [_selectPhoto_btn setImage:[UIImage imageNamed:@"image_icon.png"] forState:UIControlStateNormal];
@@ -1937,11 +1964,25 @@ unsigned long location;
 
 -(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"] || ![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"])
+    if (alertView.tag==2)
     {
-        NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
-        [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
-        [self insertIntoToField];
+        //Flash favorite alert.
+        
+        if (buttonIndex==0)
+        {
+            [self goFavViewController];
+        }
+        
+    }
+    else
+    {
+        //Contact selection from alertView.
+        if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"] || ![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"])
+        {
+            NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
+            [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
+            [self insertIntoToField];
+        }
     }
 }
 
