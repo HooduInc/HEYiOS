@@ -437,7 +437,7 @@ NSUserDefaults *preferances;
     }
     
     
-    messagesView_obj.quickContactsArray=[[NSMutableArray alloc] init];
+    messagesView_obj.quickContactsArray=[NSMutableArray array];
     
     if(![messagesView_obj.getMessageStr containsString:@"Write or pick message using edit"])
         [self.navigationController pushViewController:messagesView_obj animated:YES];

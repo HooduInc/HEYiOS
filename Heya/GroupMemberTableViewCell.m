@@ -131,8 +131,8 @@ static CGFloat const kBounceValue = 10.0f;
                 }
             }
             
-            self.contentViewLeftConstraint.constant = -self.contentViewRightConstraint.constant-16; //8
-            NSLog(@"Set contentViewLeftConstraint constant %f",self.contentViewLeftConstraint.constant);
+            //self.contentViewLeftConstraint.constant = -self.contentViewRightConstraint.constant-16; //8
+            //NSLog(@"Set contentViewLeftConstraint constant %f",self.contentViewLeftConstraint.constant);
         }
             break;
             
@@ -210,18 +210,17 @@ static CGFloat const kBounceValue = 10.0f;
 - (void)resetConstraintContstantsToZero:(BOOL)animated notifyDelegateDidClose:(BOOL)notifyDelegate {
     //TODO: Notify delegate.
     
-    if (self.startingRightLayoutConstraintConstant == -8 &&
-        self.contentViewRightConstraint.constant == -8) {
+    if (self.startingRightLayoutConstraintConstant == -8) {
         //Already all the way closed, no bounce necessary
         return;
     }
     
     self.contentViewRightConstraint.constant = -kBounceValue;
-    self.contentViewLeftConstraint.constant = kBounceValue;
+    //self.contentViewLeftConstraint.constant = kBounceValue;
     
     [self updateConstraintsIfNeeded:animated completion:^(BOOL finished) {
         self.contentViewRightConstraint.constant = -8;
-        self.contentViewLeftConstraint.constant = -8;
+        //self.contentViewLeftConstraint.constant = -8;
         
         [self updateConstraintsIfNeeded:animated completion:^(BOOL finished) {
             self.startingRightLayoutConstraintConstant = self.contentViewRightConstraint.constant;
@@ -238,12 +237,12 @@ static CGFloat const kBounceValue = 10.0f;
         return;
     }
     //2
-    self.contentViewLeftConstraint.constant = -[self buttonTotalWidth] - kBounceValue;
+    //self.contentViewLeftConstraint.constant = -[self buttonTotalWidth] - kBounceValue;
     self.contentViewRightConstraint.constant = [self buttonTotalWidth] + kBounceValue;
     
     [self updateConstraintsIfNeeded:animated completion:^(BOOL finished) {
         //3
-        self.contentViewLeftConstraint.constant = -[self buttonTotalWidth];
+        //self.contentViewLeftConstraint.constant = -[self buttonTotalWidth];
         self.contentViewRightConstraint.constant = [self buttonTotalWidth];
         
         [self updateConstraintsIfNeeded:animated completion:^(BOOL finished) {

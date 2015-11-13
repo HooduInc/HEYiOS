@@ -13,7 +13,14 @@
 #import "ModelGroupMembers.h"
 #import "MBProgressHUD.h"
 
-@interface GroupMemberViewController ()<GroupMemberTableViewCellDelegate,UITextFieldDelegate,UIAlertViewDelegate>
+
+#import "KBContactsSelectionViewController.h"
+#import "APContact.h"
+#import "APPhoneWithLabel.h"
+
+@import Photos;
+
+@interface GroupMemberViewController ()<GroupMemberTableViewCellDelegate,UITextFieldDelegate,UIAlertViewDelegate,KBContactsSelectionViewControllerDelegate>
 {
     MBProgressHUD *HUD;
     NSIndexPath *selectedIndexPath;
@@ -25,12 +32,15 @@
     IBOutlet UIView *groupView;
     IBOutlet UIView *displayGroupImageView;
 }
+
+@property (weak) KBContactsSelectionViewController* presentedCSVC;
+
 @end
 
 @implementation GroupMemberViewController
 NSMutableDictionary *contactInfoDict;
 
-@synthesize groupNameTextField, addNewGroupMemberLabel, groupHelpLabel, addressBookController, groupSwipeTextLabel;
+@synthesize groupNameTextField, addNewGroupMemberLabel, groupHelpLabel, groupSwipeTextLabel;
 @synthesize clickedGroupId, isNewGroup;
 @synthesize groupMemberTableView, groupMemberArray;
 
@@ -44,12 +54,21 @@ NSMutableDictionary *contactInfoDict;
 {
     [super viewDidLoad];
     HUD = [[MBProgressHUD alloc] initWithView:self.view];
+    
     saveAlert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
     
     groupView.layer.cornerRadius = groupView.frame.size.width / 2;
     groupView.clipsToBounds = YES;
     groupView.layer.borderColor=[UIColor colorWithRed:208/255.0f green:208/255.0f  blue:211/255.0f  alpha:1].CGColor;
     groupView.layer.borderWidth=1.0f;
+    
+    int photolibaryAccessStatus = [self AssetLibraryAuthStatus];
+    
+    if (photolibaryAccessStatus==0 || photolibaryAccessStatus==1 || photolibaryAccessStatus==4)
+    {
+        [self alertStatus:@"Privacy Warning!" :@"Permission was not granted for photos.\nTip: Go to settings->Hey and allow photos."];
+    }
+    [self PHAssetAuthStatus];
 }
 
 -(void) viewWillAppear:(BOOL)animated
@@ -85,32 +104,7 @@ NSMutableDictionary *contactInfoDict;
         [self.view addSubview:HUD];
         [HUD show:YES];
         
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
-            
-            //Mostly Coding Part
-            
-            groupMemberArray = [[NSMutableArray alloc]init];
-            groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
-            dispatch_async(dispatch_get_main_queue(), ^{ // 2
-                
-                //Mostly UI Updates
-                if (groupMemberArray.count>0)
-                {
-                    self.saveBtn.hidden=YES;
-                    groupNameTextField.userInteractionEnabled=NO;
-                    groupMemberTableView.hidden = NO;
-                    groupHelpLabel.hidden = YES;
-                    groupSwipeTextLabel.hidden=NO;
-                    
-                    //displayGroupImageView.hidden=YES;
-                    //groupView.hidden=NO;
-                }
-                
-                [groupMemberTableView reloadData];
-                [HUD hide:YES];
-                [HUD removeFromSuperview];
-            });
-        });
+        [self fetchGroupMembersAndRefresh];
 
     }
 }
@@ -161,7 +155,7 @@ NSMutableDictionary *contactInfoDict;
     else
     {
         NSString *str = objMember.strProfileImage;
-        NSLog(@"ImageURL: %@",str);
+        //NSLog(@"ImageURL: %@",str);
         
         //ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
         NSURL *myAssetUrl = [NSURL URLWithString:str];
@@ -198,204 +192,6 @@ NSMutableDictionary *contactInfoDict;
 }
 
 
-
-#pragma mark
-#pragma  mark PeoplePicker Delegate
-#pragma mark
-
-//Works from IOS 8
-- (void)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker didSelectPerson:(ABRecordRef)person
-{
-    multipleContactNoArray=[[NSMutableArray alloc] init];
-    
-    // Initialize a mutable dictionary and give it initial values.
-    contactInfoDict = [[NSMutableDictionary alloc]
-                       initWithObjects:@[@"", @"", @"", @"", @"", @"", @"", @"", @""]
-                       forKeys:@[@"firstName", @"lastName", @"mobileNumber", @"homeNumber", @"homeEmail", @"workEmail", @"address", @"zipCode", @"city"]];
-    
-    [contactInfoDict setObject:clickedGroupId forKey:@"groupId"];
-    
-    // Use a general Core Foundation object.
-    CFTypeRef generalCFObject = ABRecordCopyValue(person, kABPersonFirstNameProperty);
-    
-    // Get the first name.
-    if (generalCFObject) {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"firstName"];
-        CFRelease(generalCFObject);
-    }
-    
-    // Get the last name.
-    generalCFObject = ABRecordCopyValue(person, kABPersonLastNameProperty);
-    if (generalCFObject) {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"lastName"];
-        CFRelease(generalCFObject);
-    }
-    
-    // Get the phone numbers as a multi-value property.
-    ABMultiValueRef phonesRef = ABRecordCopyValue(person, kABPersonPhoneProperty);
-    
-    if (phonesRef)
-    {
-        
-        //NSLog(@"isFacebook %d", [self isPersonFacebookContact:person]);
-        
-        if([self isPersonFacebookContact:person])
-        {
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"This contact information synced from facebook to your addressbook. Contact picture may not appear in the groups." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
-        }
-        
-        for (int i=0; i<ABMultiValueGetCount(phonesRef); i++)
-        {
-            CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
-            CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
-            
-            if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABPersonPhoneMainLabel
-            if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-            if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            
-            //If Phone Number doesn't exists in kABPersonIPhoneLabel
-            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABHomeLabel
-            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABWorkLabel
-            if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            else
-            {
-                NSString *localLabel =(__bridge NSString*) ABAddressBookCopyLocalizedLabel(currentPhoneLabel);
-                NSLog(@"localLabel: %@",localLabel);
-                
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            
-            
-            CFRelease(currentPhoneLabel);
-            CFRelease(currentPhoneValue);
-        }
-        
-        NSLog(@"Contact Dictionary: %@", contactInfoDict);
-        CFRelease(phonesRef);
-        
-        
-        
-        // If the contact has an image then get it too.
-        if (ABPersonHasImageData(person))
-        {
-            
-            NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-            contactImageFromAddressBook = [UIImage imageWithData:contactImageData];
-            
-            if (multipleContactNoArray.count>1)
-            {
-                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-                
-                for(NSString *buttonTitle in multipleContactNoArray)
-                    [alertContactDialog addButtonWithTitle:buttonTitle];
-                [addressBookController dismissViewControllerAnimated:YES completion:nil];
-                [alertContactDialog show];
-                
-            }
-            else if(multipleContactNoArray.count!=0)
-                [self insertGroupMember];
-            
-        }
-        
-        else
-        {
-            contactImageFromAddressBook=nil;
-            [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
-            
-            if (multipleContactNoArray.count>1)
-            {
-                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-                
-                for(NSString *buttonTitle in multipleContactNoArray)
-                    [alertContactDialog addButtonWithTitle:buttonTitle];
-                [addressBookController dismissViewControllerAnimated:YES completion:nil];
-                [alertContactDialog show];
-            }
-            else
-                [self insertGroupMember];
-        }
-    }
-    
-    else
-    {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Sorry. Contact number doesn't exist." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
-    }
-    
-    //[addressBookController dismissViewControllerAnimated:YES completion:nil];
-    
-}
-
--(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker
-{
-    [addressBookController dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (BOOL)isPersonFacebookContact:(ABRecordRef)person
-{
-    ABMultiValueRef instantMessage = ABRecordCopyValue(person, kABPersonInstantMessageProperty);
-    
-    BOOL returnValue = NO;
-    
-    if (instantMessage)
-    {
-        for (NSInteger i=0 ; i < ABMultiValueGetCount(instantMessage); i++)
-        {
-            CFDictionaryRef instantMessageValue = ABMultiValueCopyValueAtIndex(instantMessage, i);
-            CFStringRef instantMessageString = CFDictionaryGetValue(instantMessageValue, kABPersonInstantMessageServiceKey);
-            
-            if (CFStringCompare(instantMessageString, kABPersonInstantMessageServiceFacebook, 0) == kCFCompareEqualTo)
-            {
-                returnValue = YES;
-            }
-            
-            CFRelease(instantMessageString);
-            CFRelease(instantMessageValue);
-        }
-    }
-    
-    //CFRelease(instantMessage);
-    
-    return returnValue;
-}
-
 #pragma mark
 #pragma mark - SwipeableCellDelegate
 #pragma mark
@@ -403,53 +199,77 @@ NSMutableDictionary *contactInfoDict;
 - (void)buttonDeleteActionForItemText:(id)sender
 {
     GroupMemberTableViewCell *cellGroup=(GroupMemberTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
-    //NSIndexPath *indexPath=[groupMemberTableView indexPathForCell:cellGroup];
+    NSIndexPath *indexPath=[groupMemberTableView indexPathForCell:cellGroup];
+    
     cellDeleteStatus=YES;
     selectedIndexPath=nil;
     
-    NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cellGroup.groupMemberName.text);
-    BOOL isDeleted=[DBManager deleteGroupMemberWithMemberId:[NSString stringWithFormat:@"%ld",(long)cellGroup.groupMemberName.tag]];
-     
-     if(isDeleted)
-     {
-         groupMemberArray= [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
-         [groupMemberTableView reloadData];
-     }
+    ModelGroupMembers *selectedGroupObj = [groupMemberArray objectAtIndex:indexPath.row];
     
-}
-
-
-#pragma mark
-#pragma mark AlertView Delegate Methods
-#pragma mark
-
--(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"])
+    if (selectedGroupObj)
     {
-        NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
+        NSLog(@"ProfileImage URL:%@",selectedGroupObj.strProfileImage);
         
-        [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
-        
-        [self.view addSubview:HUD];
-        [HUD show:YES];
-        [self insertGroupMember];
-        
-//        BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:[alertView buttonTitleAtIndex:buttonIndex] groupID:clickedGroupId];
-//        
-//        if(!exists)
-//        {
-//            
-//        }
-//        else
-//        {
-//            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-//            [alert show];
-//        }
+        if([selectedGroupObj.strProfileImage containsString:@"assets-library:"])
+        {
+            float currentVersion = [[[UIDevice currentDevice] systemVersion] floatValue];
+            NSLog(@"currentVersion: %f",currentVersion);
+            
+            NSURL *photosUrl=[NSURL URLWithString:selectedGroupObj.strProfileImage];
+            __block NSArray *arrphotosUrl=[NSArray arrayWithObjects:photosUrl, nil];
+            
+            if (currentVersion>=8.0)
+            {
+                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                    
+                    PHFetchResult *assetsToBeDeleted = [PHAsset fetchAssetsWithALAssetURLs:arrphotosUrl options:nil];
+                    [PHAssetChangeRequest deleteAssets:assetsToBeDeleted];
+                } completionHandler:^(BOOL success, NSError *error) {
+                    
+                    
+                    if (success)
+                    {
+                        NSLog(@"Deleted from assets library.");
+                    }
+                    else
+                    {
+                        NSLog(@"Problem in deleting asset. %@", error);
+                    }
+                    NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cellGroup.groupMemberName.text);
+                    BOOL isDeleted=[DBManager deleteGroupMemberWithMemberId:[NSString stringWithFormat:@"%ld",(long)cellGroup.groupMemberName.tag]];
+                    
+                    if(isDeleted)
+                    {
+                        [self fetchGroupMembersAndRefresh];
+                    }
+                }];
+                
+            }
+            else
+            {
+                NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cellGroup.groupMemberName.text);
+                BOOL isDeleted=[DBManager deleteGroupMemberWithMemberId:[NSString stringWithFormat:@"%ld",(long)cellGroup.groupMemberName.tag]];
+                
+                if(isDeleted)
+                {
+                    [self fetchGroupMembersAndRefresh];
+                }
+            }
+        }
+        else
+        {
+            //NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cell.nameLabelText.text);
+            NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cellGroup.groupMemberName.text);
+            BOOL isDeleted=[DBManager deleteGroupMemberWithMemberId:[NSString stringWithFormat:@"%ld",(long)cellGroup.groupMemberName.tag]];
+            
+            if(isDeleted)
+            {
+                [self fetchGroupMembersAndRefresh];
+            }
+        }
     }
+  
 }
-
-
 
 #pragma mark
 #pragma  mark IBAction Methods
@@ -510,7 +330,7 @@ NSMutableDictionary *contactInfoDict;
         {
             if (![DBManager checkGroupNameExistsinGroupTable:groupNameTextField.text])
             {
-                long long insertID= [DBManager insertGroup:groupNameTextField.text];
+                long long insertID = [DBManager insertGroup:groupNameTextField.text];
                 if (insertID!=0)
                 {
                     [self.navigationController popViewControllerAnimated:YES];
@@ -520,12 +340,8 @@ NSMutableDictionary *contactInfoDict;
             {
                 [self alertStatus:@"Group name already exists." :nil ];
             }
-            
-            
         }
-
     }
-    
 }
 
 - (IBAction)addButtonTapped:(id)sender
@@ -543,9 +359,45 @@ NSMutableDictionary *contactInfoDict;
         }
         else
         {
-            addressBookController = [[ABPeoplePickerNavigationController alloc] init];
+            __block KBContactsSelectionViewController *vc = [KBContactsSelectionViewController contactsSelectionViewControllerWithConfiguration:^(KBContactsSelectionConfiguration *configuration) {
+                configuration.shouldShowNavigationBar = YES;
+                configuration.tintColor = [UIColor colorWithRed:11.0/255 green:211.0/255 blue:24.0/255 alpha:1];
+                configuration.title = @"All Contacts";
+                configuration.selectButtonTitle = @"";
+                
+                //configuration.mode = KBContactsSelectionModeMessages | KBContactsSelectionModeEmail;
+                configuration.mode = KBContactsSelectionModeMessages;
+                configuration.skipUnnamedContacts = YES;
+                configuration.customSelectButtonHandler = ^(NSArray * contacts) {
+                    //NSLog(@"%@", contacts);
+                };
+                /*configuration.contactEnabledValidation = ^(id contact) {
+                 APContact * _c = contact;
+                 if ([_c phonesWithLabels].count > 0) {
+                 
+                 NSString * phone = ((APPhoneWithLabel*) _c.phonesWithLabels[0]).phone;
+                 if ([phone containsString:@"888"]) {
+                 return NO;
+                 }
+                 }
+                 return YES;
+                 };*/
+            }];
+            [vc setDelegate:self];
+            [self presentViewController:vc animated:YES completion:NULL];
+            //[self.navigationController pushViewController:vc animated:YES];
+            
+            self.presentedCSVC = vc;
+            
+            __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 24)];
+            label.textAlignment = NSTextAlignmentCenter;
+            label.text = @"Select people you want to text";
+            
+            vc.additionalInfoView = label;
+            
+            /*addressBookController = [[ABPeoplePickerNavigationController alloc] init];
             [addressBookController setPeoplePickerDelegate:self];
-            [self presentViewController:addressBookController animated:YES completion:nil];
+            [self presentViewController:addressBookController animated:YES completion:nil];*/
         }
     }
 }
@@ -553,6 +405,118 @@ NSMutableDictionary *contactInfoDict;
 - (IBAction)back:(id)sender
 {
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+#pragma mark - KBContactsSelectionViewControllerDelegate
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didSelectContact:(APContact *)contact {
+    
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
+    
+    self.presentedCSVC.additionalInfoView = label;
+    
+    NSLog(@"Selected Contact: %@", self.presentedCSVC.selectedContacts);
+    [self dismissViewControllerAnimated:YES completion:NULL];
+    
+    if (self.presentedCSVC.selectedContacts.count>0)
+    {
+        APContact *selectedContact =[self.presentedCSVC.selectedContacts firstObject];
+        multipleContactNoArray=[NSMutableArray array];
+        
+        if (selectedContact)
+        {
+            
+            ModelGroupMembers *objMember=[[ModelGroupMembers alloc] init];
+            
+            objMember.strGroupId=clickedGroupId;
+            
+            if(selectedContact.firstName)
+                objMember.strFirstName=selectedContact.firstName;
+            else
+                objMember.strFirstName=@"";
+            if(selectedContact.lastName)
+                objMember.strLastName=selectedContact.lastName;
+            else
+                objMember.strLastName=@"";
+            objMember.strMobileNumber=[[selectedContact.phonesWithLabels firstObject] phone];
+            objMember.strHomePhone=[[selectedContact.phonesWithLabels firstObject] phone];
+            
+            
+            
+            [self.view addSubview:HUD];
+            [HUD show:YES];
+            if (selectedContact.thumbnail)
+            {
+                int photolibaryAccessStatus = [self AssetLibraryAuthStatus];
+                
+                if (photolibaryAccessStatus==3)
+                {
+                    __block NSString *imageURL =@"";
+                    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+                    [library writeImageToSavedPhotosAlbum:[selectedContact.thumbnail CGImage] orientation:(ALAssetOrientation)[selectedContact.thumbnail imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error)
+                     {
+                         if (error)
+                         {
+                             [HUD hide:YES];
+                             [HUD removeFromSuperview];
+                             NSLog(@"Fetch Error: %@",error);
+                             objMember.strProfileImage=@"man_icon.png";
+                         }
+                         else
+                         {
+                             imageURL = [assetURL absoluteString];
+                             //NSLog(@"imageURL url %@", imageURL);
+                             objMember.strProfileImage=imageURL;
+                         }
+                         [self insertGroupMemberWithGroupMemObj:objMember];
+                     }];
+                }
+                else
+                {
+                    objMember.strProfileImage=@"man_icon.png";
+                    [self insertGroupMemberWithGroupMemObj:objMember];
+                }
+            }
+            else
+            {
+                objMember.strProfileImage=@"man_icon.png";
+                [self insertGroupMemberWithGroupMemObj:objMember];
+            }
+        }
+        else
+        {
+            [self alertStatus:nil :@"Failed to fetch the contact details. Please try again."];
+        }
+    }
+    
+    else
+    {
+        [self alertStatus:nil :@"Failed to fetch the contact details. Please try again."];
+    }
+    
+}
+
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didRemoveContact:(APContact *)contact {
+    
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
+    self.presentedCSVC.additionalInfoView = label;
+    
+    NSLog(@"%@", self.presentedCSVC.selectedContacts);
+}
+
+- (void)contactsSelectionWillLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+//    HUD.labelText = @"Loading Contacts";
+//    [self.view addSubview:HUD];
+//    [HUD show:YES];
+}
+- (void)contactsSelectionDidLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+//    [HUD hide:YES];
+//    [HUD removeFromSuperview];
 }
 
 
@@ -604,166 +568,60 @@ NSMutableDictionary *contactInfoDict;
     [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
 }
 
-
--(void) insertGroupMember
+-(void) insertGroupMemberWithGroupMemObj:(ModelGroupMembers*)objMember
 {
-    if (contactImageFromAddressBook)
+    
+    BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:objMember.strMobileNumber groupID:clickedGroupId];
+    
+    if(!exists)
     {
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        [library writeImageToSavedPhotosAlbum:[contactImageFromAddressBook CGImage] orientation:(ALAssetOrientation)[contactImageFromAddressBook imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error)
-         {
-             if (error)
-             {
-                 NSLog(@"error: %@",error);
-             }
-             else
-             {
-                 
-                 NSString *urlString = [assetURL absoluteString];
-                 //NSLog(@"url %@", urlString);
-                 [contactInfoDict setObject:urlString forKey:@"image"];
-                 NSLog(@"contactInfoDict: %@",contactInfoDict);
-                 
-                 ModelGroupMembers *objMember=[[ModelGroupMembers alloc] init];
-                 
-                 objMember.strGroupId=[contactInfoDict valueForKey:@"groupId"];
-                 objMember.strFirstName=[contactInfoDict valueForKey:@"firstName"];
-                 objMember.strLastName=[contactInfoDict valueForKey:@"lastName"];
-                 objMember.strMobileNumber=[contactInfoDict valueForKey:@"mobileNumber"];
-                 objMember.strHomePhone=[contactInfoDict valueForKey:@"homeNumber"];
-                 objMember.strProfileImage=[contactInfoDict valueForKey:@"image"];
-                 
-                 BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:objMember.strMobileNumber groupID:clickedGroupId];
-                 
-                 if(!exists)
-                 {
-                     NSMutableArray *memberInsertArray=[[NSMutableArray alloc] init];
-                     [memberInsertArray addObject:objMember];
-                 
-                     long long insertId= [DBManager insertGroupMember:memberInsertArray];
-                     [HUD hide:YES];
-                     [HUD removeFromSuperview];
-                     
-                     if (insertId>0)
-                     {
-                         
-                         [saveAlert show];
-                         [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
-                         
-                         groupMemberArray = [[NSMutableArray alloc] init];
-                         groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
-                         
-                         self.saveBtn.hidden=YES;
-                         groupNameTextField.userInteractionEnabled=NO;
-                         groupMemberTableView.hidden = NO;
-                         groupHelpLabel.hidden = YES;
-                         groupSwipeTextLabel.hidden=NO;
-                         [groupMemberTableView reloadData];
-                         
-                         /*if (groupMemberArray.count==1)
-                         {
-                             ModelGroupMembers *obj=[groupMemberArray objectAtIndex:0];
-                             
-                             if (obj.strProfileImage && obj.strProfileImage.length>0)
-                             {
-                                 NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
-                                 [imageUrlArr addObject:obj.strProfileImage];
-                                 [self noOfViews:imageUrlArr];
-                             }
-                         }
-                         else if (groupMemberArray.count==2)
-                         {
-                             NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
-                             for (int i=0; i<groupMemberArray.count; i++)
-                             {
-                                 ModelGroupMembers *obj=[groupMemberArray objectAtIndex:i];
-                                 
-                                 if (obj.strProfileImage && obj.strProfileImage.length>0)
-                                     [imageUrlArr addObject:obj.strProfileImage];
-                             }
-                             [self noOfViews:imageUrlArr];
-                         }*/
-                     }
-                 }
-                 else
-                 {
-                     [HUD hide:YES];
-                     [HUD removeFromSuperview];
-                     [self alertStatus:@"Already exists." :nil];
-                 }
-             }
-         }];
+        NSMutableArray *memberInsertArray=[[NSMutableArray alloc] init];
+        [memberInsertArray addObject:objMember];
+        
+        long long insertId= [DBManager insertGroupMember:memberInsertArray];
+        [HUD hide:YES];
+        [HUD removeFromSuperview];
+        
+        if (insertId>0)
+        {
+            
+            [saveAlert show];
+            [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+            
+            [self fetchGroupMembersAndRefresh];
+        }
     }
     else
     {
-        [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
-        NSLog(@"contactInfoDict: %@",contactInfoDict);
-        
-        ModelGroupMembers *objMember=[[ModelGroupMembers alloc] init];
-        
-        objMember.strGroupId=[contactInfoDict valueForKey:@"groupId"];
-        objMember.strFirstName=[contactInfoDict valueForKey:@"firstName"];
-        objMember.strLastName=[contactInfoDict valueForKey:@"lastName"];
-        objMember.strMobileNumber=[contactInfoDict valueForKey:@"mobileNumber"];
-        objMember.strHomePhone=[contactInfoDict valueForKey:@"homeNumber"];
-        objMember.strProfileImage=[contactInfoDict valueForKey:@"image"];
-        
-        BOOL exists=[DBManager checkGroupMembersExistsinGroupTable:objMember.strMobileNumber groupID:clickedGroupId];
-        
-        if(!exists)
-        {
-            NSMutableArray *memberInsertArray=[[NSMutableArray alloc] init];
-            [memberInsertArray addObject:objMember];
-            
-            long long insertId= [DBManager insertGroupMember:memberInsertArray];
-            [HUD hide:YES];
-            [HUD removeFromSuperview];
-            
-            if (insertId>0)
-            {
-                groupMemberArray = [[NSMutableArray alloc] init];
-                groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
-                
-                self.saveBtn.hidden=YES;
-                groupNameTextField.userInteractionEnabled=NO;
-                groupMemberTableView.hidden = NO;
-                groupHelpLabel.hidden = YES;
-                groupSwipeTextLabel.hidden=NO;
-                
-                [groupMemberTableView reloadData];
-                
-                /*if (groupMemberArray.count==1)
-                {
-                    ModelGroupMembers *obj=[groupMemberArray objectAtIndex:0];
-                    
-                    if (obj.strProfileImage && obj.strProfileImage.length>0)
-                    {
-                        NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
-                        [imageUrlArr addObject:obj.strProfileImage];
-                        [self noOfViews:imageUrlArr];
-                    }
-                }
-                else if (groupMemberArray.count==2)
-                {
-                    NSMutableArray *imageUrlArr=[[NSMutableArray alloc] init];
-                    for (int i=0; i<groupMemberArray.count; i++)
-                    {
-                        ModelGroupMembers *obj=[groupMemberArray objectAtIndex:i];
-                        
-                        if (obj.strProfileImage && obj.strProfileImage.length>0)
-                            [imageUrlArr addObject:obj.strProfileImage];
-                    }
-                    [self noOfViews:imageUrlArr];
-                }*/
-            }
-        }
-        else
-        {
-            [HUD hide:YES];
-            [HUD removeFromSuperview];
-            [self alertStatus:@"Already exists." :nil];
-        }
+        [HUD hide:YES];
+        [HUD removeFromSuperview];
+        [self alertStatus:@"Already exists." :nil];
     }
+}
+
+-(void) fetchGroupMembersAndRefresh
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        
+        //Mostly Coding Part
+        groupMemberArray = [NSMutableArray array];
+        groupMemberArray = [DBManager fetchGroupMembersWithGroupId:clickedGroupId];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{ // 2
+            
+            //Mostly UI Updates
+            
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+            self.saveBtn.hidden=YES;
+            groupNameTextField.userInteractionEnabled=NO;
+            groupMemberTableView.hidden = NO;
+            groupHelpLabel.hidden = YES;
+            groupSwipeTextLabel.hidden=NO;
+            [groupMemberTableView reloadData];
+        });
+    });
+    
 }
 
 -(void)noOfViews:(NSMutableArray *)imageURLArray
@@ -931,4 +789,67 @@ NSMutableDictionary *contactInfoDict;
         
     }
 }
+
+
+#pragma mark AssetLibrary Authorization Status
+
+-(int)AssetLibraryAuthStatus
+{
+    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+    switch (status)
+    {
+        case ALAuthorizationStatusRestricted:
+            return 0;
+            
+        case ALAuthorizationStatusDenied:
+            return 1;
+            
+        case ALAuthorizationStatusNotDetermined:
+            return 2;
+            
+        case ALAuthorizationStatusAuthorized:
+            return 3;
+            
+            
+        default:
+            return 4;
+    }
+}
+
+#pragma mark PHAsset Authorization Status
+
+-(void)PHAssetAuthStatus
+
+{
+    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    
+    if (status == PHAuthorizationStatusAuthorized) {
+        // Access has been granted.
+    }
+    
+    else if (status == PHAuthorizationStatusDenied) {
+        // Access has been denied.
+    }
+    
+    else if (status == PHAuthorizationStatusNotDetermined)
+    {
+        
+        // Access has not been determined.
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            
+            if (status == PHAuthorizationStatusAuthorized) {
+                // Access has been granted.
+            }
+            
+            else {
+                // Access has been denied.
+            }
+        }];
+    }
+    
+    else if (status == PHAuthorizationStatusRestricted) {
+        // Restricted access - normally won't happen.
+    }
+}
+
 @end

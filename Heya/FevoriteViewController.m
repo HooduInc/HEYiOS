@@ -11,25 +11,29 @@
 #import "FevretTableViewCell.h"
 #import "ModelFevorite.h"
 #import "MBProgressHUD.h"
-#import <Social/Social.h>
 
-@interface FevoriteViewController ()<FevretTableViewCellDelegate,UITextFieldDelegate, UIAlertViewDelegate>
+#import "KBContactsSelectionViewController.h"
+#import "APContact.h"
+#import "APPhoneWithLabel.h"
+
+@import Photos;
+
+@interface FevoriteViewController ()<FevretTableViewCellDelegate,UITextFieldDelegate, UIAlertViewDelegate,KBContactsSelectionViewControllerDelegate>
 {
     MBProgressHUD *HUD;
     NSIndexPath *selectedIndexPath;
     BOOL cellEditingStatus, cellDeleteStatus;
     UIAlertView *saveAlert;
     NSMutableArray *multipleContactNoArray, *arrDisplay;
-
     UIImage *contactImageFromAddressBook;
 }
 
+@property (weak) KBContactsSelectionViewController* presentedCSVC;
 @end
 
 @implementation FevoriteViewController
-NSMutableDictionary *contactInfoDict;
-NSString *urlString;
-@synthesize fevoriteList_table,fevoritelist_array,number_arr,alphabetArray, testingImage;
+
+@synthesize fevoriteList_table,fevoritelist_array,number_arr,alphabetArray, testingImage, arrContactsData;
 
 
 #pragma mark
@@ -57,238 +61,34 @@ NSString *urlString;
     [self setEditing:YES animated:YES];// 3
     [fevoriteList_table setEditing:YES animated:YES];
     
+    
+    //Request Access to Photos
+    int photolibaryAccessStatus = [self AssetLibraryAuthStatus];
+    
+    if (photolibaryAccessStatus==0 || photolibaryAccessStatus==1 || photolibaryAccessStatus==4)
+    {
+        [self showMessageWithTitle:@"Privacy Warning!" withMessage:@"Permission was not granted for photos.\nTip: Go to settings->Hey and allow photos." withButtonTittle:@"OK"];
+    }
+    [self PHAssetAuthStatus];
+
 }
 
 -(void) viewWillAppear:(BOOL)animated
 {
     selectedIndexPath=nil;
-    self.arrContactsData = [[NSMutableArray alloc]init];
     
     [fevoriteList_table setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
     
-    [self fetchAndRefresh];
     
     [self.view addSubview:HUD];
     [HUD show:YES];
-
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{ // 1
-        
-        //Mostly Coding Part
-        
-        [self fetchAndRefresh];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{ // 2
-            
-            //Mostly UI Updates
-            [fevoriteList_table reloadData];
-            [HUD hide:YES];
-            [HUD removeFromSuperview];
-        });
-    });
+    [self fetchAndRefresh];
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-
-#pragma mark
-#pragma mark - ABPeoplePickerNavigationController
-#pragma mark
-
-//Works from IOS 8
-- (void)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker didSelectPerson:(ABRecordRef)person
-{
-    multipleContactNoArray=[[NSMutableArray alloc] init];
-    
-    // Initialize a mutable dictionary and give it initial values.
-    contactInfoDict = [[NSMutableDictionary alloc]
-                                            initWithObjects:@[@"", @"", @"", @"", @"", @"", @"", @"", @""]
-                                            forKeys:@[@"firstName", @"lastName", @"mobileNumber", @"homeNumber", @"homeEmail", @"workEmail", @"address", @"zipCode", @"city"]];
-    
-    
-    // Use a general Core Foundation object.
-    CFTypeRef generalCFObject = ABRecordCopyValue(person, kABPersonFirstNameProperty);
-    
-    // Get the first name.
-    if (generalCFObject)
-    {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"firstName"];
-        CFRelease(generalCFObject);
-    }
-    
-    // Get the last name.
-    generalCFObject = ABRecordCopyValue(person, kABPersonLastNameProperty);
-    if (generalCFObject)
-    {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"lastName"];
-        CFRelease(generalCFObject);
-    }
-    
-    // Get the phone numbers as a multi-value property.
-    ABMultiValueRef phonesRef = ABRecordCopyValue(person, kABPersonPhoneProperty);
-    
-    if (phonesRef)
-    {
-        
-        //NSLog(@"isFacebook %d", [self isPersonFacebookContact:person]);
-        
-        if([self isPersonFacebookContact:person])
-        {
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"This contact information synced from facebook to your addressbook. Contact picture may not appear in the favorites." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
-        }
-        
-        for (int i=0; i<ABMultiValueGetCount(phonesRef); i++)
-        {
-            CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
-            CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
-            /*
-             NSLog(@"ContactLabel: %@",currentPhoneLabel);
-             NSLog(@"ContactValue: %@",currentPhoneValue);
-             NSLog(@"kABPersonPhoneMobileLabel: %@", kABPersonPhoneMobileLabel);*/
-            
-            
-            if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABPersonPhoneMainLabel
-            if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-            if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABPersonIPhoneLabel
-            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-    
-            }
-            
-            //If Phone Number doesn't exists in kABHomeLabel
-            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABWorkLabel
-            if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            else
-            {
-                NSString *localLabel =(__bridge NSString*) ABAddressBookCopyLocalizedLabel(currentPhoneLabel);
-                NSLog(@"localLabel: %@",localLabel);
-                
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            CFRelease(currentPhoneLabel);
-            CFRelease(currentPhoneValue);
-        }
-        
-        CFRelease(phonesRef);
-        
-        // If the contact has an image then get it too.
-        if (ABPersonHasImageData(person))
-        {
-            
-            NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-        
-            contactImageFromAddressBook = [UIImage imageWithData:contactImageData];
-            
-            if (multipleContactNoArray.count>1)
-            {
-                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-                
-                for(NSString *buttonTitle in multipleContactNoArray)
-                    [alertContactDialog addButtonWithTitle:buttonTitle];
-                [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-                [alertContactDialog show];
-            }
-            else if(multipleContactNoArray.count!=0)
-                [self insertFavorite];
-            
-        }
-        
-        else
-        {
-            contactImageFromAddressBook=nil;
-            [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
-            
-            if (multipleContactNoArray.count>1)
-            {
-                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-                
-                for(NSString *buttonTitle in multipleContactNoArray)
-                    [alertContactDialog addButtonWithTitle:buttonTitle];
-                [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-                [alertContactDialog show];
-            }
-            else
-                [self insertFavorite];
-        }
-    }
-    else
-    {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Sorry. Contact number doesn't exist." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
-    }
-    
-    //[self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-    
-    
-}
-
--(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker{
-    [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (BOOL)isPersonFacebookContact:(ABRecordRef)person
-{
-    ABMultiValueRef instantMessage = ABRecordCopyValue(person, kABPersonInstantMessageProperty);
-    
-    BOOL returnValue = NO;
-    
-    if (instantMessage)
-    {
-        for (NSInteger i=0 ; i < ABMultiValueGetCount(instantMessage); i++)
-        {
-            CFDictionaryRef instantMessageValue = ABMultiValueCopyValueAtIndex(instantMessage, i);
-            CFStringRef instantMessageString = CFDictionaryGetValue(instantMessageValue, kABPersonInstantMessageServiceKey);
-                
-            if (CFStringCompare(instantMessageString, kABPersonInstantMessageServiceFacebook, 0) == kCFCompareEqualTo)
-            {
-                returnValue = YES;
-            }
-            
-            CFRelease(instantMessageString);
-            CFRelease(instantMessageValue);
-        }
-    }
-    
-    //CFRelease(instantMessage);
-    
-    return returnValue;
 }
 
 
@@ -370,9 +170,7 @@ NSString *urlString;
     [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     
     
-    ModelFevorite *favObj = [[ModelFevorite alloc] init];
-    //favObj=[self.arrContactsData objectAtIndex:indexPath.row];
-    favObj=[[arrDisplay objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+    ModelFevorite *favObj = [[arrDisplay objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
     
     cell.itemText = [NSString stringWithFormat:@"%@ %@", favObj.strFirstName,favObj.strLastName];
     cell.nameLabelText.tag=[favObj.strFevoriteId intValue];
@@ -380,14 +178,12 @@ NSString *urlString;
     
     if([favObj.strProfileImage isEqualToString:@"man_icon.png"])
     {
-        
-        //cell.profileImg.image = [UIImage imageNamed:favObj.strProfileImage];
         cell.itemImage = [UIImage imageNamed:favObj.strProfileImage];
     }
     else
     {
           NSString *str = favObj.strProfileImage;
-          NSLog(@"ImageURL: %@",str);
+          //NSLog(@"ImageURL: %@",str);
         
         //ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
         NSURL *myAssetUrl = [NSURL URLWithString:str];
@@ -401,7 +197,6 @@ NSString *urlString;
                     UIImage *image = [UIImage imageWithCGImage:iref];
 
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        //cell.profileImg.image=image;
                         cell.itemImage=image;
                     });
                     iref = nil;
@@ -446,11 +241,11 @@ NSString *urlString;
     cellEditingStatus=YES;
     cellDeleteStatus=NO;
     
-    NSLog(@"In the delegate, Clicked buttonChange-> Before Updating->Name: %@",cell.nameLabelText.text);
+    //NSLog(@"In the delegate, Clicked buttonChange-> Before Updating->Name: %@",cell.nameLabelText.text);
     
     
     CGRect rectOfCellInTableView = [fevoriteList_table rectForRowAtIndexPath:indexPath];
-    NSLog(@"TextField Origin: %f",rectOfCellInTableView.origin.y+120);
+    //NSLog(@"TextField Origin: %f",rectOfCellInTableView.origin.y+120);
     
     if(isIphone4 || isIphone5)
     {
@@ -475,18 +270,67 @@ NSString *urlString;
 - (void)buttonDeleteActionForItemText:(id)sender
 {
     FevretTableViewCell *cell=(FevretTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
-    //NSIndexPath *indexPath=[fevoriteList_table indexPathForCell:cell];
+    NSIndexPath *indexPath=[fevoriteList_table indexPathForCell:cell];
     //selectedIndexPath=indexPath;
     
     cellEditingStatus=NO;
     cellDeleteStatus=YES;
     selectedIndexPath=nil;
 
-    NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cell.nameLabelText.text);
-    BOOL isDeleted=[DBManager deleteFavoriteDetailsWithFavoriteId:[NSString stringWithFormat:@"%ld",(long)cell.nameLabelText.tag]];
+    ModelFevorite *selectedFavObj = [[arrDisplay objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
     
-    if(isDeleted)
-        [self fetchAndRefresh];
+    if (selectedFavObj)
+    {
+        NSLog(@"ProfileImage URL:%@",selectedFavObj.strProfileImage);
+        
+        if([selectedFavObj.strProfileImage containsString:@"assets-library:"])
+        {
+            float currentVersion = [[[UIDevice currentDevice] systemVersion] floatValue];
+            NSLog(@"currentVersion: %f",currentVersion);
+            
+            NSURL *photosUrl=[NSURL URLWithString:selectedFavObj.strProfileImage];
+            __block NSArray *arrphotosUrl=[NSArray arrayWithObjects:photosUrl, nil];
+            
+            if (currentVersion>=8.0)
+            {
+                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                    
+                     PHFetchResult *assetsToBeDeleted = [PHAsset fetchAssetsWithALAssetURLs:arrphotosUrl options:nil];
+                    [PHAssetChangeRequest deleteAssets:assetsToBeDeleted];
+                } completionHandler:^(BOOL success, NSError *error) {
+                    
+                    
+                    if (success)
+                    {
+                       NSLog(@"Deleted from assets library.");
+                    }
+                    else
+                    {
+                        NSLog(@"Problem in deleting asset. %@", error);
+                    }
+                    BOOL isDeleted=[DBManager deleteFavoriteDetailsWithFavoriteId:[NSString stringWithFormat:@"%ld",(long)cell.nameLabelText.tag]];
+                    
+                    if(isDeleted)
+                        [self fetchAndRefresh];
+                }];
+
+            }
+            else
+            {
+                BOOL isDeleted=[DBManager deleteFavoriteDetailsWithFavoriteId:[NSString stringWithFormat:@"%ld",(long)cell.nameLabelText.tag]];
+                if(isDeleted)
+                    [self fetchAndRefresh];
+            }
+        }
+        else
+        {
+            //NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cell.nameLabelText.text);
+            BOOL isDeleted=[DBManager deleteFavoriteDetailsWithFavoriteId:[NSString stringWithFormat:@"%ld",(long)cell.nameLabelText.tag]];
+            if(isDeleted)
+                [self fetchAndRefresh];
+        }
+    }
+    
 }
 
 #pragma mark
@@ -502,15 +346,52 @@ NSString *urlString;
 
 - (IBAction)getcontacts:(id)sender
 {
+    __block KBContactsSelectionViewController *vc = [KBContactsSelectionViewController contactsSelectionViewControllerWithConfiguration:^(KBContactsSelectionConfiguration *configuration) {
+        configuration.shouldShowNavigationBar = YES;
+        configuration.tintColor = [UIColor colorWithRed:11.0/255 green:211.0/255 blue:24.0/255 alpha:1];
+        configuration.title = @"All Contacts";
+        configuration.selectButtonTitle = @"";
+        
+        //configuration.mode = KBContactsSelectionModeMessages | KBContactsSelectionModeEmail;
+        configuration.mode = KBContactsSelectionModeMessages;
+        configuration.skipUnnamedContacts = YES;
+        configuration.customSelectButtonHandler = ^(NSArray * contacts) {
+            //NSLog(@"%@", contacts);
+        };
+        /*configuration.contactEnabledValidation = ^(id contact) {
+         APContact * _c = contact;
+         if ([_c phonesWithLabels].count > 0) {
+         
+         NSString * phone = ((APPhoneWithLabel*) _c.phonesWithLabels[0]).phone;
+         if ([phone containsString:@"888"]) {
+         return NO;
+         }
+         }
+         return YES;
+         };*/
+    }];
+    [vc setDelegate:self];
+    [self presentViewController:vc animated:YES completion:NULL];
+    //[self.navigationController pushViewController:vc animated:YES];
     
-    self.addressBookController = [[ABPeoplePickerNavigationController alloc] init];
+    self.presentedCSVC = vc;
+    
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 24)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = @"Select people you want to text";
+    
+    vc.additionalInfoView = label;
+    // Do any additional setup after loading the view, typically from a nib.
+    
+    
+    /*self.addressBookController = [[ABPeoplePickerNavigationController alloc] init];
     [self.addressBookController setPeoplePickerDelegate:self];
-    [self presentViewController:self.addressBookController animated:YES completion:nil];
+    [self presentViewController:self.addressBookController animated:YES completion:nil];*/
 }
 
 -(IBAction)rearrangeBtnTapped:(id)sender
 {
-    if (self.arrContactsData.count>0)
+    if (arrContactsData.count>0)
     {
         RearrangeFevoriteViewController *rearrangeController=[[RearrangeFevoriteViewController alloc] initWithNibName:@"RearrangeFevoriteViewController" bundle:nil];
         [self.navigationController pushViewController:rearrangeController animated:YES];
@@ -556,6 +437,117 @@ NSString *urlString;
 
 
 
+#pragma mark - KBContactsSelectionViewControllerDelegate
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didSelectContact:(APContact *)contact {
+    
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
+    
+    self.presentedCSVC.additionalInfoView = label;
+    
+    NSLog(@"Selected Contact: %@", self.presentedCSVC.selectedContacts);
+    [self dismissViewControllerAnimated:YES completion:NULL];
+    
+    if (self.presentedCSVC.selectedContacts.count>0)
+    {
+        APContact *selectedContact =[self.presentedCSVC.selectedContacts firstObject];
+        multipleContactNoArray=[NSMutableArray array];
+        
+        if (selectedContact)
+        {
+            
+                ModelFevorite *favObj=[[ModelFevorite alloc] init];
+                
+                if(selectedContact.firstName)
+                    favObj.strFirstName=selectedContact.firstName;
+                else
+                    favObj.strFirstName=@"";
+                if(selectedContact.lastName)
+                    favObj.strLastName=selectedContact.lastName;
+                else
+                    favObj.strLastName=@"";
+                
+                favObj.strMobNumber=[[selectedContact.phonesWithLabels firstObject] phone];
+                favObj.strHomeNumber=[[selectedContact.phonesWithLabels firstObject] phone];
+                
+                __block NSString *imageURL =@"";
+                
+                
+                [self.view addSubview:HUD];
+                [HUD show:YES];
+                if (selectedContact.thumbnail)
+                {
+                    int photolibaryAccessStatus = [self AssetLibraryAuthStatus];
+                    if (photolibaryAccessStatus==3)
+                    {
+                        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+                        [library writeImageToSavedPhotosAlbum:[selectedContact.thumbnail CGImage] orientation:(ALAssetOrientation)[selectedContact.thumbnail imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error)
+                         {
+                             if (error)
+                             {
+                                 [HUD hide:YES];
+                                 [HUD removeFromSuperview];
+                                 NSLog(@"Fetch Error: %@",error);
+                                 favObj.strProfileImage=@"man_icon.png";
+                             }
+                             else
+                             {
+                                 imageURL = [assetURL absoluteString];
+                                 //NSLog(@"imageURL url %@", imageURL);
+                                 favObj.strProfileImage=imageURL;
+                             }
+                             [self insertFavoriteWith:favObj];
+                         }];
+                    }
+                    else
+                    {
+                        favObj.strProfileImage=@"man_icon.png";
+                        [self insertFavoriteWith:favObj];
+                    }
+                }
+                else
+                {
+                    favObj.strProfileImage=@"man_icon.png";
+                    [self insertFavoriteWith:favObj];
+                }
+        }
+        else
+        {
+           [self showMessageWithTitle:nil withMessage:@"Failed to fetch the contact details. Please try again." withButtonTittle:@"OK"];
+        }
+    }
+    
+    else
+    {
+        [self showMessageWithTitle:nil withMessage:@"Failed to fetch the contact details. Please try again." withButtonTittle:@"OK"];
+       
+    }
+    
+}
+
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didRemoveContact:(APContact *)contact
+{
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
+    self.presentedCSVC.additionalInfoView = label;
+    
+    NSLog(@"%@", self.presentedCSVC.selectedContacts);
+}
+
+- (void)contactsSelectionWillLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+//    HUD.labelText = @"Loading Contacts";
+//    [self.view addSubview:HUD];
+//    [HUD show:YES];
+}
+- (void)contactsSelectionDidLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+//   [HUD hide:YES];
+//   [HUD removeFromSuperview];
+}
+
 #pragma mark
 #pragma mark TextField Delegate Methods
 #pragma mark
@@ -573,22 +565,6 @@ NSString *urlString;
     [fevoriteList_table setContentOffset:CGPointZero animated:YES];
 }
 
-#pragma mark
-#pragma mark AlertView Delegate Methods
-#pragma mark
-
--(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"])
-    {
-        NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
-        [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
-        
-        [self.view addSubview:HUD];
-        [HUD show:YES];
-        [self insertFavorite];
-    }
-}
 
 
 #pragma mark
@@ -620,27 +596,43 @@ NSString *urlString;
 
 -(void) fetchAndRefresh
 {
-    arrDisplay=[[NSMutableArray alloc] init];
-    self.arrContactsData=[[NSMutableArray alloc] init];
-    self.arrContactsData = [DBManager fetchFavorite];
-     NSLog(@"No of Elements: %ld",(long)self.arrContactsData.count);
-    [self updateSortedArray:^(BOOL finished) {
-        NSLog(@"Sections in arrDisplay: %ld",(long)arrDisplay.count);
-        NSLog(@"ArrDisplay Contents: %@",arrDisplay);
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        
+        //Mostly Coding Part
+        arrDisplay=[NSMutableArray array];
+        arrContactsData=[NSMutableArray array];
+        arrContactsData = [DBManager fetchFavorite];
+        NSLog(@"No of Elements: %ld",(long)arrContactsData.count);
+        [self updateSortedArray];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{ // 2
+            
+            //Mostly UI Updates
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+            [fevoriteList_table reloadData];
+        });
+    });
+    
+    
+    /*[self updateSortedArray:^(BOOL finished) {
+        //NSLog(@"Sections in arrDisplay: %ld",(long)arrDisplay.count);
+        //NSLog(@"ArrDisplay Contents: %@",arrDisplay);
         [fevoriteList_table reloadData];
-    }];
+    }];*/
+    
 }
 
--(void)updateSortedArray:(void(^)(BOOL finished))myBlock
+-(void)updateSortedArray //:(void(^)(BOOL finished))myBlock
 {
-    if (self.arrContactsData.count>0)
+    if (arrContactsData.count>0)
     {
         int j=0;
         BOOL flag=NO;
         NSMutableArray *arrTemp=[NSMutableArray array];
-        for (int i=0; i<self.arrContactsData.count; i++)
+        for (int i=0; i<arrContactsData.count; i++)
         {
-            [arrTemp addObject:self.arrContactsData[i]];
+            [arrTemp addObject:arrContactsData[i]];
             if (arrTemp.count==5)
             {
                 flag=YES;
@@ -648,82 +640,22 @@ NSString *urlString;
                 arrTemp=nil;
                 arrTemp=[NSMutableArray array];
             }
-            else{
+            else
+            {
                 flag=NO;
                 continue;
             }
         }
         if (!flag) {
             [arrDisplay insertObject:arrTemp atIndex:j];
+            
         }
     }
-    myBlock(YES);
+    //myBlock(YES);
 }
 
--(void) insertFavorite
+-(void) insertFavoriteWith:(ModelFevorite*)favObj
 {
-    if (contactImageFromAddressBook)
-    {
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        [library writeImageToSavedPhotosAlbum:[contactImageFromAddressBook CGImage] orientation:(ALAssetOrientation)[contactImageFromAddressBook imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error)
-         {
-             if (error)
-             {
-                 NSLog(@"error: %@",error);
-             }
-             else
-             {
-                 
-                 urlString = [assetURL absoluteString];
-                 NSLog(@"url %@", urlString);
-                 [contactInfoDict setObject:urlString forKey:@"image"];
-                 //NSLog(@"contactInfoDict: %@",contactInfoDict);
-                 
-                 ModelFevorite *favObj=[[ModelFevorite alloc] init];
-                 favObj.strFirstName=[contactInfoDict valueForKey:@"firstName"];
-                 favObj.strLastName=[contactInfoDict valueForKey:@"lastName"];
-                 favObj.strMobNumber=[contactInfoDict valueForKey:@"mobileNumber"];
-                 favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
-                 favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
-                 
-                 if(![DBManager checkMobileNumExistsinFavoriteTable:favObj.strMobNumber])
-                 {
-                     NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
-                     [favInsertArray addObject:favObj];
-                     
-                     //insert to database
-                     [DBManager insertToFavoriteTable:favInsertArray];
-                     
-                     [HUD hide:YES];
-                     [HUD removeFromSuperview];
-                     contactImageFromAddressBook=nil;
-                     
-                     [self fetchAndRefresh];
-
-                     [saveAlert show];
-                     [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
-                 }
-                 else
-                 {
-                     [HUD hide:YES];
-                     [HUD removeFromSuperview];
-                     UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                     [alert show];
-                 }
-                 
-                 
-             }
-         }];
-    }
-    else
-    {
-        ModelFevorite *favObj=[[ModelFevorite alloc] init];
-        favObj.strFirstName=[contactInfoDict valueForKey:@"firstName"];
-        favObj.strLastName=[contactInfoDict valueForKey:@"lastName"];
-        favObj.strMobNumber=[contactInfoDict valueForKey:@"mobileNumber"];
-        favObj.strHomeNumber=[contactInfoDict valueForKey:@"homeNumber"];
-        favObj.strProfileImage=[contactInfoDict valueForKey:@"image"];
-        
         if(![DBManager checkMobileNumExistsinFavoriteTable:favObj.strMobNumber])
         {
             NSMutableArray *favInsertArray=[[NSMutableArray alloc] init];
@@ -734,7 +666,6 @@ NSString *urlString;
             
             [HUD hide:YES];
             [HUD removeFromSuperview];
-            contactImageFromAddressBook=nil;
             
             [self fetchAndRefresh];
             
@@ -745,9 +676,75 @@ NSString *urlString;
         {
             [HUD hide:YES];
             [HUD removeFromSuperview];
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Already exists." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
+            
+            [self showMessageWithTitle:nil withMessage:@"Already exists." withButtonTittle:@"OK"];
         }
+}
+
+-(void)showMessageWithTitle:(NSString*)strTitle withMessage:(NSString*)strMessage withButtonTittle:(NSString*)strButtonTitle
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strTitle message:strMessage delegate:nil cancelButtonTitle:strButtonTitle otherButtonTitles: nil];
+    [alert show];
+}
+
+#pragma mark AssetLibrary Authorization Status
+
+-(int)AssetLibraryAuthStatus
+{
+    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+    switch (status)
+    {
+        case ALAuthorizationStatusRestricted:
+            return 0;
+            
+        case ALAuthorizationStatusDenied:
+            return 1;
+            
+        case ALAuthorizationStatusNotDetermined:
+            return 2;
+            
+        case ALAuthorizationStatusAuthorized:
+            return 3;
+
+            
+        default:
+            return 4;
+    }
+}
+
+#pragma mark PHAsset Authorization Status
+
+-(void)PHAssetAuthStatus
+
+{
+    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    
+    if (status == PHAuthorizationStatusAuthorized) {
+        // Access has been granted.
+    }
+    
+    else if (status == PHAuthorizationStatusDenied) {
+        // Access has been denied.
+    }
+    
+    else if (status == PHAuthorizationStatusNotDetermined)
+    {
+        
+        // Access has not been determined.
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            
+            if (status == PHAuthorizationStatusAuthorized) {
+                // Access has been granted.
+            }
+            
+            else {
+                // Access has been denied.
+            }
+        }];
+    }
+    
+    else if (status == PHAuthorizationStatusRestricted) {
+        // Restricted access - normally won't happen.
     }
 }
 

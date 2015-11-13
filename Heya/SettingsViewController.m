@@ -101,10 +101,6 @@ NSUserDefaults *preferances;
     
 }
 
-- (BOOL) prefersStatusBarHidden
-{
-    return YES;
-}
 
 - (IBAction)selectThemeButtonTapped:(id)sender {
     
@@ -122,21 +118,21 @@ NSUserDefaults *preferances;
     [self.navigationController pushViewController:pickListController animated:YES];
 }
 
-- (IBAction)favouriteButton:(id)sender {
-    
+- (IBAction)favouriteButton:(id)sender
+{
     FevoriteViewController *fevoriteController = [[FevoriteViewController alloc] initWithNibName:@"FevoriteViewController" bundle:nil];
     [self.navigationController pushViewController:fevoriteController animated:YES];
     
 }
 
-- (IBAction)groupButton:(id)sender {
-    
+- (IBAction)groupButton:(id)sender
+{
     GroupViewController *groupController = [[GroupViewController alloc] initWithNibName:@"GroupViewController" bundle:nil];
     [self.navigationController pushViewController:groupController animated:YES];
 }
 
-- (IBAction)otherSettingsButton:(id)sender {
-    
+- (IBAction)otherSettingsButton:(id)sender
+{
     OtherSettingsController *otherController = [[OtherSettingsController alloc] initWithNibName:@"OtherSettingsController" bundle:nil];
     [self.navigationController pushViewController:otherController animated:YES];
 }

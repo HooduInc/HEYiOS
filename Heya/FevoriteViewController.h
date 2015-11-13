@@ -7,10 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 #import <AddressBook/AddressBook.h>
 #import <AddressBookUI/AddressBookUI.h>
-#import "AssetsLibrary/AssetsLibrary.h"
-#import <QuartzCore/QuartzCore.h>
+#import <AssetsLibrary/AssetsLibrary.h>
+
+
 
 @interface FevoriteViewController : UIViewController <ABPeoplePickerNavigationControllerDelegate, UITableViewDataSource, UITableViewDelegate>{
     
@@ -19,7 +21,6 @@
 @property (nonatomic, retain) NSMutableArray *number_arr;
 @property (nonatomic, strong) NSMutableArray *arrContactsData;
 
-@property (nonatomic, strong) ABPeoplePickerNavigationController *addressBookController;
 
 @property (nonatomic, retain) IBOutlet UITableView *fevoriteList_table;
 @property (nonatomic, retain) NSMutableArray *fevoritelist_array,*alphabetArray;

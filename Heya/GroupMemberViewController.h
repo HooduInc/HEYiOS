@@ -7,10 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 #import <AddressBook/AddressBook.h>
 #import <AddressBookUI/AddressBookUI.h>
 #import <AssetsLibrary/AssetsLibrary.h>
-#import <QuartzCore/QuartzCore.h>
+
 
 
 @interface GroupMemberViewController : UIViewController<UITextFieldDelegate, ABPeoplePickerNavigationControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate, UITableViewDataSource, UITableViewDelegate>
@@ -27,7 +28,6 @@
 @property (weak, nonatomic) IBOutlet UIButton *addBtnLabel;
 @property (weak, nonatomic) IBOutlet UIButton *saveBtn;
 
-@property (nonatomic, strong) ABPeoplePickerNavigationController *addressBookController;
 
 @property (nonatomic, assign) BOOL isNewGroup;
 @property (nonatomic, strong) NSString *clickedGroupId;

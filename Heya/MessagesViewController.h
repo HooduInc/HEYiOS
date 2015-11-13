@@ -11,7 +11,7 @@
 #import <MessageUI/MessageUI.h>
 #import <AddressBook/AddressBook.h>
 #import <AddressBookUI/AddressBookUI.h>
-#import "AssetsLibrary/AssetsLibrary.h"
+#import <AssetsLibrary/AssetsLibrary.h>
 #import "AOTag.h"
 #import "FbGraph.h"
 #import "SBJSON.h"
@@ -36,7 +36,6 @@
 @property (nonatomic, strong) IBOutlet UIButton *smileButtonSelected;
 @property (nonatomic, strong) IBOutlet UIView *sendView;
 
-@property (nonatomic, strong) ABPeoplePickerNavigationController *addressBookController;
 @property (nonatomic, strong) NSString *getMessageStr;
 @property (nonatomic, strong) IBOutlet UIButton *take_photo_btn,*selectPhoto_btn,*smile_btn,*addPhone_btn,*share_btn;
 

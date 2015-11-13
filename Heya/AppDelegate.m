@@ -18,11 +18,20 @@
 #import "InAppPurchaseHelper.h"
 #import "ModelInAppPurchase.h"
 #import "KeychainItemWrapper.h"
+#import "Harpy.h"
 
 #import <Fabric/Fabric.h>
 #import <Crashlytics/Crashlytics.h>
 
-BOOL isReachable;
+
+
+@interface AppDelegate () <HarpyDelegate>
+{
+    BOOL isReachable;
+    NSUserDefaults *preferances;
+}
+
+@end
 
 @implementation AppDelegate
 
@@ -30,7 +39,7 @@ BOOL isReachable;
 @synthesize navigationcontrollar,EMOJI_arr,buttonArray,imageArray;
 @synthesize hostReachability,internetReachability,wifiReachability;
 
-NSUserDefaults *preferances;
+
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -53,8 +62,35 @@ NSUserDefaults *preferances;
     self.dbPath = [DBManager getDBPath];
     NSLog(@"Databse Path: %@",self.dbPath);
     
-    buttonArray = [[NSMutableArray alloc]init];
+    buttonArray = [NSMutableArray array];
     preferances=[NSUserDefaults standardUserDefaults];
+    
+    
+   #pragma mark Check new update avilable or not in the app store.
+    
+    // Set the App ID for your app
+    [[Harpy sharedInstance] setAppID:@"1002913101"]; // iTunes Connect Mobile App ID
+    
+    // Set the UIViewController that will present an instance of UIAlertController
+    [[Harpy sharedInstance] setPresentingViewController:_window.rootViewController];
+    
+    // (Optional) Set the Delegate to track what a user clicked on, or to use a custom UI to present your message.
+    [[Harpy sharedInstance] setDelegate:self];
+    
+    // (Optional) The tintColor for the alertController
+    //    [[Harpy sharedInstance] setAlertControllerTintColor:[UIColor purpleColor]];
+    
+    // (Optional) Set the App Name for your app
+    [[Harpy sharedInstance] setAppName:@"Hey!"];
+    
+    /* (Optional) Set the Alert Type for your app
+     By default, Harpy is configured to use HarpyAlertTypeOption */
+    [[Harpy sharedInstance] setAlertType:HarpyAlertTypeSkip];
+    
+    
+    // Perform check for new version of your app
+    [[Harpy sharedInstance] checkVersion];
+    
     
    #pragma mark - KeyChainUDID Access Start
     
@@ -72,6 +108,8 @@ NSUserDefaults *preferances;
     if (uniqueIdentifierStr.length==0)
     {
         [keychain setObject:advertisingUDID forKey:(__bridge id)(kSecValueData)];
+        [keychain setObject:@"HEY" forKey:(id)kSecAttrAccount];
+        [keychain setObject:@"HeyMessenger" forKey: (id)kSecAttrService];
         uniqueIdentifierStr=[keychain objectForKey:(__bridge id)(kSecValueData)];
         NSLog(@"KeyChainUDID Added: %@",uniqueIdentifierStr);
     }
@@ -81,12 +119,10 @@ NSUserDefaults *preferances;
     SplashViewController *splashController = [[SplashViewController alloc]initWithNibName:@"SplashViewController" bundle:nil];
     MessagesListViewController *msgController = [[MessagesListViewController alloc]initWithNibName:@"MessagesListViewController" bundle:nil];
     
-    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"HasLaunchedOnce"])
+    if (![preferances boolForKey:@"HasLaunchedOnce"])
     {
         // This is the first launch ever
         navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:splashController];
-        
-        //[preferances setBool:YES forKey:@"HasLaunchedOnce"];
         [preferances setObject:@"Standard" forKey:@"themeName"];
         NSDate *applicationInstalledDate = [NSDate date];
         NSLog(@"Application Installation Date: %@",applicationInstalledDate);
@@ -126,18 +162,32 @@ NSUserDefaults *preferances;
     pushDeviceTokenId = [token stringByReplacingOccurrencesOfString:@" " withString:@""];
     NSLog(@"PushDeviceTokenId: %@", pushDeviceTokenId);
     
+    
+    CGFloat currentBundleVersion = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] floatValue];
+    
+    NSString *strCurrentVersion = [NSString stringWithFormat:@"%f",currentBundleVersion];
+    
     if (pushDeviceTokenId && pushDeviceTokenId.length>0)
     {
-        if (![[NSUserDefaults standardUserDefaults] boolForKey:@"HasLaunchedOnce"])
+        if (![preferances boolForKey:@"HasLaunchedOnce"])
         {
             [preferances setBool:YES forKey:@"HasLaunchedOnce"];
+            [preferances setValue:[NSString stringWithFormat:@"%f",currentBundleVersion] forKey:@"AppVersion"];
             [preferances synchronize];
             [self registerDevice];
         }
+        else
+        {
+            //Prompt alert if the user updated the app to new version only.
+            if(![strCurrentVersion isEqualToString:[preferances valueForKey:@"AppVersion"]])
+            {
+                  [[[UIAlertView alloc] initWithTitle:nil message:@"Congratulations! You have succesfully updated the App." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            }
+            
+            [preferances setValue:[NSString stringWithFormat:@"%f",currentBundleVersion] forKey:@"AppVersion"];
+            [preferances synchronize];
+        }
     }
-    
-    /*My token is: <70818242 975445b9 7eb911f9 e5bf6327 ab817c60 e10606d9 0ae418c1 d3857fc5>
-     Content--70818242975445b97eb911f9e5bf6327ab817c60e10606d90ae418c1d3857fc5*/
 }
 
 - (void)application:(UIApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error
@@ -364,6 +414,33 @@ NSUserDefaults *preferances;
     else
         NSLog(@"Database Insertion Failed.");
     
+}
+
+
+#pragma mark - HarpyDelegate
+- (void)harpyDidShowUpdateDialog
+{
+    NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)harpyUserDidLaunchAppStore
+{
+    NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)harpyUserDidSkipVersion
+{
+    NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)harpyUserDidCancel
+{
+    NSLog(@"%s", __FUNCTION__);
+}
+
+- (void)harpyDidDetectNewVersionWithoutAlert:(NSString *)message
+{
+    NSLog(@"%@", message);
 }
 
 

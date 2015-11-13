@@ -5,7 +5,6 @@
 //  Created by Jayanta Karmakar on 17/10/14.
 //  Copyright (c) 2014 Jayanta Karmakar. All rights reserved.
 //
-#import <Social/Social.h>
 #import "MessagesViewController.h"
 #import "SettingsViewController.h"
 #import "GroupViewController.h"
@@ -27,7 +26,14 @@
 #import <AdSupport/AdSupport.h>
 
 
-@interface MessagesViewController ()<MBProgressHUDDelegate>
+#import "KBContactsSelectionViewController.h"
+#import "APContact.h"
+#import "APPhoneWithLabel.h"
+
+@import Photos;
+
+
+@interface MessagesViewController ()<MBProgressHUDDelegate,KBContactsSelectionViewControllerDelegate>
 {
     int fontSize;
     NSInteger emojiTag;
@@ -37,7 +43,6 @@
     NSMutableArray *peopleImageGroupArray, *peopleImageFavArray;
     NSMutableArray *multipleContactNoArray;
     NSUserDefaults *preferances;
-    NSMutableDictionary *contactInfoDict;
     NSString *urlString, *imageURL, *contactNumString;
     NSString *shareHeyTextString, *shareHeyLink, *phoneTextString, *insertPhoneString;
     BOOL isReachable;
@@ -54,6 +59,7 @@
 @property (nonatomic) Reachability *internetReachability;
 @property (nonatomic) Reachability *wifiReachability;
 
+@property (weak) KBContactsSelectionViewController* presentedCSVC;
 @end
 
 @implementation MessagesViewController
@@ -88,6 +94,19 @@ unsigned long location;
     [super viewDidLoad];
     preferances=[NSUserDefaults standardUserDefaults];
     HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
+    
+    
+    //Request Access to Photos
+    int photolibaryAccessStatus = [self AssetLibraryAuthStatus];
+    
+    if (photolibaryAccessStatus==0 || photolibaryAccessStatus==1 || photolibaryAccessStatus==4)
+    {
+        [self showMessageWithTitle:@"Privacy Warning!" withMessage:@"Permission was not granted for photos.\nTip: Go to settings->Hey and allow photos." withButtonTittle:@"OK"];
+    }
+    [self PHAssetAuthStatus];
+    
+    
+    
     [self.view bringSubviewToFront:self.contactsScroller];
     messageTextView.font = [UIFont fontWithName:@"Helvetica" size:15];
     appDel = (AppDelegate*)[UIApplication sharedApplication].delegate;
@@ -187,6 +206,8 @@ unsigned long location;
             [_share_btn setImage:[UIImage imageNamed:@"hey_share_icon_over.png"] forState:UIControlStateNormal];
         }
         getMessageStr=@"";
+        contactsContainerX = 6.0f;
+        
     }
     else
     {
@@ -845,9 +866,47 @@ unsigned long location;
 - (IBAction)getcontacts:(id)sender
 {
     
-    _addressBookController = [[ABPeoplePickerNavigationController alloc] init];
+    __block KBContactsSelectionViewController *vc = [KBContactsSelectionViewController contactsSelectionViewControllerWithConfiguration:^(KBContactsSelectionConfiguration *configuration) {
+        configuration.shouldShowNavigationBar = YES;
+        configuration.tintColor = [UIColor colorWithRed:11.0/255 green:211.0/255 blue:24.0/255 alpha:1];
+        configuration.title = @"All Contacts";
+        configuration.selectButtonTitle = @"";
+        
+        //configuration.mode = KBContactsSelectionModeMessages | KBContactsSelectionModeEmail;
+        configuration.mode = KBContactsSelectionModeMessages;
+        configuration.skipUnnamedContacts = YES;
+        configuration.customSelectButtonHandler = ^(NSArray * contacts) {
+            //NSLog(@"%@", contacts);
+        };
+        /*configuration.contactEnabledValidation = ^(id contact) {
+         APContact * _c = contact;
+         if ([_c phonesWithLabels].count > 0) {
+         
+         NSString * phone = ((APPhoneWithLabel*) _c.phonesWithLabels[0]).phone;
+         if ([phone containsString:@"888"]) {
+         return NO;
+         }
+         }
+         return YES;
+         };*/
+    }];
+    [vc setDelegate:self];
+    [self presentViewController:vc animated:YES completion:NULL];
+    //[self.navigationController pushViewController:vc animated:YES];
+    
+    self.presentedCSVC = vc;
+    
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 24)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = @"Select people you want to text";
+    
+    vc.additionalInfoView = label;
+    
+    
+    /*_addressBookController = [[ABPeoplePickerNavigationController alloc] init];
     [_addressBookController setPeoplePickerDelegate:self];
-    [self presentViewController:_addressBookController animated:YES completion:nil];
+    [self presentViewController:_addressBookController animated:YES completion:nil];*/
+
 }
 
 -(void) removeSingleContact: (UIButton *) sender
@@ -873,208 +932,130 @@ unsigned long location;
     
 }
 
-
-#pragma mark - ABPeoplePickerNavigationController Delegate method implementation
-
-//Works from IOS 8
-- (void)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker didSelectPerson:(ABRecordRef)person
-{
-    multipleContactNoArray=[[NSMutableArray alloc] init];
+#pragma mark - KBContactsSelectionViewControllerDelegate
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didSelectContact:(APContact *)contact {
     
-    contactInfoDict = [[NSMutableDictionary alloc]
+    
+   NSMutableDictionary *dictContactInfo = [[NSMutableDictionary alloc]
                        initWithObjects:@[@"", @"", @"", @"", @"", @"", @"", @"", @""]
                        forKeys:@[@"firstName", @"lastName", @"mobileNumber", @"homeNumber", @"homeEmail", @"workEmail", @"address", @"zipCode", @"city"]];
     
-    // Use a general Core Foundation object.
-    CFTypeRef generalCFObject = ABRecordCopyValue(person, kABPersonFirstNameProperty);
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
     
-    // Get the first name.
-    if (generalCFObject) {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"firstName"];
-        CFRelease(generalCFObject);
-    }
+    self.presentedCSVC.additionalInfoView = label;
     
-    // Get the last name.
-    generalCFObject = ABRecordCopyValue(person, kABPersonLastNameProperty);
-    if (generalCFObject) {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"lastName"];
-        CFRelease(generalCFObject);
-    }
+    NSLog(@"Selected Contact: %@", self.presentedCSVC.selectedContacts);
+    [self dismissViewControllerAnimated:YES completion:NULL];
     
-    // Get the phone numbers as a multi-value property.
-    ABMultiValueRef phonesRef = ABRecordCopyValue(person, kABPersonPhoneProperty);
-    if (phonesRef)
+    if (self.presentedCSVC.selectedContacts.count>0)
     {
-        //NSLog(@"isFacebook %d", [self isPersonFacebookContact:person]);
+        APContact *selectedContact =[self.presentedCSVC.selectedContacts firstObject];
+        multipleContactNoArray=[NSMutableArray array];
         
-        if([self isPersonFacebookContact:person])
+        if (selectedContact)
         {
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"This contact information synced from facebook to your addressbook. Contact picture may not appear in here." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
-        }
-        
-        for (int i=0; i<ABMultiValueGetCount(phonesRef); i++)
-        {
-            CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
-            CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
+            if(selectedContact.firstName)
+                [dictContactInfo setObject:selectedContact.firstName forKey:@"firstName"];
             
-            
-            if ([(NSString *)kABPersonPhoneMainLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABPersonPhoneMainLabel
-            if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-            if ([(NSString *)kABPersonPhoneIPhoneLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            
-            //If Phone Number doesn't exists in kABPersonIPhoneLabel
-            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABHomeLabel
-            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
-            
-            //If Phone Number doesn't exists in kABWorkLabel
-            if ([(NSString *)kABOtherLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound)
-            {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
             else
-            {
-                NSString *localLabel =(__bridge NSString*) ABAddressBookCopyLocalizedLabel(currentPhoneLabel);
-                NSLog(@"localLabel: %@",localLabel);
+                [dictContactInfo setObject:@"" forKey:@"firstName"];
+            
+            if(selectedContact.lastName)
+                [dictContactInfo setObject:selectedContact.lastName forKey:@"lastName"];
+            else
+                [dictContactInfo setObject:@"" forKey:@"lastName"];
+            
+             [dictContactInfo setObject:[[selectedContact.phonesWithLabels firstObject] phone] forKey:@"mobileNumber"];
+            [dictContactInfo setObject:[[selectedContact.phonesWithLabels firstObject] phone] forKey:@"homeNumber"];
+            
 
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-                [multipleContactNoArray addObject:(__bridge NSString *)currentPhoneValue];
-            }
+            [self.view addSubview:HUD];
+            [HUD show:YES];
             
-            CFRelease(currentPhoneLabel);
-            CFRelease(currentPhoneValue);
-        }
-        
-        CFRelease(phonesRef);
-        
-        // If the contact has an image then get it too.
-        if (ABPersonHasImageData(person))
-        {
-            
-            NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-            
-            UIImage  *img = [UIImage imageWithData:contactImageData];
-            
-            ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-            [library writeImageToSavedPhotosAlbum:[img CGImage] orientation:(ALAssetOrientation)[img imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error){
-                if (error) {
-                    NSLog(@"error");
+            if (selectedContact.thumbnail)
+            {
+                int photolibaryAccessStatus = [self AssetLibraryAuthStatus];
+                if (photolibaryAccessStatus==3)
+                {
+                    __block NSString *strImageURL =@"";
+                    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+                    [library writeImageToSavedPhotosAlbum:[selectedContact.thumbnail CGImage] orientation:(ALAssetOrientation)[selectedContact.thumbnail imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error)
+                     {
+                         if (error)
+                         {
+                             
+                             NSLog(@"Fetch Error: %@",error);
+                             [dictContactInfo setObject:@"man_icon.png" forKey:@"image"];
+                             
+                         }
+                         else
+                         {
+                             strImageURL = [assetURL absoluteString];
+                             //NSLog(@"imageURL url %@", imageURL);
+                             [dictContactInfo setObject:strImageURL forKey:@"image"];
+                         }
+                         [HUD hide:YES];
+                         [HUD removeFromSuperview];
+                         [self insertIntoToFieldWithDict:dictContactInfo];
+                     }];
                 }
                 else
                 {
-                    
-                    urlString = [assetURL absoluteString];
-                    NSLog(@"url %@", urlString);
-                    [contactInfoDict setObject:urlString forKey:@"image"];
+                    [HUD hide:YES];
+                    [HUD removeFromSuperview];
+                    [dictContactInfo setObject:@"man_icon.png" forKey:@"image"];
+                    [self insertIntoToFieldWithDict:dictContactInfo];
                 }
-            }];
-            
-            if (multipleContactNoArray.count>1)
-            {
-                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-                
-                for(NSString *buttonTitle in multipleContactNoArray)
-                    [alertContactDialog addButtonWithTitle:buttonTitle];
-                [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-                [alertContactDialog show];
-            }
-            else if(multipleContactNoArray.count!=0)
-            {
-                [self insertIntoToField];
-            }
-            
-        }
-        
-        else
-        {
-            [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
-            
-            if (multipleContactNoArray.count>1)
-            {
-                UIAlertView *alertContactDialog=[[UIAlertView alloc] initWithTitle:@"Select Contact" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-                
-                for(NSString *buttonTitle in multipleContactNoArray)
-                    [alertContactDialog addButtonWithTitle:buttonTitle];
-                [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-                [alertContactDialog show];
             }
             else
-                [self insertIntoToField];
+            {
+                [HUD hide:YES];
+                [HUD removeFromSuperview];
+                [dictContactInfo setObject:@"man_icon.png" forKey:@"image"];
+                [self insertIntoToFieldWithDict:dictContactInfo];
+            }
+        }
+        else
+        {
+            [self showMessageWithTitle:nil withMessage:@"Failed to fetch the contact details. Please try again." withButtonTittle:@"OK"];
         }
     }
     
     else
     {
-        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Sorry. Contact number doesn't exist." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
+        [self showMessageWithTitle:nil withMessage:@"Failed to fetch the contact details. Please try again." withButtonTittle:@"OK"];
+        
     }
-
-    //[self.addressBookController dismissViewControllerAnimated:YES completion:nil];
     
 }
 
--(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker{
-    [self.addressBookController dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (BOOL)isPersonFacebookContact:(ABRecordRef)person
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didRemoveContact:(APContact *)contact
 {
-    ABMultiValueRef instantMessage = ABRecordCopyValue(person, kABPersonInstantMessageProperty);
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
+    self.presentedCSVC.additionalInfoView = label;
     
-    BOOL returnValue = NO;
-    
-    if (instantMessage)
-    {
-        for (NSInteger i=0 ; i < ABMultiValueGetCount(instantMessage); i++)
-        {
-            CFDictionaryRef instantMessageValue = ABMultiValueCopyValueAtIndex(instantMessage, i);
-            CFStringRef instantMessageString = CFDictionaryGetValue(instantMessageValue, kABPersonInstantMessageServiceKey);
-            
-            if (CFStringCompare(instantMessageString, kABPersonInstantMessageServiceFacebook, 0) == kCFCompareEqualTo)
-            {
-                returnValue = YES;
-            }
-            
-            CFRelease(instantMessageString);
-            CFRelease(instantMessageValue);
-        }
-    }
-    
-    //CFRelease(instantMessage);
-    
-    return returnValue;
+    NSLog(@"%@", self.presentedCSVC.selectedContacts);
+}
+
+- (void)contactsSelectionWillLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+//    HUD.labelText = @"Loading Contacts";
+//    [self.view addSubview:HUD];
+//    [HUD show:YES];
+}
+- (void)contactsSelectionDidLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+//    [HUD hide:YES];
+//    [HUD removeFromSuperview];
 }
 
 
--(void) insertIntoToField
+
+-(void) insertIntoToFieldWithDict:(NSMutableDictionary*)dictContactInfo
 {
     contactsContainer=[[UIView alloc] initWithFrame:CGRectMake(0.0f,4.0f,110.0f,22.0f)];
     contactsContainer.backgroundColor=[UIColor  colorWithRed:213.0f/255.0f green:213.0f/255.0f blue:213.0f/255.0f alpha:1.0f];
@@ -1086,14 +1067,14 @@ unsigned long location;
     toPeopleImg.clipsToBounds = YES;
     
     
-    if([[contactInfoDict valueForKey:@"image"]isEqualToString:@"man_icon.png"])
+    if([[dictContactInfo valueForKey:@"image"]isEqualToString:@"man_icon.png"])
     {
-        toPeopleImg.image = [UIImage imageNamed:[contactInfoDict objectForKey:@"image"]];
+        toPeopleImg.image = [UIImage imageNamed:[dictContactInfo objectForKey:@"image"]];
     }
     
     else
     {
-        NSString *str = [contactInfoDict objectForKey:@"image"];
+        NSString *str = [dictContactInfo objectForKey:@"image"];
         NSLog(@"ImageURL: %@",str);
         NSURL *myAssetUrl = [NSURL URLWithString:str];
         
@@ -1126,22 +1107,22 @@ unsigned long location;
     peopleNameLabel=[[UILabel alloc] initWithFrame:CGRectMake(27.0f,2.0f,70.0f,18.0f)];
     peopleNameLabel.font=[UIFont fontWithName:@"OpenSans" size:10];
     peopleNameLabel.textColor=[UIColor blackColor];
-    peopleNameLabel.text=[NSString stringWithFormat:@"%@", [contactInfoDict objectForKey:@"firstName"]];
+    peopleNameLabel.text=[NSString stringWithFormat:@"%@", [dictContactInfo objectForKey:@"firstName"]];
     
     closeButton = [[UIButton alloc] initWithFrame:CGRectMake(90.0f, 2.0f, 18.0f, 18.0f)];
     [closeButton setImage:[UIImage imageNamed:@"close_btn.png"] forState:UIControlStateNormal];
     [closeButton addTarget:self action:@selector(removeSingleContact:) forControlEvents:UIControlEventTouchUpInside];
     
-    closeButton.titleLabel.text=[contactInfoDict objectForKey:@"mobileNumber"];
+    closeButton.titleLabel.text=[dictContactInfo objectForKey:@"mobileNumber"];
     closeButton.layer.cornerRadius = closeButton.frame.size.width / 2;
     closeButton.clipsToBounds = YES;
     [contactsContainer addSubview:toPeopleImg];
     [contactsContainer addSubview:peopleNameLabel];
     [contactsContainer addSubview:closeButton];
     
-    if (![quickContactsArray containsObject:[contactInfoDict objectForKey:@"mobileNumber"]])
+    if (![quickContactsArray containsObject:[dictContactInfo objectForKey:@"mobileNumber"]])
     {
-        [quickContactsArray addObject:[contactInfoDict objectForKey:@"mobileNumber"]];
+        [quickContactsArray addObject:[dictContactInfo objectForKey:@"mobileNumber"]];
         
         contactsContainer.frame = CGRectMake(contactsContainerX, contactsContainer.frame.origin.y, contactsContainer.frame.size.width, contactsContainer.frame.size.height);
         [self.contactsScroller addSubview:contactsContainer];
@@ -1974,15 +1955,73 @@ unsigned long location;
         }
         
     }
-    else
+}
+
+
+-(void)showMessageWithTitle:(NSString*)strTitle withMessage:(NSString*)strMessage withButtonTittle:(NSString*)strButtonTitle
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strTitle message:strMessage delegate:nil cancelButtonTitle:strButtonTitle otherButtonTitles: nil];
+    [alert show];
+}
+
+#pragma mark AssetLibrary Authorization Status
+
+-(int)AssetLibraryAuthStatus
+{
+    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+    switch (status)
     {
-        //Contact selection from alertView.
-        if (![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Cancel"] || ![[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"OK"])
-        {
-            NSLog(@"Selected Contact: %@", [alertView buttonTitleAtIndex:buttonIndex]);
-            [contactInfoDict setObject:[alertView buttonTitleAtIndex:buttonIndex] forKey:@"mobileNumber"];
-            [self insertIntoToField];
-        }
+        case ALAuthorizationStatusRestricted:
+            return 0;
+            
+        case ALAuthorizationStatusDenied:
+            return 1;
+            
+        case ALAuthorizationStatusNotDetermined:
+            return 2;
+            
+        case ALAuthorizationStatusAuthorized:
+            return 3;
+            
+            
+        default:
+            return 4;
+    }
+}
+
+#pragma mark PHAsset Authorization Status
+
+-(void)PHAssetAuthStatus
+
+{
+    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    
+    if (status == PHAuthorizationStatusAuthorized) {
+        // Access has been granted.
+    }
+    
+    else if (status == PHAuthorizationStatusDenied) {
+        // Access has been denied.
+    }
+    
+    else if (status == PHAuthorizationStatusNotDetermined)
+    {
+        
+        // Access has not been determined.
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            
+            if (status == PHAuthorizationStatusAuthorized) {
+                // Access has been granted.
+            }
+            
+            else {
+                // Access has been denied.
+            }
+        }];
+    }
+    
+    else if (status == PHAuthorizationStatusRestricted) {
+        // Restricted access - normally won't happen.
     }
 }
 
@@ -2108,7 +2147,7 @@ unsigned long location;
                          [[NSUserDefaults standardUserDefaults] synchronize];
                          
                          
-                         NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
+                         /*NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
                          
                          NSDate *today=[NSDate date];
                          
@@ -2121,7 +2160,7 @@ unsigned long location;
                          {
                              self.sendMsgBtn.enabled=YES;
                              //self.sendMsgBtn.backgroundColor=[UIColor clearColor];
-                         }
+                         }*/
                      }
                  }
                  
@@ -2132,5 +2171,9 @@ unsigned long location;
 }
 
 //Called by Reachability whenever status changes.
+
+
+
+
 
 @end
