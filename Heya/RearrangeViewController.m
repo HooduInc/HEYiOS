@@ -43,6 +43,7 @@
 }
 -(void) viewWillAppear:(BOOL)animated
 {
+     [super viewWillAppear:animated];
     pageNumber=pageNumber+1;
     editMainMenuMsgArray=[DBManager fetchMenuForPageNo:pageNumber];
     [self setEditing:YES animated:YES];

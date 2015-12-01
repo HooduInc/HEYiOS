@@ -23,14 +23,13 @@
 #import "ModelMessageSend.h"
 #import "HeyWebService.h"
 #import "InAppPurchaseHelper.h"
-#import <AdSupport/AdSupport.h>
-
 
 #import "KBContactsSelectionViewController.h"
 #import "APContact.h"
 #import "APPhoneWithLabel.h"
 
 @import Photos;
+@import CoreTelephony;
 
 
 @interface MessagesViewController ()<MBProgressHUDDelegate,KBContactsSelectionViewControllerDelegate>
@@ -318,8 +317,7 @@ unsigned long location;
         
         [peopleImageFavArray addObject:peopleImg];
         
-        ModelFevorite *favObj=[[ModelFevorite alloc] init];
-        favObj=[arrFavData objectAtIndex:i];
+        ModelFevorite *favObj=[arrFavData objectAtIndex:i];
         
         if([favObj.strProfileImage isEqualToString:@"man_icon.png"])
         {
@@ -461,8 +459,7 @@ unsigned long location;
             toPeopleImg.layer.cornerRadius = toPeopleImg.frame.size.width / 2;
             toPeopleImg.clipsToBounds = YES;
             
-            ModelFevorite *favObj=[[ModelFevorite alloc] init];
-            favObj=[arrFavData objectAtIndex:i];
+            ModelFevorite *favObj=[arrFavData objectAtIndex:i];
             
             if([favObj.strProfileImage isEqualToString:@"man_icon.png"])
             {
@@ -600,8 +597,7 @@ unsigned long location;
     for (int i=0; i<arrGroupList.count;i++)
     {
         
-        ModelGroup *objGroup=[[ModelGroup alloc] init];
-        objGroup=[arrGroupList objectAtIndex:i];
+        ModelGroup *objGroup=[arrGroupList objectAtIndex:i];
         
         arrGroupMember=[DBManager fetchGroupMembersWithGroupId:objGroup.strGroupId];
         
@@ -1234,6 +1230,12 @@ unsigned long location;
     {
          NSMutableAttributedString *wholeMessageString = [[NSMutableAttributedString alloc] initWithAttributedString:messageTextView.attributedText];
         [wholeMessageString insertAttributedString:imageNameToPass atIndex:wholeMessageString.length-shareHeyTextString.length];
+        
+        if([[wholeMessageString string] containsString:@"HEY!"])
+        {
+            
+            [wholeMessageString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0,4)];
+        }
         messageTextView.attributedText = wholeMessageString;
         
     }
@@ -1241,12 +1243,26 @@ unsigned long location;
     {
          NSMutableAttributedString *wholeMessageString = [[NSMutableAttributedString alloc] initWithAttributedString:messageTextView.attributedText];
         [wholeMessageString insertAttributedString:imageNameToPass atIndex:wholeMessageString.length-phoneTextString.length];
+        
+        if([[wholeMessageString string] containsString:@"HEY!"])
+        {
+            
+            [wholeMessageString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0,4)];
+        }
+        
         messageTextView.attributedText = wholeMessageString;
     }
     else if ([[messageTextView.attributedText string] containsString:shareHeyTextString] && [[messageTextView.attributedText string] containsString:phoneTextString])
     {
          NSMutableAttributedString *wholeMessageString = [[NSMutableAttributedString alloc] initWithAttributedString:messageTextView.attributedText];
         [wholeMessageString insertAttributedString:imageNameToPass atIndex:wholeMessageString.length-phoneTextString.length-shareHeyTextString.length-1];
+        
+        if([[wholeMessageString string] containsString:@"HEY!"])
+        {
+            
+            [wholeMessageString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0,4)];
+        }
+        
         messageTextView.attributedText = wholeMessageString;
     }
     else
@@ -1254,7 +1270,16 @@ unsigned long location;
         NSString *normalMessageString=messageTextView.text;
         [normalMessageString stringByReplacingOccurrencesOfString:@"}" withString:@""];
         [normalMessageString stringByReplacingOccurrencesOfString:@"}" withString:@""];
-        messageTextView.attributedText=[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@ %@", normalMessageString, normalImageNameToPass]];
+        
+        NSMutableAttributedString *wholeMessageString=[[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@ %@", normalMessageString, normalImageNameToPass]];
+        
+        if([[wholeMessageString string] containsString:@"HEY!"])
+        {
+            
+            [wholeMessageString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0,4)];
+        }
+       
+        messageTextView.attributedText=wholeMessageString;
     }
     messageTextView.font = [UIFont fontWithName:@"Helvetica" size:fontSize];
     
@@ -1404,38 +1429,43 @@ unsigned long location;
                     HUD.labelText = @"Uploading";
                     [HUD show:YES];
                     
-                    //NSString *strUDID=[[[UIDevice currentDevice] identifierForVendor] UUIDString];
-                    //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
+                    
                     
                     NSMutableArray *userProfile=[[NSMutableArray alloc] init];
                     userProfile=[DBManager fetchUserProfile];
-                    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
                     
-                    [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
+                    if (userProfile.count>0)
+                    {
+                        ModelUserProfile *modObj=[userProfile firstObject];
                         
-                        [HUD hide:YES];
-                        [HUD removeFromSuperview];
-                        if (isError)
-                        {
-                            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                            [alert show];
+                        [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
                             
-                        }
-                        else
-                        {
-                            if ([result isKindOfClass:[NSString class]])
+                            [HUD hide:YES];
+                            [HUD removeFromSuperview];
+                            if (isError)
                             {
-                                imageURL=(NSString*)result;
-                                if(imageURL.length>0)
+                                UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                                [alert show];
+                                
+                            }
+                            else
+                            {
+                                if ([result isKindOfClass:[NSString class]])
                                 {
-                                    //add Image link
-                                    NSLog(@"Image URL: %@",imageURL);
-                                    finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
-                                    [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
+                                    imageURL=(NSString*)result;
+                                    if(imageURL.length>0)
+                                    {
+                                        //add Image link
+                                        NSLog(@"Image URL: %@",imageURL);
+                                        finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
+                                        [self prepareMessageWithContact:arrayOfContacts Message:finalMessage];
+                                    }
                                 }
                             }
-                        }
-                    }];
+                        }];
+                    }
+                    
+                    
                 }
             }
             else
@@ -1500,18 +1530,23 @@ unsigned long location;
             NSLog(@"MessageDetails not inserted.");*/
         
         //For Test
-        if([MFMessageComposeViewController canSendText])
+        
+        if([MFMessageComposeViewController canSendText] && [self hasCellularCoverage])
         {
-            afterMsgSendString=finalMessage;
-            afterMsgSendContactArr=[[NSArray alloc] initWithArray:allContacts];
-            
-            controller.body = finalMessage;
-            NSLog(@"Sending Message :%@",controller.body);
-            controller.recipients = allContacts;
-            //controller.recipients=[NSArray arrayWithObjects:@"98736542635", @"9875463982", nil];
-            controller.messageComposeDelegate = self;
-            [self presentViewController:controller animated:YES completion:nil];
-  
+                            afterMsgSendString=finalMessage;
+                afterMsgSendContactArr=[[NSArray alloc] initWithArray:allContacts];
+                
+                controller.body = finalMessage;
+                NSLog(@"Sending Message :%@",controller.body);
+                controller.recipients = allContacts;
+                //controller.recipients=[NSArray arrayWithObjects:@"98736542635", @"9875463982", nil];
+                controller.messageComposeDelegate = self;
+                [self presentViewController:controller animated:YES completion:nil];
+        }
+        
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"No sim card present or no cellular coverage or may be the phone is on airplane mode." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
         }
     }
 }
@@ -1529,42 +1564,45 @@ unsigned long location;
 		case MessageComposeResultSent:
         {
             NSLog(@"Message Sent");
-            NSMutableArray *msgArray=[[NSMutableArray alloc] init];
-            NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+            NSMutableArray *msgArray=[NSMutableArray array];
+            NSMutableArray *userProfile=[NSMutableArray array];
             ModelMessageSend *msgObj=[[ModelMessageSend alloc] init];
             
             userProfile=[DBManager fetchUserProfile];
             
-            NSString *toPhoneNo=@"";
-    
-            ModelUserProfile *obj=[userProfile objectAtIndex:0];
-            toPhoneNo=obj.strPhoneNo;
-            
-            msgObj.strDeviceId=obj.strDeviceUDID;
-            msgObj.strtemplateId=@"1";
-            msgObj.strMessageText=afterMsgSendString;
-            
-            if (toPhoneNo.length>0 || ![toPhoneNo isEqualToString:@"0"])
-                msgObj.strFrom=toPhoneNo;
-            else
-                msgObj.strFrom=@"";
-            
-            msgObj.strTo=[afterMsgSendContactArr componentsJoinedByString:@","];
-            
-            NSDate *todayDate=[[NSDate alloc] init];
-            NSDateFormatter *format=[[NSDateFormatter alloc] init];
-            [format setDateFormat:@"yyyy-MM-dd"];
-            
-            msgObj.strSendDate=[format stringFromDate:todayDate];
-            
-            [msgArray addObject:msgObj];
-            
-            long long msgInsertId=[DBManager insertMessageDetails:msgArray];
-            
-            if (msgInsertId!=0)
-                NSLog(@"MessageDetails inserted.");
-            else
-                NSLog(@"MessageDetails not inserted.");
+            if (userProfile.count>0)
+            {
+                NSString *toPhoneNo=@"";
+                
+                ModelUserProfile *obj=[userProfile firstObject];
+                toPhoneNo=obj.strPhoneNo;
+                
+                msgObj.strDeviceId=obj.strDeviceUDID;
+                msgObj.strtemplateId=@"1";
+                msgObj.strMessageText=afterMsgSendString;
+                
+                if (toPhoneNo.length>0 || ![toPhoneNo isEqualToString:@"0"])
+                    msgObj.strFrom=toPhoneNo;
+                else
+                    msgObj.strFrom=@"";
+                
+                msgObj.strTo=[afterMsgSendContactArr componentsJoinedByString:@","];
+                
+                NSDate *todayDate=[[NSDate alloc] init];
+                NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                [format setDateFormat:@"yyyy-MM-dd"];
+                
+                msgObj.strSendDate=[format stringFromDate:todayDate];
+                
+                [msgArray addObject:msgObj];
+                
+                long long msgInsertId=[DBManager insertMessageDetails:msgArray];
+                
+                if (msgInsertId!=0)
+                    NSLog(@"MessageDetails inserted.");
+                else
+                    NSLog(@"MessageDetails not inserted.");
+            }
             
             afterMsgSendString=@"";
             afterMsgSendContactArr=[NSArray array];
@@ -1573,6 +1611,14 @@ unsigned long location;
             imageURL=@"";
 			break;
         }
+            
+            
+        case MessageComposeResultFailed:
+            
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Sorry, Failed to send the message." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+            break;
+            
+            
 		default:
 			break;
 	}
@@ -1624,35 +1670,42 @@ unsigned long location;
             
             NSMutableArray *userProfile=[[NSMutableArray alloc] init];
             userProfile=[DBManager fetchUserProfile];
-            ModelUserProfile *modObj=[userProfile objectAtIndex:0];
             
-            //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
-            
-            [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
-                
-                [HUD hide:YES];
-                [HUD removeFromSuperview];
-                if (isError)
-                {
-                    UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                    [alert show];
+            if (userProfile.count>0)
+            {
+                ModelUserProfile *modObj=[userProfile firstObject];
+                [[HeyWebService service] callGenerateImageURL:imageData UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg) {
                     
-                }
-                else
-                {
-                    if ([result isKindOfClass:[NSString class]])
+                    [HUD hide:YES];
+                    [HUD removeFromSuperview];
+                    if (isError)
                     {
-                        imageURL=(NSString*)result;
-                        if(imageURL.length>0)
+                        UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:strMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                        [alert show];
+                        
+                    }
+                    else
+                    {
+                        if ([result isKindOfClass:[NSString class]])
                         {
-                            //add Image link
-                            NSLog(@"Image URL: %@",imageURL);
-                            finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
-                            [self WhatsAppComposeMsg:finalMessage];
+                            imageURL=(NSString*)result;
+                            if(imageURL.length>0)
+                            {
+                                //add Image link
+                                NSLog(@"Image URL: %@",imageURL);
+                                finalMessage = [NSString stringWithFormat: @"%@ \n\n%@", finalMessage, imageURL];
+                                [self WhatsAppComposeMsg:finalMessage];
+                            }
                         }
                     }
-                }
-            }];
+                }];
+            }
+            
+            
+            
+            
+            
+            
         }
         else
             [self WhatsAppComposeMsg:finalMessage];
@@ -1964,6 +2017,92 @@ unsigned long location;
     [alert show];
 }
 
+
+
+#pragma mark check CheckSubscription
+-(void)CheckSubscription
+{
+    NSMutableArray *userProfile=[NSMutableArray array];
+    userProfile=[DBManager fetchUserProfile];
+    
+    if (userProfile.count>0)
+    {
+        ModelUserProfile *modObj=[userProfile firstObject];
+        
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+        
+        //Change the host name here to change the server you want to monitor.
+        NSString *remoteHostName =HeyBaseURL;
+        
+        self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+        [self.hostReachability startNotifier];
+        [self updateInterfaceWithReachability:self.hostReachability];
+        
+        self.internetReachability = [Reachability reachabilityForInternetConnection];
+        [self.internetReachability startNotifier];
+        [self updateInterfaceWithReachability:self.internetReachability];
+        
+        self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+        [self.wifiReachability startNotifier];
+        [self updateInterfaceWithReachability:self.wifiReachability];
+        
+        if([self isNetworkAvailable])
+        {
+            
+            [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+             {
+                 if (isError)
+                 {
+                     NSLog(@"Subscription Fetch Failed: %@",strMsg);
+                 }
+                 else
+                 {
+                     NSDictionary *resultDict=(id)result;
+                     
+                     if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                     {
+                         
+                         NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                         
+                         if (serverDateString && serverDateString.length>0)
+                         {
+                             NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                             [format setDateFormat:@"MM.dd.yyyy"];
+                             NSDate * serverDate =[format dateFromString:serverDateString];
+                             NSLog(@"Server Date: %@",serverDate);
+                             
+                             if (serverDate)
+                             {
+                                 [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                 [[NSUserDefaults standardUserDefaults] synchronize];
+                                 
+                                 
+                                 /*NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
+                                  
+                                  NSDate *today=[NSDate date];
+                                  
+                                  if ([expireDate compare:today] == NSOrderedAscending)
+                                  {
+                                  self.sendMsgBtn.enabled=NO;
+                                  //self.sendMsgBtn.backgroundColor=[UIColor colorWithRed:0/255.0f green:0/255.0f blue:0/255.0f alpha:0.2];
+                                  }
+                                  else
+                                  {
+                                  self.sendMsgBtn.enabled=YES;
+                                  //self.sendMsgBtn.backgroundColor=[UIColor clearColor];
+                                  }*/
+                             }
+                         }
+                         
+                     }
+                 }
+             }];
+        }
+    }
+    
+}
+
 #pragma mark AssetLibrary Authorization Status
 
 -(int)AssetLibraryAuthStatus
@@ -2090,90 +2229,23 @@ unsigned long location;
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kReachabilityChangedNotification object:nil];
 }
 
-
-
--(void)CheckSubscription
-{
-    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
-    userProfile=[DBManager fetchUserProfile];
-    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
-    
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-    
-    //Change the host name here to change the server you want to monitor.
-    NSString *remoteHostName =HeyBaseURL;
-    
-    self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-    [self.hostReachability startNotifier];
-    [self updateInterfaceWithReachability:self.hostReachability];
-    
-    self.internetReachability = [Reachability reachabilityForInternetConnection];
-    [self.internetReachability startNotifier];
-    [self updateInterfaceWithReachability:self.internetReachability];
-    
-    self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-    [self.wifiReachability startNotifier];
-    [self updateInterfaceWithReachability:self.wifiReachability];
-    
-    if([self isNetworkAvailable])
-    {
-    
-    [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-     {
-         if (isError)
-         {
-             NSLog(@"Subscription Fetch Failed: %@",strMsg);
-         }
-         else
-         {
-             NSDictionary *resultDict=(id)result;
-             
-             if ([[resultDict valueForKey:@"status"] boolValue]==true)
-             {
-                 
-                 NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
-                 
-                 if (serverDateString && serverDateString.length>0)
-                 {
-                     NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                     [format setDateFormat:@"MM.dd.yyyy"];
-                     NSDate * serverDate =[format dateFromString:serverDateString];
-                     NSLog(@"Server Date: %@",serverDate);
-                     
-                     if (serverDate)
-                     {
-                         [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                         [[NSUserDefaults standardUserDefaults] synchronize];
-                         
-                         
-                         /*NSDate *expireDate = [[NSUserDefaults standardUserDefaults] objectForKey:kSubscriptionExpirationDateKey];
-                         
-                         NSDate *today=[NSDate date];
-                         
-                         if ([expireDate compare:today] == NSOrderedAscending)
-                         {
-                             self.sendMsgBtn.enabled=NO;
-                             //self.sendMsgBtn.backgroundColor=[UIColor colorWithRed:0/255.0f green:0/255.0f blue:0/255.0f alpha:0.2];
-                         }
-                         else
-                         {
-                             self.sendMsgBtn.enabled=YES;
-                             //self.sendMsgBtn.backgroundColor=[UIColor clearColor];
-                         }*/
-                     }
-                 }
-                 
-            }
-         }
-     }];
-    }
-}
-
 //Called by Reachability whenever status changes.
 
 
+#pragma mark Check SIMcard installed or not
 
+-(BOOL)hasCellularCoverage
+{
+    CTTelephonyNetworkInfo *networkInfo = [CTTelephonyNetworkInfo new];
+    CTCarrier *carrier = [networkInfo subscriberCellularProvider];
+    
+    
+    if (!carrier.isoCountryCode) {
+        NSLog(@"No sim present Or No cellular coverage or phone is on airplane mode.");
+        return NO;
+    }
+    return YES;
+}
 
 
 @end

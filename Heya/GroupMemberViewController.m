@@ -73,6 +73,7 @@ NSMutableDictionary *contactInfoDict;
 
 -(void) viewWillAppear:(BOOL)animated
 {
+     [super viewWillAppear:animated];
     [groupMemberTableView setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
     
     self.addBtnLabel.userInteractionEnabled=YES;
@@ -302,7 +303,7 @@ NSMutableDictionary *contactInfoDict;
 
 - (IBAction)saveButtonTapped:(id)sender
 {
-    if ([self.groupNameTextField.text length] == 0)
+    if ([[self.groupNameTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
     {
         [self alertStatus:@"Please enter group name to add members." :nil ];
         
@@ -346,7 +347,7 @@ NSMutableDictionary *contactInfoDict;
 
 - (IBAction)addButtonTapped:(id)sender
 {
-    if ([groupNameTextField.text length] == 0)
+    if ([[groupNameTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] == 0)
     {
         [self alertStatus:@"Please enter group name to add members." :nil ];
         
@@ -567,6 +568,8 @@ NSMutableDictionary *contactInfoDict;
 {
     [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
 }
+
+
 
 -(void) insertGroupMemberWithGroupMemObj:(ModelGroupMembers*)objMember
 {

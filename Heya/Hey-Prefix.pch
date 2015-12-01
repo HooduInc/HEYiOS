@@ -40,6 +40,5 @@
 #define HostOne @"api.getheyfever.com/index.php"
 #define HeyBaseURL @"http://api.getheyfever.com/index.php/"
 
-NSString * messageHolderString;
+NSString * messageHolderString, *pushDeviceTokenId;
 BOOL addPhoneClicked;
-NSString *conatctNoFetchFromContactList, *strSelectContact, *pushDeviceTokenId;

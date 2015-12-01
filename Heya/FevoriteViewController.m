@@ -24,7 +24,7 @@
     NSIndexPath *selectedIndexPath;
     BOOL cellEditingStatus, cellDeleteStatus;
     UIAlertView *saveAlert;
-    NSMutableArray *multipleContactNoArray, *arrDisplay;
+    NSMutableArray *arrDisplay;
     UIImage *contactImageFromAddressBook;
 }
 
@@ -75,6 +75,7 @@
 
 -(void) viewWillAppear:(BOOL)animated
 {
+     [super viewWillAppear:animated];
     selectedIndexPath=nil;
     
     [fevoriteList_table setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
@@ -245,24 +246,18 @@
     
     
     CGRect rectOfCellInTableView = [fevoriteList_table rectForRowAtIndexPath:indexPath];
-    //NSLog(@"TextField Origin: %f",rectOfCellInTableView.origin.y+120);
+    NSLog(@"TextField Origin: %f",rectOfCellInTableView.origin.y+120);
     
     if(isIphone4 || isIphone5)
     {
-        if(rectOfCellInTableView.origin.y+120>253)
-            [fevoriteList_table setContentOffset:CGPointMake(0,rectOfCellInTableView.origin.y-120) animated:YES];
+        if(rectOfCellInTableView.origin.y+120>140)
+            [fevoriteList_table setContentOffset:CGPointMake(0,rectOfCellInTableView.origin.y) animated:YES];
     }
     
-    else if (isIphone6)
+    else if (isIphone6 || isIphone6Plus)
     {
-        if(rectOfCellInTableView.origin.y+120>258)
-            [fevoriteList_table setContentOffset:CGPointMake(0,rectOfCellInTableView.origin.y-120) animated:YES];
-    }
-    
-    else if (isIphone6)
-    {
-        if(rectOfCellInTableView.origin.y+120>271)
-            [fevoriteList_table setContentOffset:CGPointMake(0,rectOfCellInTableView.origin.y-120) animated:YES];
+        if(rectOfCellInTableView.origin.y+120>195)
+            [fevoriteList_table setContentOffset:CGPointMake(0,rectOfCellInTableView.origin.y) animated:YES];
     }
         
 }
@@ -405,7 +400,7 @@
         
         FevretTableViewCell *cell=(FevretTableViewCell*)[fevoriteList_table cellForRowAtIndexPath:selectedIndexPath];
         
-        if (cell.nameLabelText.text.length>0)
+        if ([cell.nameLabelText.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
         {
             NSLog(@"Updated Name: %@",cell.nameLabelText.text);
             NSLog(@"Favorite ID: %ld",(long)cell.nameLabelText.tag);
@@ -431,6 +426,10 @@
             }
 
         }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Person name can't be blanked!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
     }
 
 }
@@ -438,8 +437,8 @@
 
 
 #pragma mark - KBContactsSelectionViewControllerDelegate
-- (void) contactsSelection:(KBContactsSelectionViewController*)selection didSelectContact:(APContact *)contact {
-    
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didSelectContact:(APContact *)contact
+{
     __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
     label.textAlignment = NSTextAlignmentCenter;
     label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
@@ -452,7 +451,6 @@
     if (self.presentedCSVC.selectedContacts.count>0)
     {
         APContact *selectedContact =[self.presentedCSVC.selectedContacts firstObject];
-        multipleContactNoArray=[NSMutableArray array];
         
         if (selectedContact)
         {
@@ -538,14 +536,14 @@
 
 - (void)contactsSelectionWillLoadContacts:(KBContactsSelectionViewController *)csvc
 {
-//    HUD.labelText = @"Loading Contacts";
-//    [self.view addSubview:HUD];
-//    [HUD show:YES];
+    HUD.labelText = @"Loading Contacts...";
+    [self.view addSubview:HUD];
+    [HUD show:YES];
 }
 - (void)contactsSelectionDidLoadContacts:(KBContactsSelectionViewController *)csvc
 {
-//   [HUD hide:YES];
-//   [HUD removeFromSuperview];
+   [HUD hide:YES];
+   [HUD removeFromSuperview];
 }
 
 #pragma mark
@@ -592,6 +590,12 @@
 -(void) hideAlertView
 {
     [saveAlert dismissWithClickedButtonIndex:0 animated:YES];
+    
+}
+
+-(void)reloadView
+{
+    [self fetchAndRefresh];
 }
 
 -(void) fetchAndRefresh
@@ -611,6 +615,12 @@
             [HUD hide:YES];
             [HUD removeFromSuperview];
             [fevoriteList_table reloadData];
+            
+            if (arrContactsData.count>1)
+                self.rearrangeBtn.hidden=NO;
+            else
+                self.rearrangeBtn.hidden=YES;
+            
         });
     });
     
@@ -671,6 +681,7 @@
             
             [saveAlert show];
             [self performSelector:@selector(hideAlertView)  withObject:nil afterDelay:0.75];
+            [self performSelector:@selector(reloadView) withObject:nil afterDelay:1.0];
         }
         else
         {

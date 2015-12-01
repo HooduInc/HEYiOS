@@ -107,7 +107,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
     
     //Change the host name here to change the server you want to monitor.
-    NSString *remoteHostName =@"http://www.google.com";
+    NSString *remoteHostName =HeyBaseURL;
     
     self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
     [self.hostReachability startNotifier];
@@ -123,12 +123,12 @@
     
     if ([self isNetworkAvailable])
     {
-        emailSubject = @"Improve Hey";
+        emailSubject = @"Improve Hey!";
         BOOL isValidate=YES;
         
-        if(emailID.text.length>0)
+        if([emailID.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
         {
-            if([self NSStringIsValidEmail:[emailID text]])
+            if([self NSStringIsValidEmail:[emailID.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]])
             {
                 emailBody= [emailContent.text stringByAppendingString:[NSString stringWithFormat:@"\r\n\r\nRegards,\r\n%@", emailID.text]];
                 NSLog(@"EmailBody: %@",emailBody);
@@ -142,9 +142,19 @@
         }
         else
         {
-            emailBody=emailContent.text;
-            NSLog(@"EmailBody: %@",emailBody);
-            isValidate=YES;
+            emailBody=[emailContent.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+            
+            if (emailBody.length>0)
+            {
+                NSLog(@"EmailBody: %@",emailBody);
+                isValidate=YES;
+            }
+            else
+            {
+                
+                [[[UIAlertView alloc] initWithTitle:nil message:@"Email body is empty." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+                isValidate=NO;
+            }
         }
         
         if(isValidate)
@@ -171,6 +181,10 @@
                 
                 [mailViewController.navigationBar setTintColor:[UIColor greenColor]];
                 [self presentViewController:mailViewController animated:YES completion:nil];
+            }
+            else
+            {
+                [[[UIAlertView alloc] initWithTitle:nil message:@"Cannot send the mail. May be you did not setup your mail id in phone settings." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
             }
         }
     }
@@ -246,7 +260,7 @@
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title
                                                         message:msg
                                                        delegate:self
-                                              cancelButtonTitle:@"Ok"
+                                              cancelButtonTitle:@"OK"
                                               otherButtonTitles:nil, nil];
     [alertView show];
 }

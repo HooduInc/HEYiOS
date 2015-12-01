@@ -39,7 +39,7 @@
 
 
 @property (nonatomic, strong) IBOutlet UIView *contactsContainer;
-@property (nonatomic, strong) ABPeoplePickerNavigationController *addressBookController;
+//@property (nonatomic, strong) ABPeoplePickerNavigationController *addressBookController;
 @property (nonatomic, strong) NSMutableArray *quickContactsArray;
 
 typedef void (^ALAssetsLibraryAssetForURLResultBlock)(ALAsset *asset);

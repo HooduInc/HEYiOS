@@ -181,8 +181,8 @@
         
         if(sqlite3_open(dbPath, &database)==SQLITE_OK)
         {
-            if([menuText containsString:@"'"])
-                menuText= [menuText stringByReplacingOccurrencesOfString:@"\'" withString:@"`"];
+            //if([menuText containsString:@"'"])
+                //menuText= [menuText stringByReplacingOccurrencesOfString:@"\'" withString:@"`"];
             
             NSString *stm = [NSString stringWithFormat:@"UPDATE menulist Set menuname ='%@'where  menuId ='%@'",menuText,strId];
             NSLog(@"Update Querystring: %@", stm);
@@ -966,84 +966,94 @@
 +(long long)insertToFavoriteTable:(NSMutableArray*)fevoriteArray
 {
     long long lastInsertedId=0;
-    ModelFevorite *fevObj=[fevoriteArray objectAtIndex:0];
     
-    NSString *query  = [NSString stringWithFormat:@"select * from favoriteList where mobNumber = '%@'",fevObj.strMobNumber];
-    
-    NSLog(@"MobileNUm Exists or not query : %@",query);
-    BOOL recordExist = [self recordExistOrNot:query];
-    
-    if (!recordExist)
+    if (fevoriteArray.count>0)
     {
-        FMDatabase *database=[DBManager getDatabase];
-        if(database)
+        ModelFevorite *fevObj=[fevoriteArray objectAtIndex:0];
+        
+        NSString *query  = [NSString stringWithFormat:@"select * from favoriteList where mobNumber = '%@'",fevObj.strMobNumber];
+        
+        NSLog(@"MobileNUm Exists or not query : %@",query);
+        BOOL recordExist = [self recordExistOrNot:query];
+        
+        if (!recordExist)
         {
-            sqlite3 *database;
-            NSString *dbpath = [DBManager getDBPath];
-            const char* dbPath=[dbpath UTF8String];
-            
-            if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+            FMDatabase *database=[DBManager getDatabase];
+            if(database)
             {
-                NSString *stm = [NSString stringWithFormat:@"INSERT INTO favoriteList(firstName, lastName, mobNumber, homeNumber, profileImage) values(\"%@\", \"%@\", \"%@\",\"%@\", \"%@\") ",fevObj.strFirstName,fevObj.strLastName,fevObj.strMobNumber,fevObj.strHomeNumber,fevObj.strProfileImage];
+                sqlite3 *database;
+                NSString *dbpath = [DBManager getDBPath];
+                const char* dbPath=[dbpath UTF8String];
                 
-                NSLog(@"Favorite Insertion Querystring: %@", stm);
-                const char *sqlQuerry= [stm UTF8String];
-                sqlite3_stmt *querryStatement;
-                if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+                if(sqlite3_open(dbPath, &database)==SQLITE_OK)
                 {
-                    NSLog(@"Favorite Insertion successful....");
+                    NSString *stm = [NSString stringWithFormat:@"INSERT INTO favoriteList(firstName, lastName, mobNumber, homeNumber, profileImage) values(\"%@\", \"%@\", \"%@\",\"%@\", \"%@\") ",fevObj.strFirstName,fevObj.strLastName,fevObj.strMobNumber,fevObj.strHomeNumber,fevObj.strProfileImage];
                     
-                    bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
-                    
-                    if(!executeQueryResults)
+                    NSLog(@"Favorite Insertion Querystring: %@", stm);
+                    const char *sqlQuerry= [stm UTF8String];
+                    sqlite3_stmt *querryStatement;
+                    if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
                     {
-                        NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                        NSLog(@"Favorite Insertion successful....");
+                        
+                        bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                        
+                        if(!executeQueryResults)
+                        {
+                            NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                        }
+                        else
+                        {
+                            int affectedRows = sqlite3_changes(database);
+                            NSLog(@"affectedRows: %d",affectedRows);
+                            
+                            lastInsertedId=sqlite3_last_insert_rowid(database);
+                            
+                            NSLog(@"lastInsertedId: %lld",lastInsertedId);
+                            
+                            if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+                            {
+                                NSString *stmUpdate = [NSString stringWithFormat:@"UPDATE favoriteList SET favouriteOrder='%d' where fevoriteId ='%d'",(int)lastInsertedId,(int)lastInsertedId];
+                                
+                                NSLog(@"Favorite Update Querystring: %@", stmUpdate);
+                                const char *sqlQuerryTwo= [stmUpdate UTF8String];
+                                sqlite3_stmt *querryStatementTwo;
+                                if(sqlite3_prepare_v2(database, sqlQuerryTwo, -1, &querryStatementTwo, NULL)==SQLITE_OK)
+                                {
+                                    NSLog(@"Favorite Updation successful....");
+                                    bool executeQueryResultsTwo = sqlite3_step(querryStatementTwo) == SQLITE_DONE;
+                                    
+                                    if(!executeQueryResultsTwo)
+                                    {
+                                        NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                                    }
+                                    
+                                    sqlite3_reset(querryStatementTwo);
+                                }
+                                else
+                                {
+                                    NSLog(@"error while Updating Favourite contacts....");
+                                }
+                                
+                            }
+                        }
+                        sqlite3_reset(querryStatement);
                     }
                     else
                     {
-                        int affectedRows = sqlite3_changes(database);
-                        NSLog(@"affectedRows: %d",affectedRows);
-                        
-                        lastInsertedId=sqlite3_last_insert_rowid(database);
-                        
-                        NSLog(@"lastInsertedId: %lld",lastInsertedId);
-                        
-                        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
-                        {
-                            NSString *stmUpdate = [NSString stringWithFormat:@"UPDATE favoriteList SET favouriteOrder='%d' where fevoriteId ='%d'",(int)lastInsertedId,(int)lastInsertedId];
-                            
-                            NSLog(@"Favorite Update Querystring: %@", stmUpdate);
-                            const char *sqlQuerryTwo= [stmUpdate UTF8String];
-                            sqlite3_stmt *querryStatementTwo;
-                            if(sqlite3_prepare_v2(database, sqlQuerryTwo, -1, &querryStatementTwo, NULL)==SQLITE_OK)
-                            {
-                                NSLog(@"Favorite Updation successful....");
-                                bool executeQueryResultsTwo = sqlite3_step(querryStatementTwo) == SQLITE_DONE;
-                                
-                                if(!executeQueryResultsTwo)
-                                {
-                                    NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
-                                }
-                                
-                                sqlite3_reset(querryStatementTwo);
-                            }
-                            else
-                            {
-                                NSLog(@"error while Updating Favourite contacts....");
-                            }
-                            
-                        }
+                        NSLog(@"error while inserting Favourite contacts....");
                     }
-                    sqlite3_reset(querryStatement);
+                    sqlite3_close(database);
                 }
-                else
-                {
-                    NSLog(@"error while inserting Favourite contacts....");
-                }
-                sqlite3_close(database);
             }
         }
     }
+    else
+    {
+        lastInsertedId=-1;
+    }
+    
+   
     return  lastInsertedId;
 }
 
@@ -1095,7 +1105,7 @@
 
 +(BOOL) UpdateFavoriteWithId:(NSString *)favoriteId  withColoumValue:(NSString*)tableColoumValue
 {
-    BOOL isUpdated;
+    BOOL isUpdated = NO;
     NSArray *fullNameArray=[tableColoumValue componentsSeparatedByString:@" "];
     NSString *strFirstName, *strLastName;
     
@@ -1162,7 +1172,7 @@
 
 +(BOOL) deleteFavoriteDetailsWithFavoriteId:(NSString *)favoriteId
 {
-    BOOL isDeleted;
+    BOOL isDeleted =NO;
     FMDatabase *database=[DBManager getDatabase];
     if(database)
     {
@@ -1765,7 +1775,7 @@
 
 +(BOOL) updateGroupNameWithGroupId:(NSString *)groupId withGroupName:(NSString *)groupName
 {
-    BOOL isUpdated;
+    BOOL isUpdated =NO;
     
     FMDatabase *database=[DBManager getDatabase];
     if(database){
@@ -1916,15 +1926,25 @@
 +(long long) insertGroupMember:(NSMutableArray*)groupMemberArray
 {
     long long lastInsertedId=0;
-    ModelGroupMembers *memeberObj=[groupMemberArray objectAtIndex:0];
     
-    NSString *query  = [NSString stringWithFormat:@"select * from groupMembers where mobNumber = '%@'",memeberObj.strMobileNumber];
+    
+    /*NSString *query  = [NSString stringWithFormat:@"select * from groupMembers where mobNumber = '%@'",memeberObj.strMobileNumber];
     
     NSLog(@"query : %@",query);
     BOOL recordExist = [self recordExistOrNot:query];
 
     if (!recordExist)
     {
+        
+    }
+    else
+    {
+        lastInsertedId=-1;
+    }*/
+    
+    if (groupMemberArray.count>0)
+    {
+        ModelGroupMembers *memeberObj=[groupMemberArray objectAtIndex:0];
         FMDatabase *database=[DBManager getDatabase];
         if(database)
         {
@@ -1996,10 +2016,9 @@
         }
     }
     else
-    {
         lastInsertedId=-1;
-    }
-
+    
+    
     return lastInsertedId;
 }
 
@@ -2356,57 +2375,69 @@
 +(long long) insertPickSubMenu:(NSMutableArray *)pickArray
 {
     long long lastInsertedId=0;
-    ModelPickListSubMenu *objPickSub=[pickArray objectAtIndex:0];
     
-    NSLog(@"Database End PickText: %@",objPickSub.strPickMenuId);
     
-    if([objPickSub.strPickSubMenuName containsString:@"'"])
-        objPickSub.strPickSubMenuName= [objPickSub.strPickSubMenuName stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
-    
-    FMDatabase *database=[DBManager getDatabase];
-    if(database){
-        sqlite3 *database;
-        NSString *dbpath = [DBManager getDBPath];
-        const char* dbPath=[dbpath UTF8String];
+    if (pickArray.count>0)
+    {
+        ModelPickListSubMenu *objPickSub=[pickArray objectAtIndex:0];
         
-        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        NSLog(@"Database End PickText: %@",objPickSub.strPickMenuId);
+        
+        if([objPickSub.strPickSubMenuName containsString:@"'"])
+            objPickSub.strPickSubMenuName= [objPickSub.strPickSubMenuName stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
+        
+        FMDatabase *database=[DBManager getDatabase];
+        if(database)
         {
-            NSString *stm = [NSString stringWithFormat:@"INSERT INTO pickFromListSubMenu(pickText, pickMenu,  displayFlag) values(\"%@\",%d,%d)",objPickSub.strPickSubMenuName, [objPickSub.strPickMenuId intValue], [objPickSub.strPickSubMenuFlag intValue]];
+            sqlite3 *database;
+            NSString *dbpath = [DBManager getDBPath];
+            const char* dbPath=[dbpath UTF8String];
             
-            NSLog(@"Insert picklistsubmenu Querystring: %@", stm);
-            
-            const char *sqlQuerry= [stm UTF8String];
-            sqlite3_stmt *querryStatement;
-            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            if(sqlite3_open(dbPath, &database)==SQLITE_OK)
             {
-                NSLog(@"Insertion successful....");
+                NSString *stm = [NSString stringWithFormat:@"INSERT INTO pickFromListSubMenu(pickText, pickMenu,  displayFlag) values(\"%@\",%d,%d)",objPickSub.strPickSubMenuName, [objPickSub.strPickMenuId intValue], [objPickSub.strPickSubMenuFlag intValue]];
                 
-                bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                NSLog(@"Insert picklistsubmenu Querystring: %@", stm);
                 
-                if(!executeQueryResults)
+                const char *sqlQuerry= [stm UTF8String];
+                sqlite3_stmt *querryStatement;
+                if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
                 {
-                    NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                    NSLog(@"Insertion successful....");
+                    
+                    bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                    
+                    if(!executeQueryResults)
+                    {
+                        NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                    }
+                    else
+                    {
+                        int affectedRows = sqlite3_changes(database);
+                        NSLog(@"affectedRows: %d",affectedRows);
+                        
+                        lastInsertedId=sqlite3_last_insert_rowid(database);
+                        
+                        NSLog(@"lastInsertedId: %lld",lastInsertedId);
+                        
+                        [DBManager updatePickSubMenuWithPickId:[NSString stringWithFormat:@"%lld",lastInsertedId] withTableColoum:@"pickOrder" withColoumValue:[NSString stringWithFormat:@"%lld",lastInsertedId]];
+                    }
+                    sqlite3_reset(querryStatement);
                 }
-                else
-                {
-                    int affectedRows = sqlite3_changes(database);
-                    NSLog(@"affectedRows: %d",affectedRows);
-                    
-                    lastInsertedId=sqlite3_last_insert_rowid(database);
-                    
-                    NSLog(@"lastInsertedId: %lld",lastInsertedId);
-                    
-                    [DBManager updatePickSubMenuWithPickId:[NSString stringWithFormat:@"%lld",lastInsertedId] withTableColoum:@"pickOrder" withColoumValue:[NSString stringWithFormat:@"%lld",lastInsertedId]];
+                else {
+                    NSLog(@"error while conversion....");
                 }
                 sqlite3_reset(querryStatement);
+                sqlite3_close(database);
             }
-            else {
-                NSLog(@"error while conversion....");
-            }
-            sqlite3_reset(querryStatement);
-            sqlite3_close(database);
         }
     }
+    else
+    {
+        lastInsertedId=-1;
+    }
+    
+    
     return lastInsertedId;
 }
 
@@ -2470,41 +2501,50 @@
         NSString *dbpath = [DBManager getDBPath];
         const char* dbPath=[dbpath UTF8String];
         
-        ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
-        
-        userObj=[profileArray objectAtIndex:0];
-        
-        
-        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        if (profileArray.count>0)
         {
-            NSString *stm =[NSString stringWithFormat:@"INSERT INTO userProfile(firstName,lastName,heyName,phoneNo,deviceUDID,profileImage,currentTimeStamp,accountCreated) values(\"%@\", \"%@\", \"%@\", \"%@\",  \"%@\", \"%@\", \"%@\", \"%@\")", userObj.strFirstName,userObj.strLastName, userObj.strHeyName, userObj.strPhoneNo, userObj.strDeviceUDID, userObj.strProfileImage, userObj.strCurrentTimeStamp, userObj.strAccountCreated];
+            ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
+            userObj=[profileArray firstObject];
             
-            NSLog(@"Profile Insertion Querystring: %@", stm);
-            const char *sqlQuerry= [stm UTF8String];
-            sqlite3_stmt *querryStatement;
-            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            if([userObj.strFirstName containsString:@"'"])
+                userObj.strFirstName= [userObj.strFirstName stringByReplacingOccurrencesOfString:@"'" withString:@"\'"];
+            if([userObj.strLastName containsString:@"'"])
+                userObj.strLastName= [userObj.strLastName stringByReplacingOccurrencesOfString:@"'" withString:@"\'"];
+            if([userObj.strHeyName containsString:@"'"])
+                userObj.strHeyName= [userObj.strHeyName stringByReplacingOccurrencesOfString:@"'" withString:@"\'"];
+            
+            
+            if(sqlite3_open(dbPath, &database)==SQLITE_OK)
             {
+                NSString *stm =[NSString stringWithFormat:@"INSERT INTO userProfile(firstName,lastName,heyName,phoneNo,deviceUDID,profileImage,currentTimeStamp,accountCreated) values(\"%@\", \"%@\", \"%@\", \"%@\",  \"%@\", \"%@\", \"%@\", \"%@\")", userObj.strFirstName,userObj.strLastName, userObj.strHeyName, userObj.strPhoneNo, userObj.strDeviceUDID, userObj.strProfileImage, userObj.strCurrentTimeStamp, userObj.strAccountCreated];
                 
-                NSLog(@"UserProfile Inserted....");
-                isInserted=YES;
-
-                bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
-                
-                if(!executeQueryResults)
+                NSLog(@"Profile Insertion Querystring: %@", stm);
+                const char *sqlQuerry= [stm UTF8String];
+                sqlite3_stmt *querryStatement;
+                if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
                 {
-                    NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
-                    isInserted=NO;
+                    
+                    NSLog(@"UserProfile Inserted....");
+                    isInserted=YES;
+                    
+                    bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                    
+                    if(!executeQueryResults)
+                    {
+                        NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                        isInserted=NO;
+                    }
+                    
+                    if (sqlite3_finalize(querryStatement) != SQLITE_OK)
+                        NSLog(@"SQL Error: %s",sqlite3_errmsg(database));
+                }
+                else
+                {
+                    NSLog(@"error while inserting profile....");
                 }
                 
-                if (sqlite3_finalize(querryStatement) != SQLITE_OK)
-                    NSLog(@"SQL Error: %s",sqlite3_errmsg(database));
+                sqlite3_close(database);
             }
-            else
-            {
-                NSLog(@"error while inserting profile....");
-            }
-            
-            sqlite3_close(database);
         }
     }
     
@@ -2521,7 +2561,7 @@
         NSString *dbpath = [DBManager getDBPath];
         const char* dbPath=[dbpath UTF8String];
         
-        ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
+        ModelUserProfile *userObj=[profileArray objectAtIndex:0];
         
         userObj=[profileArray objectAtIndex:0];
         
@@ -2610,7 +2650,6 @@
             {
                 NSLog(@"error while updating profile....");
             }
-            
             sqlite3_close(database);
         }
     }
@@ -2669,7 +2708,7 @@
 
 + (NSMutableArray*) fetchUserProfile
 {
-    NSMutableArray *arr = [[NSMutableArray alloc]init];
+    NSMutableArray *arr = [NSMutableArray array];
     
     FMDatabase *database=[DBManager getDatabase];
     if(database)
@@ -2725,49 +2764,56 @@
 +(long long) insertMessageDetails:(NSMutableArray *)msgArray
 {
     long long lastInsertedId=0;
-    ModelMessageSend *msgObj=[msgArray objectAtIndex:0];
     
-    if([msgObj.strMessageText containsString:@"'"])
-        msgObj.strMessageText= [msgObj.strMessageText stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
-    
-    FMDatabase *database=[DBManager getDatabase];
-    if(database)
-    {
-        sqlite3 *database;
-        NSString *dbpath = [DBManager getDBPath];
-        const char* dbPath=[dbpath UTF8String];
+    if (msgArray.count>0) {
+        ModelMessageSend *msgObj=[msgArray objectAtIndex:0];
         
-        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        if([msgObj.strMessageText containsString:@"'"])
+            msgObj.strMessageText= [msgObj.strMessageText stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
+        
+        FMDatabase *database=[DBManager getDatabase];
+        if(database)
         {
-            NSString *stm = [NSString stringWithFormat:@"INSERT INTO messageCounter(templateId,deviceId,usedMsgText, strFrom, strTo, sendDate) values(\"%@\", \"%@\", \"%@\",\"%@\", \"%@\", \"%@\") ",msgObj.strtemplateId,msgObj.strDeviceId,msgObj.strMessageText,msgObj.strFrom,msgObj.strTo,msgObj.strSendDate];
+            sqlite3 *database;
+            NSString *dbpath = [DBManager getDBPath];
+            const char* dbPath=[dbpath UTF8String];
             
-            NSLog(@"MessageCounter Insertion Querystring: %@", stm);
-            const char *sqlQuerry= [stm UTF8String];
-            sqlite3_stmt *querryStatement;
-            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            if(sqlite3_open(dbPath, &database)==SQLITE_OK)
             {
-                NSLog(@"MessageDetails Insertion successful....");
+                NSString *stm = [NSString stringWithFormat:@"INSERT INTO messageCounter(templateId,deviceId,usedMsgText, strFrom, strTo, sendDate) values(\"%@\", \"%@\", \"%@\",\"%@\", \"%@\", \"%@\") ",msgObj.strtemplateId,msgObj.strDeviceId,msgObj.strMessageText,msgObj.strFrom,msgObj.strTo,msgObj.strSendDate];
                 
-                bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
-                
-                if(!executeQueryResults)
+                NSLog(@"MessageCounter Insertion Querystring: %@", stm);
+                const char *sqlQuerry= [stm UTF8String];
+                sqlite3_stmt *querryStatement;
+                if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
                 {
-                    NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                    NSLog(@"MessageDetails Insertion successful....");
+                    
+                    bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                    
+                    if(!executeQueryResults)
+                    {
+                        NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                    }
+                    else
+                    {
+                        lastInsertedId=sqlite3_last_insert_rowid(database);
+                        NSLog(@"MessageDetails lastInsertedId: %lld",lastInsertedId);
+                    }
+                    sqlite3_reset(querryStatement);
                 }
                 else
                 {
-                    lastInsertedId=sqlite3_last_insert_rowid(database);
-                    NSLog(@"MessageDetails lastInsertedId: %lld",lastInsertedId);
+                    NSLog(@"error while inserting MessageDetails....");
                 }
-                sqlite3_reset(querryStatement);
+                sqlite3_close(database);
             }
-            else
-            {
-                NSLog(@"error while inserting MessageDetails....");
-            }
-            sqlite3_close(database);
         }
     }
+    else
+        lastInsertedId=-1;
+    
+    
     
     return lastInsertedId;
 }
@@ -3145,46 +3191,54 @@
 +(long long) insertSubscriptionDetails:(NSMutableArray *)msgArray
 {
     long long lastInsertedId=0;
-    ModelSubscription *subObj=[msgArray objectAtIndex:0];
     
-    FMDatabase *database=[DBManager getDatabase];
-    if(database)
+    if(msgArray.count>0)
     {
-        sqlite3 *database;
-        NSString *dbpath = [DBManager getDBPath];
-        const char* dbPath=[dbpath UTF8String];
+        ModelSubscription *subObj=[msgArray objectAtIndex:0];
         
-        if(sqlite3_open(dbPath, &database)==SQLITE_OK)
+        FMDatabase *database=[DBManager getDatabase];
+        if(database)
         {
-            NSString *stm = [NSString stringWithFormat:@"INSERT INTO subscription(deviceUDID,purchaseTime,purchaseState, purchaseToken) values(\"%@\", \"%@\", \"%d\",\"%@\") ",subObj.strDeviceUDID,subObj.strPurchaseTime,subObj.purchaseState,subObj.strPurchaseToken];
+            sqlite3 *database;
+            NSString *dbpath = [DBManager getDBPath];
+            const char* dbPath=[dbpath UTF8String];
             
-            NSLog(@"Subscription Insertion Querystring: %@", stm);
-            const char *sqlQuerry= [stm UTF8String];
-            sqlite3_stmt *querryStatement;
-            if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
+            if(sqlite3_open(dbPath, &database)==SQLITE_OK)
             {
-                NSLog(@"Subscription Insertion successful....");
+                NSString *stm = [NSString stringWithFormat:@"INSERT INTO subscription(deviceUDID,purchaseTime,purchaseState, purchaseToken) values(\"%@\", \"%@\", \"%d\",\"%@\") ",subObj.strDeviceUDID,subObj.strPurchaseTime,subObj.purchaseState,subObj.strPurchaseToken];
                 
-                bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
-                
-                if(!executeQueryResults)
+                NSLog(@"Subscription Insertion Querystring: %@", stm);
+                const char *sqlQuerry= [stm UTF8String];
+                sqlite3_stmt *querryStatement;
+                if(sqlite3_prepare_v2(database, sqlQuerry, -1, &querryStatement, NULL)==SQLITE_OK)
                 {
-                    NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                    NSLog(@"Subscription Insertion successful....");
+                    
+                    bool executeQueryResults = sqlite3_step(querryStatement) == SQLITE_DONE;
+                    
+                    if(!executeQueryResults)
+                    {
+                        NSAssert1(0, @"Error while inserting. '%s'", sqlite3_errmsg(database));
+                    }
+                    else
+                    {
+                        lastInsertedId=sqlite3_last_insert_rowid(database);
+                        NSLog(@"Subscription lastInsertedId: %lld",lastInsertedId);
+                    }
+                    sqlite3_reset(querryStatement);
                 }
                 else
                 {
-                    lastInsertedId=sqlite3_last_insert_rowid(database);
-                    NSLog(@"Subscription lastInsertedId: %lld",lastInsertedId);
+                    NSLog(@"error while inserting Subscription....");
                 }
-                sqlite3_reset(querryStatement);
+                sqlite3_close(database);
             }
-            else
-            {
-                NSLog(@"error while inserting Subscription....");
-            }
-            sqlite3_close(database);
         }
     }
+    else
+        lastInsertedId=-1;
+    
+    
     
     return lastInsertedId;
 }

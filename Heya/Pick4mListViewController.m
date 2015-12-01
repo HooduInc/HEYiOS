@@ -280,10 +280,24 @@
 {
     if (FlagFromSettings==NO)
     {
-        selectedIndexPath=indexPath;
-        UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Are you sure you want to update the message from Pick List?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
-        confirmDialog.tag=1;
-        [confirmDialog show];
+        ModelPickListMenu *objMenu=[tempPickList objectAtIndex:[indexPath section]];
+        ModelPickListSubMenu *objSub=[objMenu.arrPickSubMenu objectAtIndex:indexPath.row];
+        
+        NSLog(@"SubMenuName and DisplayFlag:%@ %@",objSub.strPickSubMenuName,objSub.strPickSubMenuFlag);
+        
+        if ([objSub.strPickSubMenuFlag isEqualToString:@"1"])
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"This template is already in your message list. Choose another one!" delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+        else
+        {
+            selectedIndexPath=indexPath;
+            UIAlertView *confirmDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Are you sure you want to update the message from Pick List?" delegate:self cancelButtonTitle:@"CANCEL" otherButtonTitles:@"OK", nil];
+            confirmDialog.tag=1;
+            [confirmDialog show];
+        }
+        
+        
     }
     
 }
@@ -370,26 +384,32 @@
         NSLog(@"Sub PickID: %@",objSub.strPickSubMenuId);
         
         
-        if (subCell.subTextLabel.text.length>0)
+        if ([subCell.subTextLabel.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
         {
             if(![objSub.strPickSubMenuName isEqualToString:subCell.subTextLabel.text])
             {
                 [DBManager updatePickSubMenuWithPickId:objSub.strPickSubMenuId withTableColoum:@"pickText" withColoumValue:subCell.subTextLabel.text];
                 [DBManager updatePickSubMenuWithPickId:objSub.strPickMenuId withTableColoum:@"displayFlag" withColoumValue:@"0"];
                 selectedIndexPath=nil;
+                
                 [self generatePickListArray];
                 [pickListTableView reloadData];
+                
             }
            
             [subCell.subTextLabel resignFirstResponder];
             [subCell.subTextLabel setUserInteractionEnabled:NO];
+        }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter some text." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
         }
     }
     else if(addPickListIndexPath!=nil)
     {
         SubCellPickList *subCell=(SubCellPickList*)[pickListTableView cellForRowAtIndexPath:addPickListIndexPath];
         
-        if (subCell.subTextLabel.text.length>0)
+        if ([subCell.subTextLabel.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
         {
             NSLog(@"Cell Text: %@",subCell.subTextLabel.text);
             NSLog(@"Cell PickeMenuID: %@",[NSString stringWithFormat:@"%ld",(long)subCell.tag]);
@@ -419,6 +439,10 @@
             [subCell.subTextLabel resignFirstResponder];
             [subCell.subTextLabel setUserInteractionEnabled:NO];
             
+        }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter some text." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil] show];
         }
         
         

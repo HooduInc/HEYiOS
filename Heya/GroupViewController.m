@@ -14,7 +14,7 @@
 #import "ModelGroup.h"
 
 
-@interface GroupViewController ()<GroupTableViewCellDelegate,UITextFieldDelegate>
+@interface GroupViewController ()<GroupTableViewCellDelegate,UITextFieldDelegate,UIAlertViewDelegate>
 {
     MBProgressHUD *HUD;
     NSIndexPath *selectedIndexPath;
@@ -24,7 +24,7 @@
 @end
 
 @implementation GroupViewController
-@synthesize addGroupView, doneButton, saveButton, groupListArray, groupTableView;
+@synthesize addGroupView, rearrangeButton, saveButton, groupListArray, groupTableView;
 
 
 #pragma mark
@@ -43,6 +43,12 @@
     [groupTableView setBackgroundColor:[UIColor colorWithRed:232/255.0f green:232/255.0f blue:232/255.0f alpha:1]];
     
     groupListArray = [DBManager fetchDetailsFromGroup];
+    
+    if (groupListArray.count>1)
+        rearrangeButton.hidden=NO;
+    else
+        rearrangeButton.hidden=YES;
+    
     [groupTableView reloadData];
     
     /*dispatch_queue_t myQueue = dispatch_queue_create("hey_main_group", NULL);
@@ -144,6 +150,9 @@
     GroupTableViewCell *cell=(GroupTableViewCell*)[self getSuperviewOfType:[UITableViewCell class] fromView:sender];
     NSIndexPath *indexPath=[groupTableView indexPathForCell:cell];
     
+    
+    self.saveButton.hidden=NO;
+    
     cell.groupNameLabel.userInteractionEnabled=YES;
     [cell.groupNameLabel becomeFirstResponder];
     selectedIndexPath=indexPath;
@@ -187,13 +196,11 @@
     selectedIndexPath=nil;
     
     NSLog(@"In the delegate, Clicked buttonDelete-> Name: %@",cell.groupNameLabel.text);
-    BOOL isDeleted=[DBManager deleteGroupWithGroupId:[NSString stringWithFormat:@"%ld",(long)cell.groupNameLabel.tag]];
     
-    if(isDeleted)
-    {
-        groupListArray= [DBManager fetchDetailsFromGroup];
-        [groupTableView reloadData];
-    }
+    UIAlertView *delAlert=[[UIAlertView alloc] initWithTitle:nil message:@"If you delete the group all group members belongs to this group will be deleted. Are you sure?" delegate:self cancelButtonTitle:@"NO" otherButtonTitles:@"YES", nil];
+    delAlert.tag=cell.groupNameLabel.tag;
+    
+    [delAlert show];
     
 }
 
@@ -229,12 +236,13 @@
 
 -(IBAction)saveBtnPressed:(id)sender
 {
+    
     if (cellEditingStatus==YES && cellDeleteStatus==NO && selectedIndexPath!=nil)
     {
         
         GroupTableViewCell *cell=(GroupTableViewCell*)[groupTableView cellForRowAtIndexPath:selectedIndexPath];
         
-        if (cell.groupNameLabel.text.length>0)
+        if ([cell.groupNameLabel.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
         {
             NSLog(@"Updated Name: %@",cell.groupNameLabel.text);
             NSLog(@"GROUP ID: %ld",(long)cell.groupNameLabel.tag);
@@ -249,12 +257,18 @@
                     cellEditingStatus=NO;
                     cellDeleteStatus=YES;
                     selectedIndexPath=nil;
+                    [cell.groupNameLabel resignFirstResponder];
+                    self.saveButton.hidden=YES;
                     
                     UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved successfully." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                     [alert show];
                     
                     groupListArray= [DBManager fetchDetailsFromGroup];
                     [groupTableView reloadData];
+                    if (groupListArray.count>1)
+                        rearrangeButton.hidden=NO;
+                    else
+                        rearrangeButton.hidden=YES;
                 }
                 else
                 {
@@ -268,6 +282,36 @@
                 [alert show];
             }
             
+        }
+        else
+        {
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Group name can't be blanked!" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        }
+    }
+}
+
+
+#pragma mark AlertViewDelegate
+
+-(void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex==1)
+    {
+        BOOL isDeletedAllMembers = [DBManager deleteGroupMemberWithGroupId:[NSString stringWithFormat:@"%ld",(long)alertView.tag]];
+        
+        if (isDeletedAllMembers)
+        {
+            BOOL isDeleted=[DBManager deleteGroupWithGroupId:[NSString stringWithFormat:@"%ld",(long)alertView.tag]];
+            
+            if(isDeleted)
+            {
+                groupListArray= [DBManager fetchDetailsFromGroup];
+                [groupTableView reloadData];
+                if (groupListArray.count>1)
+                    rearrangeButton.hidden=NO;
+                else
+                    rearrangeButton.hidden=YES;
+            }
         }
     }
 }

@@ -155,60 +155,65 @@ NSString *const kSubscriptionPurchaseState = @"PurchaseState";
     
     NSMutableArray *userProfile=[[NSMutableArray alloc] init];
     userProfile=[DBManager fetchUserProfile];
-    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
     
-    ModelSubscription *objSub=[[ModelSubscription alloc] init];
-    objSub.strDeviceUDID=modObj.strDeviceUDID;
-    
-    NSTimeInterval timeInMiliseconds = [[NSDate date] timeIntervalSince1970];
-    
-    objSub.strPurchaseTime=[NSString stringWithFormat:@"%f",timeInMiliseconds*1000];
-    objSub.purchaseState=1;
-    
-    [[HeyWebService service] createSubscriptionWithUDID:objSub.strDeviceUDID PurchaseTime:objSub.strPurchaseTime PurchaseState:[NSString stringWithFormat:@"%d",objSub.purchaseState] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-     {
-         if (isError)
+    if (userProfile.count>0)
+    {
+        ModelUserProfile *modObj=[userProfile firstObject];
+        
+        ModelSubscription *objSub=[[ModelSubscription alloc] init];
+        objSub.strDeviceUDID=modObj.strDeviceUDID;
+        
+        NSTimeInterval timeInMiliseconds = [[NSDate date] timeIntervalSince1970];
+        
+        objSub.strPurchaseTime=[NSString stringWithFormat:@"%f",timeInMiliseconds*1000];
+        objSub.purchaseState=1;
+        
+        [[HeyWebService service] createSubscriptionWithUDID:objSub.strDeviceUDID PurchaseTime:objSub.strPurchaseTime PurchaseState:[NSString stringWithFormat:@"%d",objSub.purchaseState] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
          {
-             NSLog(@"Subscription not Completed");
-         }
-         else
-         {
-             NSDictionary *resultDict=(id)result;
-             
-             NSLog(@"Subscription details: %@",[resultDict valueForKey:@"error"]);
-             
-             [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-              {
-                  if (isError)
+             if (isError)
+             {
+                 NSLog(@"Subscription not Completed");
+             }
+             else
+             {
+                 NSDictionary *resultDict=(id)result;
+                 
+                 NSLog(@"Subscription details: %@",[resultDict valueForKey:@"error"]);
+                 
+                 [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                   {
-                      NSLog(@"Subscription Fetch Failed: %@",strMsg);
-                  }
-                  else
-                  {
-                      NSDictionary *resultDict=(id)result;
-                      
-                      if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                      if (isError)
                       {
-                          NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                          NSLog(@"Subscription Fetch Failed: %@",strMsg);
+                      }
+                      else
+                      {
+                          NSDictionary *resultDict=(id)result;
                           
-                          if (serverDateString && serverDateString.length>0)
+                          if ([[resultDict valueForKey:@"status"] boolValue]==true)
                           {
-                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                              [format setDateFormat:@"MM.dd.yyyy"];
-                              NSDate * serverDate =[format dateFromString:serverDateString];
-                              NSLog(@"Server Date: %@",serverDate);
-                              if (serverDate)
+                              NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                              
+                              if (serverDateString && serverDateString.length>0)
                               {
-                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                  [[NSUserDefaults standardUserDefaults] synchronize];
+                                  NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                  [format setDateFormat:@"MM.dd.yyyy"];
+                                  NSDate * serverDate =[format dateFromString:serverDateString];
+                                  NSLog(@"Server Date: %@",serverDate);
+                                  if (serverDate)
+                                  {
+                                      [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                      [[NSUserDefaults standardUserDefaults] synchronize];
+                                  }
                               }
                           }
                       }
-                  }
-              }];
-             
-         }
-     }];
+                  }];
+                 
+             }
+         }];
+    }
+    
 
     
 }

@@ -462,13 +462,15 @@ NSUserDefaults *preferances;
         
     }
     
+    MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
+    
     if (pageNumber==0)
     {
         ModelMenu *obj=[arrDisplayTableOne objectAtIndex:[sender tag]];
         if (obj.arrSubMenu.count==0)
         {
 
-            MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
+            
             
             if([obj.strMenuName containsString:@"[ Custom Message ]"])
             {
@@ -506,7 +508,6 @@ NSUserDefaults *preferances;
         ModelMenu *obj=[arrDisplayTableTwo objectAtIndex:[sender tag]];
         if (obj.arrSubMenu.count==0)
         {
-            MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
             messagesView_obj.getMessageStr =[NSString stringWithFormat:@"HEY! %@",[NSString emoticonizedString:obj.strMenuName]];
             
             /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
@@ -533,7 +534,6 @@ NSUserDefaults *preferances;
         ModelMenu *obj=[arrDisplayTableThree objectAtIndex:[sender tag]];
         if (obj.arrSubMenu.count==0)
         {
-            MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
             messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@",[NSString emoticonizedString:obj.strMenuName]];
             
             /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
@@ -560,7 +560,6 @@ NSUserDefaults *preferances;
         ModelMenu *obj=[arrDisplayTableFour objectAtIndex:[sender tag]];
         if (obj.arrSubMenu.count==0)
         {
-            MessagesViewController *messagesView_obj = [[MessagesViewController alloc]initWithNibName:@"MessagesViewController" bundle:nil];
             messagesView_obj.getMessageStr = [NSString stringWithFormat:@"HEY! %@",[NSString emoticonizedString:obj.strMenuName]];
             
             /*if([[obj.strMenuName lowercaseString] containsString:[loveyouString lowercaseString]])
@@ -730,181 +729,188 @@ NSUserDefaults *preferances;
             
             NSMutableArray *userProfile=[[NSMutableArray alloc] init];
             userProfile=[DBManager fetchUserProfile];
-            ModelUserProfile *modObj=[userProfile objectAtIndex:0];
             
-            NSLog(@"Device UDID: %@",modObj.strDeviceUDID);
             
-            NSString *accountCreationDateStr=@"";
-            if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+            if(userProfile.count>0)
             {
-                NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
-                accountCreationDateStr=[NSString stringWithFormat:@"%@",modObj.strAccountCreated];
-                NSLog(@"Account Creation Date After Formatting: %@",accountCreationDateStr);
+                ModelUserProfile *modObj=[userProfile firstObject];
                 
-            }
-            NSString *FullName=@"";
-            if (modObj.strFirstName && modObj.strFirstName.length>0)
-            {
-                FullName=[NSString stringWithFormat:@"%@",modObj.strFirstName];
-            }
-            if (modObj.strLastName && modObj.strLastName.length>0)
-            {
-                FullName=[NSString stringWithFormat:@"%@ %@",FullName, modObj.strLastName];
-            }
-            NSString *ContactNumber=@"";
-            if (modObj.strPhoneNo && modObj.strPhoneNo.length>0)
-            {
-                ContactNumber=[NSString stringWithFormat:@"%@",modObj.strPhoneNo];
-            }
-            
-            
-            NSDate *today=[NSDate date];
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            [formatter setDateFormat:@"yyyy-MM-dd"];
-            NSString *timeStamp = [formatter stringFromDate:today];
-            
-            NSLog(@"timeStamp: %@",timeStamp);
-            
-            NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
-            if (modObj.isRegistered==0)
-            {
-                [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[FullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[ContactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                 {
-                     if (isError)
+                NSLog(@"Device UDID: %@",modObj.strDeviceUDID);
+                
+                NSString *accountCreationDateStr=@"";
+                if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                {
+                    NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                    accountCreationDateStr=[NSString stringWithFormat:@"%@",modObj.strAccountCreated];
+                    NSLog(@"Account Creation Date After Formatting: %@",accountCreationDateStr);
+                    
+                }
+                NSString *FullName=@"";
+                if (modObj.strFirstName && modObj.strFirstName.length>0)
+                {
+                    FullName=[NSString stringWithFormat:@"%@",modObj.strFirstName];
+                }
+                if (modObj.strLastName && modObj.strLastName.length>0)
+                {
+                    FullName=[NSString stringWithFormat:@"%@ %@",FullName, modObj.strLastName];
+                }
+                NSString *ContactNumber=@"";
+                if (modObj.strPhoneNo && modObj.strPhoneNo.length>0)
+                {
+                    ContactNumber=[NSString stringWithFormat:@"%@",modObj.strPhoneNo];
+                }
+                
+                
+                NSDate *today=[NSDate date];
+                NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                [formatter setDateFormat:@"yyyy-MM-dd"];
+                NSString *timeStamp = [formatter stringFromDate:today];
+                
+                NSLog(@"timeStamp: %@",timeStamp);
+                
+                NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
+                if (modObj.isRegistered==0)
+                {
+                    [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[FullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[ContactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                      {
-                         NSLog(@"Resigartion Error Message: %@",strMsg);
-                         
-                         if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                         if (isError)
                          {
-                             UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                             NSLog(@"Resigartion Error Message: %@",strMsg);
                              
-                             [showDialog show];
-                             
-                             [DBManager updatedToServerForUserWithFlag:1];
-                             [DBManager isRegistrationSuccessful:1];
-                             
-                         }
-                     }
-                     
-                     else
-                     {   [DBManager updatedToServerForUserWithFlag:1];
-                         [DBManager isRegistrationSuccessful:1];
-                         
-                         if (pushDeviceTokenId && pushDeviceTokenId.length>0)
-                         {
-                             [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                              {
-                                  NSLog(@"Push Message: %@",strMsg);
-                              }];
-                         }
-                         
-                         //store the trail period date or the subscription date in NSUserDefaults
-                         [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                          {
-                              if (isError)
-                              {
-                                  NSLog(@"Subscription Fetch Failed: %@",strMsg);
-                              }
-                              else
-                              {
-                                  NSDictionary *resultDict=(id)result;
-                                  
-                                  if ([[resultDict valueForKey:@"status"] boolValue]==true)
-                                  {
-                                      NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
-                                      
-                                      if (serverDateString && serverDateString.length>0)
-                                      {
-                                          NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                                          [format setDateFormat:@"MM.dd.yyyy"];
-                                          NSDate * serverDate =[format dateFromString:serverDateString];
-                                          NSLog(@"Server Date: %@",serverDate);
-                                          if (serverDate)
-                                          {
-                                              [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                              [[NSUserDefaults standardUserDefaults] synchronize];
-                                          }
-                                      }
-                                      
-                                  }
-                              }
-                              
-                          }];
-                         //store the trail period date or the subscription date in NSUserDefaults
-                         
-                         
-                         NSLog(@"Resigartion Success Message: %@",strMsg);
-                         for (ModelMessageSend *objSend in unSyncArray)
-                         {
-                             NSString *strTimeStamp=@"";
-                             if (objSend.strSendDate && objSend.strSendDate.length>0)
+                             if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
                              {
-                                 strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
-                                 NSLog(@"Message Send Timestamp: %@",strTimeStamp);
+                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
                                  
+                                 [showDialog show];
                                  
-                                 /*NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-                                 [formatter setDateFormat:@"yyyy-mm-dd"];
-                                 NSDate *sendTimeStamp = [formatter dateFromString:strTimeStamp];
-                                 [formatter setDateFormat:@"MM.dd.yyyy"];
-                                 NSString *strSendTime=[formatter stringFromDate:sendTimeStamp];
-                                 NSLog(@"Timestamp send to server: %@",strSendTime);*/
+                                 [DBManager updatedToServerForUserWithFlag:1];
+                                 [DBManager isRegistrationSuccessful:1];
                                  
                              }
+                         }
+                         
+                         else
+                         {   [DBManager updatedToServerForUserWithFlag:1];
+                             [DBManager isRegistrationSuccessful:1];
                              
-                             [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                              {
-                                  if(isError)
+                             if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                             {
+                                 [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                                   {
-                                      NSLog(@"Error: %@",strMsg);
+                                      NSLog(@"Push Message: %@",strMsg);
+                                  }];
+                             }
+                             
+                             //store the trail period date or the subscription date in NSUserDefaults
+                             [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                              {
+                                  if (isError)
+                                  {
+                                      NSLog(@"Subscription Fetch Failed: %@",strMsg);
                                   }
                                   else
                                   {
-                                      NSLog(@"Success: %@",strMsg);
+                                      NSDictionary *resultDict=(id)result;
                                       
-                                      [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
+                                      if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                                      {
+                                          NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                                          
+                                          if (serverDateString && serverDateString.length>0)
+                                          {
+                                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                              [format setDateFormat:@"MM.dd.yyyy"];
+                                              NSDate * serverDate =[format dateFromString:serverDateString];
+                                              NSLog(@"Server Date: %@",serverDate);
+                                              if (serverDate)
+                                              {
+                                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                                  [[NSUserDefaults standardUserDefaults] synchronize];
+                                              }
+                                          }
+                                          
+                                      }
                                   }
+                                  
                               }];
-                         }
-                     }
-                     
-                 }];
-                
-            }
-            else
-            {
-                for (ModelMessageSend *objSend in unSyncArray)
-                {
-                    NSString *strTimeStamp=@"";
-                    if (objSend.strSendDate && objSend.strSendDate.length>0)
-                    {
-                        strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
-                        NSLog(@"Message Send Timestamp: %@",strTimeStamp);
-                        
-                        /*NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-                        [formatter setDateFormat:@"yyyy-mm-dd"];
-                        NSDate *sendTimeStamp = [formatter dateFromString:strTimeStamp];
-                        [formatter setDateFormat:@"MM.dd.yyyy"];
-                        NSString *strSendTime=[formatter stringFromDate:sendTimeStamp];
-                        NSLog(@"Timestamp send to server: %@",strSendTime);*/
-                        
-                    }
-                    
-                    [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         if(isError)
-                         {
-                             NSLog(@"Error: %@",strMsg);
-                         }
-                         else
-                         {
-                             NSLog(@"Success: %@",strMsg);
+                             //store the trail period date or the subscription date in NSUserDefaults
                              
-                             [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
+                             
+                             NSLog(@"Resigartion Success Message: %@",strMsg);
+                             for (ModelMessageSend *objSend in unSyncArray)
+                             {
+                                 NSString *strTimeStamp=@"";
+                                 if (objSend.strSendDate && objSend.strSendDate.length>0)
+                                 {
+                                     strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
+                                     NSLog(@"Message Send Timestamp: %@",strTimeStamp);
+                                     
+                                     
+                                     /*NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                                      [formatter setDateFormat:@"yyyy-mm-dd"];
+                                      NSDate *sendTimeStamp = [formatter dateFromString:strTimeStamp];
+                                      [formatter setDateFormat:@"MM.dd.yyyy"];
+                                      NSString *strSendTime=[formatter stringFromDate:sendTimeStamp];
+                                      NSLog(@"Timestamp send to server: %@",strSendTime);*/
+                                     
+                                 }
+                                 
+                                 [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                  {
+                                      if(isError)
+                                      {
+                                          NSLog(@"Error: %@",strMsg);
+                                      }
+                                      else
+                                      {
+                                          NSLog(@"Success: %@",strMsg);
+                                          
+                                          [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
+                                      }
+                                  }];
+                             }
                          }
+                         
                      }];
+                    
+                }
+                else
+                {
+                    for (ModelMessageSend *objSend in unSyncArray)
+                    {
+                        NSString *strTimeStamp=@"";
+                        if (objSend.strSendDate && objSend.strSendDate.length>0)
+                        {
+                            strTimeStamp=[NSString stringWithFormat:@"%@",objSend.strSendDate];
+                            NSLog(@"Message Send Timestamp: %@",strTimeStamp);
+                            
+                            /*NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                             [formatter setDateFormat:@"yyyy-mm-dd"];
+                             NSDate *sendTimeStamp = [formatter dateFromString:strTimeStamp];
+                             [formatter setDateFormat:@"MM.dd.yyyy"];
+                             NSString *strSendTime=[formatter stringFromDate:sendTimeStamp];
+                             NSLog(@"Timestamp send to server: %@",strSendTime);*/
+                            
+                        }
+                        
+                        [[HeyWebService service] sendMessageDetailsToServerWithUDID:[objSend.strDeviceId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  TemplateId:objSend.strtemplateId MsgText:objSend.strMessageText TimeStamp:strTimeStamp From:objSend.strTo To:objSend.strFrom WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                         {
+                             if(isError)
+                             {
+                                 NSLog(@"Error: %@",strMsg);
+                             }
+                             else
+                             {
+                                 NSLog(@"Success: %@",strMsg);
+                                 
+                                 [DBManager updateMessageDetailsIsPushedToServer:1 withMessageId:[NSString stringWithFormat:@"%@",objSend.strMessageInsertId]];
+                             }
+                         }];
+                    }
                 }
             }
+                
+            
 
         }
     }

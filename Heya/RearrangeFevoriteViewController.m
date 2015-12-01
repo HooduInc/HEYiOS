@@ -40,6 +40,7 @@
 
 -(void) viewWillAppear:(BOOL)animated
 {
+     [super viewWillAppear:animated];
     fevoriteArray=[[NSMutableArray alloc] init];
     fevoriteArray=[DBManager fetchFavorite];
     NSLog(@"fevoriteArray: %@",fevoriteArray);
@@ -90,8 +91,7 @@
         cell=[topLevelObjects objectAtIndex:0];
         
     }
-    ModelFevorite *favObj = [[ModelFevorite alloc] init];
-    favObj=[fevoriteArray objectAtIndex:indexPath.row];
+    ModelFevorite *favObj =[fevoriteArray objectAtIndex:indexPath.row];
     
     
     NSLog(@"favObj: %@",favObj);

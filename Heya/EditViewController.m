@@ -65,11 +65,6 @@
 {
     [super viewDidLoad];
     saveAlert=[[UIAlertView alloc] initWithTitle:nil message:@"Saved Successfully." delegate:nil cancelButtonTitle:nil otherButtonTitles:nil, nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWasShown:)
-                                                 name:UIKeyboardDidShowNotification
-                                               object:nil];
     keyboardHeight=200;
     
     selectedIndexPath=[NSIndexPath indexPathForRow:0 inSection:0];
@@ -97,6 +92,12 @@
     [super viewWillAppear:animated];
     arrDisplay=[DBManager fetchMenuForPageNo:pageNumber+1];
     [tblView reloadData];
+}
+
+-(void)viewDidDisappear:(BOOL)animated
+{
+    [super viewDidDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -199,7 +200,11 @@
         
     }
     
-    return cell;
+    UIView *view = [[UIView alloc] initWithFrame:[cell frame]];
+    [view addSubview:cell];
+    
+    return view;
+    //return cell;
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -750,7 +755,7 @@
     
     [menuTextField resignFirstResponder];
     
-    if(menuTextField.text.length>0)
+    if([menuTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
     {
         [menuTextField setEnabled:NO];
         
@@ -765,7 +770,7 @@
     }
     else
     {
-        [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+        [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
     }
 }
 
@@ -804,7 +809,7 @@
         if ([cell.txtField isFirstResponder])
             [cell.txtField resignFirstResponder];
         
-        if(cell.txtField.text.length>0)
+        if([cell.txtField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
         {
             [DBManager updatesubnemuWithMenuId:[NSString stringWithFormat:@"%@,%@",obj.strMenuId,objSub.strSubMenuId] withsubmenutitle:cell.txtField.text];
         
@@ -819,7 +824,7 @@
         }
         else
         {
-            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
+            [[[UIAlertView alloc] initWithTitle:nil message:@"Please enter your text." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] show ];
         }
     }
     
@@ -881,7 +886,7 @@
         }
         ModelMenu *obj=[arrDisplay objectAtIndex:lastEditedIndexPath.section];
         
-        if (strTemp.length>0)
+        if ([strTemp stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] .length>0)
         {
             [DBManager addSubMenuWithMenuId:obj.strMenuId withSubMenuText:strTemp];
             lastEditedIndexPath=nil;
@@ -908,7 +913,8 @@
         NSLog(@"SubMenuID: %@",objSub.strSubMenuId);
         NSLog(@"Updated SubMenu: %@",cell.txtField.text);
         
-        if(cell.txtField.text.length>0)
+        if([cell.txtField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet
+                                                               ]].length>0)
         {
             [DBManager updatesubnemuWithMenuId:[NSString stringWithFormat:@"%@,%@",obj.strMenuId,objSub.strSubMenuId] withsubmenutitle:cell.txtField.text];
             

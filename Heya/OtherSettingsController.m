@@ -30,6 +30,7 @@ NSUserDefaults *pref;
 
 -(void) viewWillAppear:(BOOL)animated
 {
+     [super viewWillAppear:animated];
     NSTimeInterval timeint=[[NSDate date] timeIntervalSince1970];
     NSLog(@"MiliSeconds: %f",timeint*1000);
     

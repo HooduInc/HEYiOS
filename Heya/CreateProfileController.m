@@ -13,9 +13,14 @@
 #import "ModelUserProfile.h"
 #import "HeyWebService.h"
 #import "InAppPurchaseHelper.h"
-#import <AdSupport/AdSupport.h>
 
-@interface CreateProfileController ()<UIAlertViewDelegate>
+#import "KBContactsSelectionViewController.h"
+#import "APContact.h"
+#import "APPhoneWithLabel.h"
+
+@import Photos;
+
+@interface CreateProfileController ()<UIAlertViewDelegate,KBContactsSelectionViewControllerDelegate>
 {
     float keyBoardHeight;
     MBProgressHUD *HUD;
@@ -27,6 +32,8 @@
     BOOL isReachable;
     NSData *profileImageData;
 }
+
+@property (weak) KBContactsSelectionViewController* presentedCSVC;
 
 
 @property (nonatomic) Reachability *hostReachability;
@@ -43,6 +50,15 @@
 {
     [super viewDidLoad];
     keyBoardHeight=0.0f;
+    
+    //Request Access to Photos
+    int photolibaryAccessStatus = [self AssetLibraryAuthStatus];
+    
+    if (photolibaryAccessStatus==0 || photolibaryAccessStatus==1 || photolibaryAccessStatus==4)
+    {
+        [self showMessageWithTitle:@"Privacy Warning!" withMessage:@"Permission was not granted for photos.\nTip: Go to settings->Hey and allow photos." withButtonTittle:@"OK"];
+    }
+    [self PHAssetAuthStatus];
     
     HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
     pref=[NSUserDefaults standardUserDefaults];
@@ -65,27 +81,38 @@
     
     
     
+    
+    UIToolbar* numberToolbar = [[UIToolbar alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 50)];
+    numberToolbar.barStyle = UIBarStyleBlackTranslucent;
+    numberToolbar.items = [NSArray arrayWithObjects:
+                           [[UIBarButtonItem alloc]initWithTitle:@"Clear" style:UIBarButtonItemStyleBordered target:self action:@selector(clearNumberPad)],
+                           [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                           [[UIBarButtonItem alloc]initWithTitle:@"Apply" style:UIBarButtonItemStyleDone target:self action:@selector(doneWithNumberPad)],
+                           nil];
+    [numberToolbar sizeToFit];
+    self.ContactNo.inputAccessoryView = numberToolbar;
+    
+
     //Dismiss any Keyborad if background is tapped
     UITapGestureRecognizer* tapBackground = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard:)];
     [tapBackground setNumberOfTapsRequired:1];
     [self.view addGestureRecognizer:tapBackground];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWasShown:)
-                                                 name:UIKeyboardDidShowNotification object:nil];
     
 }
 
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:YES];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWasShown:)
+                                                 name:UIKeyboardDidShowNotification object:nil];
     
     NSMutableArray *userProfile=[[NSMutableArray alloc] init];
     userProfile=[DBManager fetchUserProfile];
     
     if(userProfile.count>0)
     {
-        ModelUserProfile *obj=[userProfile objectAtIndex:0];
+        ModelUserProfile *obj=[userProfile firstObject];
         
         if (obj.strDeviceUDID.length>0 && obj.strFirstName.length==0 && obj.strLastName.length==0 && obj.strPhoneNo.length==0)
         {
@@ -101,12 +128,6 @@
             [self.lastName setUserInteractionEnabled:YES];
             [self.heyName setUserInteractionEnabled:YES];
             [self.ContactNo setUserInteractionEnabled:YES];
-            
-            if(conatctNoFetchFromContactList.length>0)
-            {
-                NSLog(@"Contact: %@",conatctNoFetchFromContactList);
-                [self.ContactNo setText:conatctNoFetchFromContactList];
-            }
         }
         else
         {
@@ -150,13 +171,13 @@
         [self.lastName setUserInteractionEnabled:YES];
         [self.heyName setUserInteractionEnabled:YES];
         [self.ContactNo setUserInteractionEnabled:YES];
-        
-        if(conatctNoFetchFromContactList.length>0)
-        {
-            NSLog(@"Contact: %@",conatctNoFetchFromContactList);
-            [self.ContactNo setText:conatctNoFetchFromContactList];
-        }
     }
+}
+
+-(void)viewDidDisappear:(BOOL)animated
+{
+    [super viewDidDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
 }
 
 
@@ -189,7 +210,7 @@
 - (IBAction)saveButton:(id)sender
 {
     
-    if (self.FirstName.text.length>0 && self.lastName.text.length>0 && self.heyName.text.length>0 && self.ContactNo.text.length>0)
+    if ([self.FirstName.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0 && [self.lastName.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0 && [self.heyName.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0 && [self.ContactNo.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0)
     {
         [self.FirstName resignFirstResponder];
         [self.lastName resignFirstResponder];
@@ -228,7 +249,6 @@
         //NSString *UDID=[NSString stringWithFormat:@"%ld",(long)rand_phone];
         //UDID= [[[UIDevice currentDevice] identifierForVendor] UUIDString];
         
-        //NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
         
         NSMutableArray *arrayUser=[[NSMutableArray alloc] init];
         ModelUserProfile *userObj=[[ModelUserProfile alloc] init];
@@ -256,7 +276,7 @@
         if (isUpdated)
         {
             
-            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Successfully registered." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alert=[[UIAlertView alloc] initWithTitle:nil message:@"Your profile has been saved successfully." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [alert show];
             
             fullName=[NSString stringWithFormat:@"%@ %@",self.FirstName.text,self.lastName.text];
@@ -288,113 +308,116 @@
                 [self.view addSubview:HUD];
                 [HUD show:YES];
                 
-                NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                NSMutableArray *userProfile=[NSMutableArray array];
                 userProfile=[DBManager fetchUserProfile];
-                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
                 
-                NSString *accountCreationDateStr=@"";
-                NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
-                if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                if (userProfile.count>0)
                 {
-                    //[formatter setDateFormat:@"yyyy-MM-dd"];
-                    NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
-                    [formatter setDateFormat:@"yyyy-MM-dd"];
-                    accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
-                }
-                
-                NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
-                if (modObj.isRegistered==0)
-                {
-                    [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         [HUD hide:YES];
-                         [HUD removeFromSuperview];
-                         if (isError)
+                    ModelUserProfile *modObj=[userProfile firstObject];
+                    
+                    NSString *accountCreationDateStr=@"";
+                    NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                    if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                    {
+                        //[formatter setDateFormat:@"yyyy-MM-dd"];
+                        NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
+                        [formatter setDateFormat:@"yyyy-MM-dd"];
+                        accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
+                    }
+                    
+                    NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
+                    if (modObj.isRegistered==0)
+                    {
+                        [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                          {
-                             NSLog(@"Resigartion Error Message: %@",strMsg);
-                             if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                             [HUD hide:YES];
+                             [HUD removeFromSuperview];
+                             if (isError)
                              {
-                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-                                 
-                                 [showDialog show];
-                                 
-                                 [DBManager updatedToServerForUserWithFlag:1];
+                                 NSLog(@"Resigartion Error Message: %@",strMsg);
+                                 if ([strMsg containsString:@"This Mobile UDID already exists. Try with another!"])
+                                 {
+                                     UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                                     
+                                     [showDialog show];
+                                     
+                                     [DBManager updatedToServerForUserWithFlag:1];
+                                     [DBManager isRegistrationSuccessful:1];
+                                     
+                                 }
+                             }
+                             
+                             else
+                             {   [DBManager updatedToServerForUserWithFlag:1];
                                  [DBManager isRegistrationSuccessful:1];
+                                 NSLog(@"Resigartion Success Message: %@",strMsg);
                                  
-                             }
-                         }
-                         
-                         else
-                         {   [DBManager updatedToServerForUserWithFlag:1];
-                             [DBManager isRegistrationSuccessful:1];
-                             NSLog(@"Resigartion Success Message: %@",strMsg);
-                             
-                             if (pushDeviceTokenId && pushDeviceTokenId.length>0)
-                             {
-                                 [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                                  {
-                                      NSLog(@"Push Message: %@",strMsg);
-                                  }];
-                             }
-                             
-                             //store the trail period date or the subscription date in NSUserDefaults
-                             [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                              {
-                                  if (isError)
-                                  {
-                                      NSLog(@"Subscription Fetch Failed: %@",strMsg);
-                                  }
-                                  else
-                                  {
-                                      NSDictionary *resultDict=(id)result;
-                                      if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                                 if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                                 {
+                                     [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                                       {
-                                          NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
-                                          
-                                          if (serverDateString && serverDateString.length>0)
+                                          NSLog(@"Push Message: %@",strMsg);
+                                      }];
+                                 }
+                                 
+                                 //store the trail period date or the subscription date in NSUserDefaults
+                                 [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                  {
+                                      if (isError)
+                                      {
+                                          NSLog(@"Subscription Fetch Failed: %@",strMsg);
+                                      }
+                                      else
+                                      {
+                                          NSDictionary *resultDict=(id)result;
+                                          if ([[resultDict valueForKey:@"status"] boolValue]==true)
                                           {
-                                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                                              [format setDateFormat:@"MM.dd.yyyy"];
-                                              NSDate * serverDate =[format dateFromString:serverDateString];
-                                              NSLog(@"Server Date: %@",serverDate);
-                                              if (serverDate)
+                                              NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                                              
+                                              if (serverDateString && serverDateString.length>0)
                                               {
-                                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                                  [[NSUserDefaults standardUserDefaults] synchronize];
+                                                  NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                                  [format setDateFormat:@"MM.dd.yyyy"];
+                                                  NSDate * serverDate =[format dateFromString:serverDateString];
+                                                  NSLog(@"Server Date: %@",serverDate);
+                                                  if (serverDate)
+                                                  {
+                                                      [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                                      [[NSUserDefaults standardUserDefaults] synchronize];
+                                                  }
                                               }
                                           }
                                       }
-                                  }
-                                  
-                              }];
-                             //store the trail period date or the subscription date in NSUserDefaults
+                                      
+                                  }];
+                                 //store the trail period date or the subscription date in NSUserDefaults
+                                 
+                                 [self.navigationController popViewControllerAnimated:YES];
+                             }
                              
-                             [self.navigationController popViewControllerAnimated:YES];
-                         }
-                         
-                     }];
-                    
-                }
-                else
-                {
-                    [[HeyWebService service] updateProfileWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         
-                         [HUD hide:YES];
-                         [HUD removeFromSuperview];
-                         if (isError)
-                             NSLog(@"Updation Error Message: %@",strMsg);
-                         
-                         else
+                         }];
+                        
+                    }
+                    else
+                    {
+                        [[HeyWebService service] updateProfileWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[fullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[contactNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                          {
-                             NSLog(@"Updation Success Message: %@",strMsg);
-                             [DBManager updatedToServerForUserWithFlag:1];
-                             [self.navigationController popViewControllerAnimated:YES];
-                         }
-                         
-                     }];
+                             
+                             [HUD hide:YES];
+                             [HUD removeFromSuperview];
+                             if (isError)
+                                 NSLog(@"Updation Error Message: %@",strMsg);
+                             
+                             else
+                             {
+                                 NSLog(@"Updation Success Message: %@",strMsg);
+                                 [DBManager updatedToServerForUserWithFlag:1];
+                                 [self.navigationController popViewControllerAnimated:YES];
+                             }
+                             
+                         }];
+                    }
                 }
-
             }
             else
             {
@@ -444,119 +467,98 @@
 
 - (IBAction)getContacts:(id)sender
 {
+    __block KBContactsSelectionViewController *vc = [KBContactsSelectionViewController contactsSelectionViewControllerWithConfiguration:^(KBContactsSelectionConfiguration *configuration) {
+        configuration.shouldShowNavigationBar = YES;
+        configuration.tintColor = [UIColor colorWithRed:11.0/255 green:211.0/255 blue:24.0/255 alpha:1];
+        configuration.title = @"All Contacts";
+        configuration.selectButtonTitle = @"";
+        
+        //configuration.mode = KBContactsSelectionModeMessages | KBContactsSelectionModeEmail;
+        configuration.mode = KBContactsSelectionModeMessages;
+        configuration.skipUnnamedContacts = YES;
+        configuration.customSelectButtonHandler = ^(NSArray * contacts) {
+            //NSLog(@"%@", contacts);
+        };
+        /*configuration.contactEnabledValidation = ^(id contact) {
+         APContact * _c = contact;
+         if ([_c phonesWithLabels].count > 0) {
+         
+         NSString * phone = ((APPhoneWithLabel*) _c.phonesWithLabels[0]).phone;
+         if ([phone containsString:@"888"]) {
+         return NO;
+         }
+         }
+         return YES;
+         };*/
+    }];
+    [vc setDelegate:self];
+    [self presentViewController:vc animated:YES completion:NULL];
+    //[self.navigationController pushViewController:vc animated:YES];
     
-    _addressBookController = [[ABPeoplePickerNavigationController alloc] init];
+    self.presentedCSVC = vc;
+    
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 24)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = @"Select people you want to text";
+    
+    vc.additionalInfoView = label;
+    
+    /*_addressBookController = [[ABPeoplePickerNavigationController alloc] init];
     [_addressBookController setPeoplePickerDelegate:self];
-    [self presentViewController:_addressBookController animated:YES completion:nil];
+    [self presentViewController:_addressBookController animated:YES completion:nil];*/
 }
 
-- (void)peoplePickerNavigationController:(ABPeoplePickerNavigationController *)peoplePicker didSelectPerson:(ABRecordRef)person
-{
+#pragma mark - KBContactsSelectionViewControllerDelegate
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didSelectContact:(APContact *)contact {
     
-    contactInfoDict = [[NSMutableDictionary alloc]
-                       initWithObjects:@[@"", @"", @"", @"", @"", @"", @"", @"", @""]
-                       forKeys:@[@"firstName", @"lastName", @"mobileNumber", @"homeNumber", @"homeEmail", @"workEmail", @"address", @"zipCode", @"city"]];
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
     
+    self.presentedCSVC.additionalInfoView = label;
     
-    // Use a general Core Foundation object.
-    CFTypeRef generalCFObject = ABRecordCopyValue(person, kABPersonFirstNameProperty);
+    NSLog(@"Selected Contact: %@", self.presentedCSVC.selectedContacts);
+    [self dismissViewControllerAnimated:YES completion:NULL];
     
-    // Get the first name.
-    if (generalCFObject) {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"firstName"];
-        CFRelease(generalCFObject);
-    }
-    
-    // Get the last name.
-    generalCFObject = ABRecordCopyValue(person, kABPersonLastNameProperty);
-    if (generalCFObject) {
-        [contactInfoDict setObject:(__bridge NSString *)generalCFObject forKey:@"lastName"];
-        CFRelease(generalCFObject);
-    }
-    
-    // Get the phone numbers as a multi-value property.
-    ABMultiValueRef phonesRef = ABRecordCopyValue(person, kABPersonPhoneProperty);
-    for (int i=0; i<ABMultiValueGetCount(phonesRef); i++) {
-        CFStringRef currentPhoneLabel = ABMultiValueCopyLabelAtIndex(phonesRef, i);
-        CFStringRef currentPhoneValue = ABMultiValueCopyValueAtIndex(phonesRef, i);
+    if (self.presentedCSVC.selectedContacts.count>0)
+    {
+        APContact *selectedContact =[self.presentedCSVC.selectedContacts firstObject];
         
-        if ([(NSString *)kABPersonPhoneMobileLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-            contactNumString =(__bridge NSString *)currentPhoneValue;
-            [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            
-            //NSLog(@"mobileNumber: %@",[contactInfoDict valueForKey:@"mobileNumber"]);
-        }
-        
-        //If Phone Number doesn't exists in kABPersonPhoneMobileLabel
-        if ([[contactInfoDict objectForKey:@"mobileNumber"] isEqualToString:@""])
+        if (selectedContact)
         {
-            if ([(NSString *)kABHomeLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            }
+            self.ContactNo.text=[[selectedContact.phonesWithLabels firstObject] phone];
         }
-        
-        //If Phone Number doesn't exists in kABHomeLabel
-        if ([[contactInfoDict objectForKey:@"mobileNumber"] isEqualToString:@""])
-        {
-            if ([(NSString *)kABWorkLabel rangeOfString:(__bridge NSString *)(currentPhoneLabel) options:NSCaseInsensitiveSearch].location  != NSNotFound) {
-                [contactInfoDict setObject:(__bridge NSString *)currentPhoneValue forKey:@"mobileNumber"];
-            }
-        }
-        CFRelease(currentPhoneLabel);
-        CFRelease(currentPhoneValue);
-    }
-    
-    CFRelease(phonesRef);
-    
-    // If the contact has an image then get it too.
-    if (ABPersonHasImageData(person))
-    {
-        
-        NSData *contactImageData = (__bridge NSData *)ABPersonCopyImageDataWithFormat(person, kABPersonImageFormatThumbnail);
-        [contactInfoDict setObject:contactImageData forKey:@"image"];
-    }
-    
-    else
-    {
-        [contactInfoDict setObject:@"man_icon.png" forKey:@"image"];
-    }
-    
-    
-    if([contactInfoDict valueForKey:@"image"])
-    {
-        NSString *imgValue=[NSString stringWithFormat:@"%@",[contactInfoDict valueForKey:@"image"]];
-        
-        if([imgValue isEqualToString:@"man_icon.png"])
-            self.profileImage.image = [UIImage imageNamed:[contactInfoDict objectForKey:@"image"]];
-        
         else
         {
-            NSData *imgData=[contactInfoDict valueForKey:@"image"];
-            UIImage  *img = [UIImage imageWithData:imgData];
-            self.profileImage.image=img;
+            [self showMessageWithTitle:nil withMessage:@"Failed to fetch the contact details. Please try again." withButtonTittle:@"OK"];
         }
-        
-        //save to preferance
-        [pref setObject:[contactInfoDict objectForKey:@"image"] forKey:@"ProfileImage"];
-        [pref synchronize];
     }
-    if([contactInfoDict objectForKey:@"mobileNumber"])
-    {
-        conatctNoFetchFromContactList=[contactInfoDict objectForKey:@"mobileNumber"];
-    }
+    
     else
     {
-        conatctNoFetchFromContactList=[contactInfoDict objectForKey:@"homeNumber"];
+        [self showMessageWithTitle:nil withMessage:@"Failed to fetch the contact details. Please try again." withButtonTittle:@"OK"];
+        
     }
-    
-    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
-    
     
 }
 
--(void)peoplePickerNavigationControllerDidCancel:(ABPeoplePickerNavigationController *)peoplePicker{
-    [_addressBookController dismissViewControllerAnimated:YES completion:nil];
+- (void) contactsSelection:(KBContactsSelectionViewController*)selection didRemoveContact:(APContact *)contact
+{
+    __block UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, 36)];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = [NSString stringWithFormat:@"%@ Selected", @(self.presentedCSVC.selectedContacts.count)];
+    self.presentedCSVC.additionalInfoView = label;
+    
+    NSLog(@"%@", self.presentedCSVC.selectedContacts);
 }
+
+- (void)contactsSelectionWillLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+}
+- (void)contactsSelectionDidLoadContacts:(KBContactsSelectionViewController *)csvc
+{
+}
+
 
 
 #pragma mark
@@ -702,4 +704,86 @@
         [self.navigationController popViewControllerAnimated:YES];
     
 }
+
+-(void)showMessageWithTitle:(NSString*)strTitle withMessage:(NSString*)strMessage withButtonTittle:(NSString*)strButtonTitle
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strTitle message:strMessage delegate:nil cancelButtonTitle:strButtonTitle otherButtonTitles: nil];
+    [alert show];
+}
+
+#pragma mark AssetLibrary Authorization Status
+
+-(int)AssetLibraryAuthStatus
+{
+    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+    switch (status)
+    {
+        case ALAuthorizationStatusRestricted:
+            return 0;
+            
+        case ALAuthorizationStatusDenied:
+            return 1;
+            
+        case ALAuthorizationStatusNotDetermined:
+            return 2;
+            
+        case ALAuthorizationStatusAuthorized:
+            return 3;
+            
+            
+        default:
+            return 4;
+    }
+}
+
+#pragma mark PHAsset Authorization Status
+
+-(void)PHAssetAuthStatus
+
+{
+    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+    
+    if (status == PHAuthorizationStatusAuthorized) {
+        // Access has been granted.
+    }
+    
+    else if (status == PHAuthorizationStatusDenied) {
+        // Access has been denied.
+    }
+    
+    else if (status == PHAuthorizationStatusNotDetermined)
+    {
+        
+        // Access has not been determined.
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            
+            if (status == PHAuthorizationStatusAuthorized) {
+                // Access has been granted.
+            }
+            
+            else {
+                // Access has been denied.
+            }
+        }];
+    }
+    
+    else if (status == PHAuthorizationStatusRestricted) {
+        // Restricted access - normally won't happen.
+    }
+}
+
+#pragma mark Keybord Toolbar Methods
+
+-(void)clearNumberPad
+{
+    self.ContactNo.text = @"";
+    [self.ContactNo resignFirstResponder];
+}
+
+-(void)doneWithNumberPad{
+    [self.ContactNo resignFirstResponder];
+}
+
+
+
 @end

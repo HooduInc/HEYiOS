@@ -13,7 +13,7 @@
 @property (nonatomic, strong) IBOutlet UITableView *groupTableView;
 @property (nonatomic, strong) IBOutlet UIView *addGroupView;
 @property (nonatomic, strong) IBOutlet UIButton *saveButton;
-@property (nonatomic, strong) IBOutlet UIButton *doneButton;
+@property (nonatomic, strong) IBOutlet UIButton *rearrangeButton;
 @property (nonatomic, strong) NSMutableArray *groupListArray;
 
 - (IBAction)addGroupButtonTapped:(id)sender;

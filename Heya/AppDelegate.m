@@ -7,7 +7,6 @@
 //
 
 #import "AppDelegate.h"
-#import <AdSupport/AdSupport.h>
 #import <StoreKit/StoreKit.h>
 #import "MessagesListViewController.h"
 #import "SplashViewController.h"
@@ -19,9 +18,6 @@
 #import "ModelInAppPurchase.h"
 #import "KeychainItemWrapper.h"
 #import "Harpy.h"
-
-#import <Fabric/Fabric.h>
-#import <Crashlytics/Crashlytics.h>
 
 
 
@@ -54,6 +50,22 @@
          (UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert)];
     }
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+    
+    NSString *remoteHostName =HeyBaseURL;
+    
+    self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+    [self.hostReachability startNotifier];
+    [self updateInterfaceWithReachability:self.hostReachability];
+    
+    self.internetReachability = [Reachability reachabilityForInternetConnection];
+    [self.internetReachability startNotifier];
+    [self updateInterfaceWithReachability:self.internetReachability];
+    
+    self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+    [self.wifiReachability startNotifier];
+    [self updateInterfaceWithReachability:self.wifiReachability];
+    
     
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -65,8 +77,66 @@
     buttonArray = [NSMutableArray array];
     preferances=[NSUserDefaults standardUserDefaults];
     
+
+    #pragma mark - KeyChainUDID Access Start
     
-   #pragma mark Check new update avilable or not in the app store.
+    #warning "Change it to HeyMessagingAppKeyLive before make it live
+    keychain = [[KeychainItemWrapper alloc] initWithIdentifier:@"HeyMessagingAppKeyLive" accessGroup:nil];
+    
+    // Get UDID from keychain (if it exists)
+    uniqueIdentifierStr=[keychain objectForKey:(__bridge id)(kSecValueData)];
+    
+    NSLog(@"KeyChainUDID: %@",uniqueIdentifierStr);
+    
+    //Generate Random UDID String
+    NSString *UID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    NSLog(@"UID: %@",UID);
+    
+    if (uniqueIdentifierStr.length==0)
+    {
+        [keychain setObject:UID forKey:(__bridge id)(kSecValueData)];
+        [keychain setObject:@"HEY" forKey:(id)kSecAttrAccount];
+        [keychain setObject:@"HeyMessenger" forKey: (id)kSecAttrService];
+        uniqueIdentifierStr=[keychain objectForKey:(__bridge id)(kSecValueData)];
+        NSLog(@"KeyChainUDID Added: %@",uniqueIdentifierStr);
+    }
+
+    #pragma mark - KeyChainUDID Access End
+
+    SplashViewController *splashController = [[SplashViewController alloc]initWithNibName:@"SplashViewController" bundle:nil];
+    MessagesListViewController *msgController = [[MessagesListViewController alloc]initWithNibName:@"MessagesListViewController" bundle:nil];
+    
+    if (![preferances boolForKey:@"HasLaunchedOnce"])
+    {
+        // This is the first launch ever
+        navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:splashController];
+        [preferances setObject:@"Standard" forKey:@"themeName"];
+        NSDate *applicationInstalledDate = [NSDate date];
+        NSLog(@"Application Installation Date: %@",applicationInstalledDate);
+        [preferances setObject:applicationInstalledDate forKey:@"applicationInstalledDate"];
+        [preferances setValue:[NSString stringWithFormat:@"%f",[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] floatValue]] forKey:@"AppVersion"];
+        [preferances setBool:0 forKey:@"shareHey"];
+        if ([self isNetworkAvailable] == NO)
+        {
+            [preferances setBool:YES forKey:@"HasLaunchedOnce"];
+            [self registerDevice];
+        }
+        [preferances synchronize];
+    }
+    else
+    {
+        // Override point for customization after application launch.
+        navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:msgController];
+    }
+
+    [self.window setRootViewController:navigationcontrollar];
+    navigationcontrollar.navigationBarHidden = YES;
+    
+    self.window.backgroundColor = [UIColor whiteColor];
+    [self.window makeKeyAndVisible];
+    
+    
+    #pragma mark Check new update avilable or not in the app store.
     
     // Set the App ID for your app
     [[Harpy sharedInstance] setAppID:@"1002913101"]; // iTunes Connect Mobile App ID
@@ -92,63 +162,10 @@
     [[Harpy sharedInstance] checkVersion];
     
     
-   #pragma mark - KeyChainUDID Access Start
-    
-    #warning "Change it to HeyMessagingAppKeyLive before make it live
-    keychain = [[KeychainItemWrapper alloc] initWithIdentifier:@"HeyMessagingAppKeyLive" accessGroup:nil];
-    
-    // Get UDID from keychain (if it exists)
-    uniqueIdentifierStr=[keychain objectForKey:(__bridge id)(kSecValueData)];
-    
-    NSLog(@"KeyChainUDID: %@",uniqueIdentifierStr);
-    
-    NSString *advertisingUDID = [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString];
-    NSLog(@"AdvertisingUDID: %@",advertisingUDID);
-    
-    if (uniqueIdentifierStr.length==0)
-    {
-        [keychain setObject:advertisingUDID forKey:(__bridge id)(kSecValueData)];
-        [keychain setObject:@"HEY" forKey:(id)kSecAttrAccount];
-        [keychain setObject:@"HeyMessenger" forKey: (id)kSecAttrService];
-        uniqueIdentifierStr=[keychain objectForKey:(__bridge id)(kSecValueData)];
-        NSLog(@"KeyChainUDID Added: %@",uniqueIdentifierStr);
-    }
-    
-   #pragma mark - KeyChainUDID Access End
-    
-    SplashViewController *splashController = [[SplashViewController alloc]initWithNibName:@"SplashViewController" bundle:nil];
-    MessagesListViewController *msgController = [[MessagesListViewController alloc]initWithNibName:@"MessagesListViewController" bundle:nil];
-    
-    if (![preferances boolForKey:@"HasLaunchedOnce"])
-    {
-        // This is the first launch ever
-        navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:splashController];
-        [preferances setObject:@"Standard" forKey:@"themeName"];
-        NSDate *applicationInstalledDate = [NSDate date];
-        NSLog(@"Application Installation Date: %@",applicationInstalledDate);
-        [preferances setObject:applicationInstalledDate forKey:@"applicationInstalledDate"];
-        [preferances setBool:0 forKey:@"shareHey"];
-        [preferances synchronize];
-    }
-    else
-    {
-        // Override point for customization after application launch.
-        navigationcontrollar = [[UINavigationController alloc]initWithRootViewController:msgController];
-    }
-    
-    [self.window setRootViewController:navigationcontrollar];
-    navigationcontrollar.navigationBarHidden = YES;
-    
-    self.window.backgroundColor = [UIColor whiteColor];
-    [self.window makeKeyAndVisible];
-    
+    #pragma mark ModelInAppPurchase SharedInstance
     
     //Transaction Observer if User lost network connection
     [ModelInAppPurchase sharedInstance];
-    
-    
-    //Crashlytics
-    [Fabric with:@[[Crashlytics class]]];
     
     return YES;
 }
@@ -172,8 +189,6 @@
         if (![preferances boolForKey:@"HasLaunchedOnce"])
         {
             [preferances setBool:YES forKey:@"HasLaunchedOnce"];
-            [preferances setValue:[NSString stringWithFormat:@"%f",currentBundleVersion] forKey:@"AppVersion"];
-            [preferances synchronize];
             [self registerDevice];
         }
         else
@@ -183,10 +198,9 @@
             {
                   [[[UIAlertView alloc] initWithTitle:nil message:@"Congratulations! You have succesfully updated the App." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
             }
-            
-            [preferances setValue:[NSString stringWithFormat:@"%f",currentBundleVersion] forKey:@"AppVersion"];
-            [preferances synchronize];
         }
+        [preferances setValue:[NSString stringWithFormat:@"%f",currentBundleVersion] forKey:@"AppVersion"];
+        [preferances synchronize];
     }
 }
 
@@ -244,7 +258,7 @@
 
 
 #pragma mark
-#pragma Call Webservice and Register the Device
+#pragma mark Call Webservice and Register the Device
 #pragma mark
 
 -(void)registerDevice
@@ -266,11 +280,10 @@
     
     userObj.strCurrentTimeStamp=timeStamp;
     
-    NSDate *downloadDate= (NSDate*)[[NSUserDefaults standardUserDefaults] valueForKey:@"applicationInstalledDate"];
+    NSDate *downloadDate= (NSDate*)[[NSUserDefaults standardUserDefaults] objectForKey:@"applicationInstalledDate"];
     NSDateFormatter *formatterStart = [[NSDateFormatter alloc] init];
     [formatterStart setDateFormat:@"yyyy-MM-dd"];
     NSString *accountCreated = [formatter stringFromDate:downloadDate];
-    
     userObj.strAccountCreated=accountCreated;
     
     [arrayUser addObject:userObj];
@@ -280,22 +293,6 @@
     if (isInserted)
     {
         //Send to server
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-        
-        NSString *remoteHostName =HeyBaseURL;
-        
-        self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-        [self.hostReachability startNotifier];
-        [self updateInterfaceWithReachability:self.hostReachability];
-        
-        self.internetReachability = [Reachability reachabilityForInternetConnection];
-        [self.internetReachability startNotifier];
-        [self updateInterfaceWithReachability:self.internetReachability];
-        
-        self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-        [self.wifiReachability startNotifier];
-        [self updateInterfaceWithReachability:self.wifiReachability];
         
         if([self isNetworkAvailable])
         {
@@ -408,7 +405,6 @@
         {
             NSLog(@"Network is not availbale.Please try again Later.");
         }
-        
     }
     
     else
@@ -418,6 +414,7 @@
 
 
 #pragma mark - HarpyDelegate
+
 - (void)harpyDidShowUpdateDialog
 {
     NSLog(@"%s", __FUNCTION__);

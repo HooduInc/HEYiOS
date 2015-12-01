@@ -12,10 +12,13 @@
 #import "ModelSubMenu.h"
 #import "AppDelegate.h"
 #import "NSString+Emoticonizer.h"
+#import "MBProgressHUD.h"
 
 @interface ThemeViewController ()
 {
     NSMutableArray *arrAllPageValue,*arrDisplayTableOne,*arrDisplayTableTwo,*arrDisplayTableThree,*arrDisplayTableFour, *arrDisplayUponImageview;
+    
+    MBProgressHUD *HUD;
 }
 
 @end
@@ -65,7 +68,7 @@ int globalIndex;
 {
     [super viewDidLoad];
     preferances=[NSUserDefaults standardUserDefaults];
-    
+    HUD = [[MBProgressHUD alloc] initWithView:self.view];
     carousel.delegate = self;
     carousel.dataSource = self;
     carousel.pageControl = self.pageControl;
@@ -81,6 +84,7 @@ int globalIndex;
 
 -(void) viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
     NSMutableArray *totalMenuArray=[[NSMutableArray alloc] init];
     arrDisplayUponImageview=[[NSMutableArray alloc] init];
     for (int i=1; i<=4; i++)
@@ -372,7 +376,6 @@ int globalIndex;
 
 - (IBAction)selectThemeButton:(id)sender
 {
-    
     NSLog(@"OutLineThemeStatus: %d", [preferances boolForKey:@"outLineThemeActive"]);
     NSLog(@"Label Value: %@",self.label.text);
     NSLog(@"Index Position: %d", globalIndex);
@@ -384,104 +387,120 @@ int globalIndex;
     }
     else
     {
-       [preferances setBool:NO forKey:@"outLineThemeActive"];
-    }
-    [preferances synchronize];
-    
-    NSMutableArray *colArray=[[NSMutableArray alloc] init];
-    NSMutableArray *createMainArray=[[NSMutableArray alloc] init];
-    colArray=[theme objectAtIndex:globalIndex];
-    
-    
-    arrAllPageValue=[[NSMutableArray alloc] init];
-    for (int i=1; i<=4; i++)
-    {
-        [arrAllPageValue addObject:[DBManager fetchMenuForPageNo:i]];
+        [preferances setBool:NO forKey:@"outLineThemeActive"];
     }
     
-    arrDisplayTableOne=[arrAllPageValue objectAtIndex:0];
-    arrDisplayTableTwo=[arrAllPageValue objectAtIndex:1];
-    arrDisplayTableThree=[arrAllPageValue objectAtIndex:2];
-    arrDisplayTableFour=[arrAllPageValue objectAtIndex:3];
     
+    [self.view addSubview:HUD];
+    [HUD show:YES];
     
-    for(int i=0; i<4; i++)
-    {
-        if (i==0)
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        
+        
+        NSMutableArray *colArray=[[NSMutableArray alloc] init];
+        NSMutableArray *createMainArray=[[NSMutableArray alloc] init];
+        colArray=[theme objectAtIndex:globalIndex];
+        
+        
+        arrAllPageValue=[[NSMutableArray alloc] init];
+        for (int i=1; i<=4; i++)
         {
-            for(int j=0; j<arrDisplayTableOne.count; j++)
+            [arrAllPageValue addObject:[DBManager fetchMenuForPageNo:i]];
+        }
+        
+        arrDisplayTableOne=[arrAllPageValue objectAtIndex:0];
+        arrDisplayTableTwo=[arrAllPageValue objectAtIndex:1];
+        arrDisplayTableThree=[arrAllPageValue objectAtIndex:2];
+        arrDisplayTableFour=[arrAllPageValue objectAtIndex:3];
+        
+        
+        for(int i=0; i<4; i++)
+        {
+            if (i==0)
             {
-                [createMainArray addObject:[colArray objectAtIndex:j]];
+                for(int j=0; j<arrDisplayTableOne.count; j++)
+                {
+                    [createMainArray addObject:[colArray objectAtIndex:j]];
+                }
             }
-        }
-        else
-        {
-            for(int j=0; j<8; j++)
+            else
             {
-                [createMainArray addObject:[colArray objectAtIndex:j]];
+                for(int j=0; j<8; j++)
+                {
+                    [createMainArray addObject:[colArray objectAtIndex:j]];
+                }
             }
         }
-    }
-    NSLog(@"Color ArraY: %@", createMainArray);
-    
-    for(int m=0; m<arrDisplayTableOne.count; m++)
-    {
-        ModelMenu *obj=[arrDisplayTableOne objectAtIndex:m];
-        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
-        if (obj.arrSubMenu.count>0)
+        NSLog(@"Color ArraY: %@", createMainArray);
+        
+        for(int m=0; m<arrDisplayTableOne.count; m++)
         {
-            for (int n=0;n<obj.arrSubMenu.count; n++) {
-                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
-                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            ModelMenu *obj=[arrDisplayTableOne objectAtIndex:m];
+            [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+            if (obj.arrSubMenu.count>0)
+            {
+                for (int n=0;n<obj.arrSubMenu.count; n++) {
+                    ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                    [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+                }
             }
         }
-    }
-    
-    for(int m=0; m<arrDisplayTableTwo.count; m++)
-    {
-        ModelMenu *obj=[arrDisplayTableTwo objectAtIndex:m];
-        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
-        if (obj.arrSubMenu.count>0)
+        
+        for(int m=0; m<arrDisplayTableTwo.count; m++)
         {
-            for (int n=0;n<obj.arrSubMenu.count; n++) {
-                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
-                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            ModelMenu *obj=[arrDisplayTableTwo objectAtIndex:m];
+            [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+            if (obj.arrSubMenu.count>0)
+            {
+                for (int n=0;n<obj.arrSubMenu.count; n++) {
+                    ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                    [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+                }
             }
         }
-    }
-    for(int m=0; m<arrDisplayTableThree.count; m++)
-    {
-        ModelMenu *obj=[arrDisplayTableThree objectAtIndex:m];
-        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
-        if (obj.arrSubMenu.count>0)
+        for(int m=0; m<arrDisplayTableThree.count; m++)
         {
-            for (int n=0;n<obj.arrSubMenu.count; n++) {
-                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
-                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            ModelMenu *obj=[arrDisplayTableThree objectAtIndex:m];
+            [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+            if (obj.arrSubMenu.count>0)
+            {
+                for (int n=0;n<obj.arrSubMenu.count; n++) {
+                    ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                    [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+                }
             }
         }
-    }
-    for(int m=0; m<arrDisplayTableFour.count; m++)
-    {
-        ModelMenu *obj=[arrDisplayTableFour objectAtIndex:m];
-        [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
-        if (obj.arrSubMenu.count>0)
+        for(int m=0; m<arrDisplayTableFour.count; m++)
         {
-            for (int n=0;n<obj.arrSubMenu.count; n++) {
-                ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
-                [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+            ModelMenu *obj=[arrDisplayTableFour objectAtIndex:m];
+            [DBManager updatemenuWithMenuId:obj.strMenuId withTableColoum:@"menuColor" withColoumValue:[createMainArray objectAtIndex:m]];
+            if (obj.arrSubMenu.count>0)
+            {
+                for (int n=0;n<obj.arrSubMenu.count; n++) {
+                    ModelSubMenu *objSub=[obj.arrSubMenu objectAtIndex:n];
+                    [DBManager updateSubMenuColorWithMenuId:obj.strMenuId subMenuID:objSub.strSubMenuId withcolorName:[createMainArray objectAtIndex:m]];
+                }
             }
         }
-    }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{ // 2
+            
+            //Mostly UI Updates
+            [HUD hide:YES];
+            [HUD removeFromSuperview];
+            
+            
+            
+            [preferances setObject:self.label.text forKey:@"themeName"];
+            [preferances synchronize];
+            
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Theme applied successfully."
+                                                           delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
+            [alert show];
+        });
+    });
     
     
-    //appDel.imageArray=[theme objectAtIndex:globalIndex];
-    //[preferances setObject:[theme objectAtIndex:globalIndex] forKey:@"imageArrayList"];
-    [preferances setObject:self.label.text forKey:@"themeName"];
-    [preferances synchronize];
     
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Theme applied successfully."
-                                                   delegate:self cancelButtonTitle:@"OK" otherButtonTitles: nil];
-    [alert show];
 }
 @end

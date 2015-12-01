@@ -70,11 +70,11 @@
 
 -(void) viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
+    
     NSTimeInterval timeint=[[NSDate date] timeIntervalSince1970];
     NSLog(@"MiliSeconds: %f",timeint*1000);
-    
-    
-    
+
     [self.view addSubview:HUD];
     [HUD show:YES];
     
@@ -193,148 +193,154 @@
 -(void) fetchAccountDetailsFromServerORDatabase
 {
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+    NSMutableArray *userProfile=[NSMutableArray array];
     userProfile=[DBManager fetchUserProfile];
-    ModelUserProfile *modObj=[userProfile objectAtIndex:0];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
-    
-    NSString *remoteHostName =HeyBaseURL;
-    
-    self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
-    [self.hostReachability startNotifier];
-    [self updateInterfaceWithReachability:self.hostReachability];
-    
-    self.internetReachability = [Reachability reachabilityForInternetConnection];
-    [self.internetReachability startNotifier];
-    [self updateInterfaceWithReachability:self.internetReachability];
-    
-    self.wifiReachability = [Reachability reachabilityForLocalWiFi];
-    [self.wifiReachability startNotifier];
-    [self updateInterfaceWithReachability:self.wifiReachability];
-    
-    if([self isNetworkAvailable])
+    if (userProfile.count>0)
     {
-         //fetch from server
+        ModelUserProfile *modObj=[userProfile firstObject];
         
-        [[HeyWebService service] fetchAccountDetailsFromServerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
+        
+        NSString *remoteHostName =HeyBaseURL;
+        
+        self.hostReachability = [Reachability reachabilityWithHostName:remoteHostName];
+        [self.hostReachability startNotifier];
+        [self updateInterfaceWithReachability:self.hostReachability];
+        
+        self.internetReachability = [Reachability reachabilityForInternetConnection];
+        [self.internetReachability startNotifier];
+        [self updateInterfaceWithReachability:self.internetReachability];
+        
+        self.wifiReachability = [Reachability reachabilityForLocalWiFi];
+        [self.wifiReachability startNotifier];
+        [self updateInterfaceWithReachability:self.wifiReachability];
+        
+        if([self isNetworkAvailable])
         {
-            [HUD hide:YES];
-            [HUD removeFromSuperview];
+            //fetch from server
             
+            [[HeyWebService service] fetchAccountDetailsFromServerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]  WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+             {
+                 [HUD hide:YES];
+                 [HUD removeFromSuperview];
+                 
+                 renewBtn.hidden=NO;
+                 
+                 if(isError)
+                 {
+                     NSLog(@"Couldn't fetch the details.");
+                     
+                     [self fetchFromDatabase];
+                     [self.myAccountTableView reloadData];
+                 }
+                 else
+                 {
+                     //NSLog(@"Success: %@",result);
+                     
+                     NSDictionary *resultDict=(id)result;
+                     
+                     if (resultDict)
+                     {
+                         totalMsgCountArray=[[NSMutableArray alloc] init];
+                         pointsArray=[[NSMutableArray alloc] init];
+                         
+                         if ([resultDict valueForKey:@"todays_count"])
+                             [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"todays_count"]]];
+                         
+                         if ([resultDict valueForKey:@"todays_count_point"])
+                             [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"todays_count_point"]]];
+                         
+                         
+                         if ([resultDict valueForKey:@"month_count"])
+                             [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"month_count"]]];
+                         
+                         if ([resultDict valueForKey:@"month_count_point"])
+                             [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"month_count_point"]]];
+                         
+                         
+                         
+                         
+                         if ([resultDict valueForKey:@"year_count"])
+                             [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"year_count"]]];
+                         
+                         if ([resultDict valueForKey:@"year_count_point"])
+                             [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"year_count_point"]]];
+                         
+                         
+                         
+                         
+                         if ([resultDict valueForKey:@"lifetime_count"])
+                             [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"lifetime_count"]]];
+                         
+                         if ([resultDict valueForKey:@"lifetime_count_point"])
+                             [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"lifetime_count_point"]]];
+                         
+                         
+                         [totalMsgCountArray addObject:@""];
+                         [totalMsgCountArray addObject:appVersion];
+                         [totalMsgCountArray addObject:dateDownloadedStr];
+                         [totalMsgCountArray addObject:@""];
+                         
+                         
+                         if ([resultDict valueForKey:@"account_started"])
+                         {
+                             NSString *accountStartedStr= [NSString stringWithFormat:@"%@",[resultDict valueForKey:@"account_started"]];
+                             
+                             [formatter setDateFormat:@"MM.dd.yyyy"];
+                             NSDate *accountStarted=[formatter dateFromString:accountStartedStr];
+                             
+                             NSString *revisedAccountStartedDateStr=[formatter stringFromDate:accountStarted];
+                             [totalMsgCountArray addObject:revisedAccountStartedDateStr];
+                             
+                         }
+                         else
+                         {
+                             [totalMsgCountArray addObject:dateDownloadedStr];
+                         }
+                         
+                         
+                         NSString *renewalDate=[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"my_renewal_date"]];
+                         
+                         if (![renewalDate isEqualToString:@"0"])
+                         {
+                             [formatter setDateFormat:@"MM.dd.yyyy"];
+                             NSDate *renewalDate= [formatter dateFromString:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"my_renewal_date"]]];
+                             
+                             [totalMsgCountArray addObject:[formatter stringFromDate:renewalDate]];
+                             
+                             [[NSUserDefaults standardUserDefaults] setObject:[formatter stringFromDate:renewalDate] forKey:@"accountRenewalDate"];
+                             [[NSUserDefaults standardUserDefaults] synchronize];
+                         }
+                         else
+                         {
+                             [totalMsgCountArray addObject:@"Not Subscribed"];
+                             [[NSUserDefaults standardUserDefaults] setObject:@"Not Subscribed" forKey:@"accountRenewalDate"];
+                             [[NSUserDefaults standardUserDefaults] synchronize];
+                         }
+                         
+                         NSLog(@"menuArray: %@",menuArray);
+                         NSLog(@"totalMsgCountArray: %@",totalMsgCountArray);
+                         NSLog(@"totalMsgCountArray :%ld",(long)totalMsgCountArray.count);
+                         NSLog(@"pointsArray: %@",pointsArray);
+                         
+                         [self.myAccountTableView reloadData];
+                     }
+                     
+                     
+                 }
+             }];
+        }
+        else
+        {
             renewBtn.hidden=NO;
-            
-            if(isError)
-            {
-                NSLog(@"Couldn't fetch the details.");
-                
-                [self fetchFromDatabase];
-                [self.myAccountTableView reloadData];
-            }
-            else
-            {
-                //NSLog(@"Success: %@",result);
-                
-                NSDictionary *resultDict=(id)result;
-                
-                if (resultDict)
-                {
-                    totalMsgCountArray=[[NSMutableArray alloc] init];
-                    pointsArray=[[NSMutableArray alloc] init];
-                    
-                    if ([resultDict valueForKey:@"todays_count"])
-                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"todays_count"]]];
+            //fetch from Database
+            [self fetchFromDatabase];
+            [self.myAccountTableView reloadData];
+        }
+    }
     
-                    if ([resultDict valueForKey:@"todays_count_point"])
-                        [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"todays_count_point"]]];
-                    
-        
-                    if ([resultDict valueForKey:@"month_count"])
-                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"month_count"]]];
-                    
-                    if ([resultDict valueForKey:@"month_count_point"])
-                        [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"month_count_point"]]];
-                    
-            
-                    
-                    
-                    if ([resultDict valueForKey:@"year_count"])
-                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"year_count"]]];
-                    
-                    if ([resultDict valueForKey:@"year_count_point"])
-                        [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"year_count_point"]]];
-                    
-                    
-                
-        
-                    if ([resultDict valueForKey:@"lifetime_count"])
-                        [totalMsgCountArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"lifetime_count"]]];
-                    
-                    if ([resultDict valueForKey:@"lifetime_count_point"])
-                        [pointsArray addObject:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"lifetime_count_point"]]];
-                    
-
-                    [totalMsgCountArray addObject:@""];
-                    [totalMsgCountArray addObject:appVersion];
-                    [totalMsgCountArray addObject:dateDownloadedStr];
-                    [totalMsgCountArray addObject:@""];
-                    
-                    
-                    if ([resultDict valueForKey:@"account_started"])
-                    {
-                       NSString *accountStartedStr= [NSString stringWithFormat:@"%@",[resultDict valueForKey:@"account_started"]];
-                        
-                        [formatter setDateFormat:@"MM.dd.yyyy"];
-                        NSDate *accountStarted=[formatter dateFromString:accountStartedStr];
-                        
-                        NSString *revisedAccountStartedDateStr=[formatter stringFromDate:accountStarted];
-                        [totalMsgCountArray addObject:revisedAccountStartedDateStr];
-                        
-                    }
-                    else
-                    {
-                        [totalMsgCountArray addObject:dateDownloadedStr];
-                    }
-                    
-                    
-                    NSString *renewalDate=[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"my_renewal_date"]];
-                    
-                    if (![renewalDate isEqualToString:@"0"])
-                    {
-                        [formatter setDateFormat:@"MM.dd.yyyy"];
-                        NSDate *renewalDate= [formatter dateFromString:[NSString stringWithFormat:@"%@",[resultDict valueForKey:@"my_renewal_date"]]];
-                        
-                        [totalMsgCountArray addObject:[formatter stringFromDate:renewalDate]];
-                        
-                        [[NSUserDefaults standardUserDefaults] setObject:[formatter stringFromDate:renewalDate] forKey:@"accountRenewalDate"];
-                         [[NSUserDefaults standardUserDefaults] synchronize];
-                    }
-                    else
-                    {
-                        [totalMsgCountArray addObject:@"Not Subscribed"];
-                        [[NSUserDefaults standardUserDefaults] setObject:@"Not Subscribed" forKey:@"accountRenewalDate"];
-                        [[NSUserDefaults standardUserDefaults] synchronize];
-                    }
-                    
-                    NSLog(@"menuArray: %@",menuArray);
-                    NSLog(@"totalMsgCountArray: %@",totalMsgCountArray);
-                    NSLog(@"totalMsgCountArray :%ld",(long)totalMsgCountArray.count);
-                    NSLog(@"pointsArray: %@",pointsArray);
-                    
-                    [self.myAccountTableView reloadData];
-                }
-
-                
-            }
-        }];
-    }
-    else
-    {
-        renewBtn.hidden=NO;
-        //fetch from Database
-        [self fetchFromDatabase];
-        [self.myAccountTableView reloadData];
-    }
+    
 }
 
 -(void) fetchFromDatabase
@@ -463,78 +469,85 @@
                  NSLog(@"Store Counrty: %@",storeCountry);
                  
                  
-                 NSMutableArray *userProfile=[[NSMutableArray alloc] init];
+                 NSMutableArray *userProfile=[NSMutableArray array];
                  userProfile=[DBManager fetchUserProfile];
-                 ModelUserProfile *modObj=[userProfile objectAtIndex:0];
                  
-                 //Check & store the trail period date or the subscription date in NSUserDefaults
-                 [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                  {
-                      NSDictionary *resultDict=(id)result;
-                      
-                      if (isError)
+                 if (userProfile.count>0) {
+                     
+                     ModelUserProfile *modObj=[userProfile firstObject];
+                     
+                     //Check & store the trail period date or the subscription date in NSUserDefaults
+                     [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                       {
-                          NSLog(@"Subscription Fetch Failed: %@",strMsg);
-                          NSDate *expirationDate = [[NSUserDefaults standardUserDefaults]
-                                                    objectForKey:kSubscriptionExpirationDateKey];
+                          NSDictionary *resultDict=(id)result;
                           
-                          UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:nil message:[NSString stringWithFormat:@"Your subscription expired on %@",[format stringFromDate:expirationDate]] delegate:self cancelButtonTitle:@"Renew Now" otherButtonTitles:@"Later",nil];
-                          buyAlert.tag=0;
-                          [buyAlert show];
-                      }
-                      else
-                      {
-                          if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                          if (isError)
                           {
-                              NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
-                              
-                              if (serverDateString && serverDateString.length>0)
-                              {
-                                  NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                                  [format setDateFormat:@"MM.dd.yyyy"];
-                                  NSDate * serverDate =[format dateFromString:serverDateString];
-                                  NSLog(@"Server Date: %@",serverDate);
-                                  if (serverDate)
-                                  {
-                                      [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                      [[NSUserDefaults standardUserDefaults] synchronize];
-                                  }
-                              }
-                              
+                              NSLog(@"Subscription Fetch Failed: %@",strMsg);
                               NSDate *expirationDate = [[NSUserDefaults standardUserDefaults]
                                                         objectForKey:kSubscriptionExpirationDateKey];
                               
-                              if ([[[resultDict valueForKey:@"error"] valueForKey:@"response"] containsString:@"FREE Trial!"])
+                              UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:nil message:[NSString stringWithFormat:@"Your subscription expired on %@",[format stringFromDate:expirationDate]] delegate:self cancelButtonTitle:@"Renew Now" otherButtonTitles:@"Later",nil];
+                              buyAlert.tag=0;
+                              [buyAlert show];
+                          }
+                          else
+                          {
+                              if ([[resultDict valueForKey:@"status"] boolValue]==true)
                               {
-                                  UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:product.localizedTitle message:[NSString stringWithFormat:@"%@",[[resultDict valueForKey:@"error"] valueForKey:@"response"]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                                  NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
                                   
-                                  buyAlert.tag=0;
-                                  [buyAlert show];
+                                  if (serverDateString && serverDateString.length>0)
+                                  {
+                                      NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                      [format setDateFormat:@"MM.dd.yyyy"];
+                                      NSDate * serverDate =[format dateFromString:serverDateString];
+                                      NSLog(@"Server Date: %@",serverDate);
+                                      if (serverDate)
+                                      {
+                                          [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                          [[NSUserDefaults standardUserDefaults] synchronize];
+                                      }
+                                  }
+                                  
+                                  NSDate *expirationDate = [[NSUserDefaults standardUserDefaults]
+                                                            objectForKey:kSubscriptionExpirationDateKey];
+                                  
+                                  if ([[[resultDict valueForKey:@"error"] valueForKey:@"response"] containsString:@"FREE Trial!"])
+                                  {
+                                      UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:product.localizedTitle message:[NSString stringWithFormat:@"%@",[[resultDict valueForKey:@"error"] valueForKey:@"response"]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                                      
+                                      buyAlert.tag=0;
+                                      [buyAlert show];
+                                  }
+                                  
+                                  else if ([[[resultDict valueForKey:@"error"] valueForKey:@"response"] containsString:@"Your trial period has expired."])
+                                  {
+                                      
+                                      UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:product.localizedTitle message:[NSString stringWithFormat:@"%@ %@ \nPrice: %@",[[resultDict valueForKey:@"error"] valueForKey:@"response"],product.localizedDescription,[priceFormatter stringFromNumber:product.price]] delegate:self cancelButtonTitle:@"Renew Now" otherButtonTitles:@"Later",nil];
+                                      
+                                      buyAlert.tag=0;
+                                      [buyAlert show];
+                                  }
+                                  
+                                  else
+                                  {
+                                      UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:@"Already Subscribed." message:[NSString stringWithFormat:@"Your subscription will expire on %@",[format stringFromDate:expirationDate]] delegate:self cancelButtonTitle:@"Renew Now" otherButtonTitles:@"Later",nil];
+                                      buyAlert.tag=0;
+                                      [buyAlert show];
+                                      
+                                      
+                                      
+                                  }
                               }
                               
-                              else if ([[[resultDict valueForKey:@"error"] valueForKey:@"response"] containsString:@"Your trial period has expired."])
-                              {
-                                  
-                                  UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:product.localizedTitle message:[NSString stringWithFormat:@"%@ %@ \nPrice: %@",[[resultDict valueForKey:@"error"] valueForKey:@"response"],product.localizedDescription,[priceFormatter stringFromNumber:product.price]] delegate:self cancelButtonTitle:@"Renew Now" otherButtonTitles:@"Later",nil];
-                                  
-                                  buyAlert.tag=0;
-                                  [buyAlert show];
-                              }
-                              
-                              else
-                              {
-                                  UIAlertView *buyAlert= [[UIAlertView alloc] initWithTitle:@"Already Subscribed." message:[NSString stringWithFormat:@"Your subscription will expire on %@",[format stringFromDate:expirationDate]] delegate:self cancelButtonTitle:@"Renew Now" otherButtonTitles:@"Later",nil];
-                                  buyAlert.tag=0;
-                                  [buyAlert show];
-                                  
-                                  
-                                  
-                              }
                           }
                           
-                      }
-                      
-                  }];
+                      }];
+                     
+                 }
+                 
+                 
                  
              }
          }

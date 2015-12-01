@@ -162,7 +162,6 @@
 		9F272F771BF09DCC005814D2 /* KBContactsTableViewDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F272F691BF09DCC005814D2 /* KBContactsTableViewDataSource.m */; };
 		9F272F781BF09DCC005814D2 /* KBRadioButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F272F6B1BF09DCC005814D2 /* KBRadioButton.m */; };
 		9F2813B51B28199200DEE3BB /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F2813B41B28199200DEE3BB /* StoreKit.framework */; };
-		9F2813B71B281A9800DEE3BB /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F2813B61B281A9800DEE3BB /* AdSupport.framework */; };
 		9F2813BD1B281C5200DEE3BB /* InAppPurchaseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F2813BC1B281C5200DEE3BB /* InAppPurchaseHelper.m */; };
 		9F2813C01B281CA800DEE3BB /* ModelInAppPurchase.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F2813BF1B281CA800DEE3BB /* ModelInAppPurchase.m */; };
 		9F2813C21B28419E00DEE3BB /* dollar_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F2813C11B28419E00DEE3BB /* dollar_icon.png */; };
@@ -224,8 +223,6 @@
 		9F71C4F41A553D98006AA4FF /* GroupMemberTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9F71C4F21A553D98006AA4FF /* GroupMemberTableViewCell.xib */; };
 		9F768A771A4D69F9007D8CC5 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F768A761A4D69F9007D8CC5 /* AddressBook.framework */; };
 		9F768A791A4D6A0C007D8CC5 /* AddressBookUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F768A781A4D6A0C007D8CC5 /* AddressBookUI.framework */; };
-		9F80F1D51BDE4AD000220D04 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F80F1D31BDE4ACF00220D04 /* Fabric.framework */; };
-		9F80F1D61BDE4AD000220D04 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F80F1D41BDE4AD000220D04 /* Crashlytics.framework */; };
 		9F8EAFD01A8C7EFB00CE173B /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9F8EAFC31A8C7EFB00CE173B /* OpenSans-Bold.ttf */; };
 		9F8EAFD11A8C7EFB00CE173B /* OpenSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9F8EAFC41A8C7EFB00CE173B /* OpenSans-BoldItalic.ttf */; };
 		9F8EAFD21A8C7EFB00CE173B /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9F8EAFC51A8C7EFB00CE173B /* OpenSans-ExtraBold.ttf */; };
@@ -300,6 +297,7 @@
 		9FE7D1631A54085600EE41CA /* GroupMemberViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FE7D1611A54085600EE41CA /* GroupMemberViewController.m */; };
 		9FE7D1681A540BEE00EE41CA /* man_group@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FE7D1671A540BEE00EE41CA /* man_group@2x.png */; };
 		9FE7D16C1A54102E00EE41CA /* GroupMemberViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FE7D16B1A54102E00EE41CA /* GroupMemberViewController.xib */; };
+		9FED78171C083BBE00713B9D /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FED78161C083BBE00713B9D /* CoreTelephony.framework */; };
 		9FEE5C631AEE17FC00ADE682 /* Pick4mListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FEE5C611AEE17FC00ADE682 /* Pick4mListViewController.m */; };
 		9FEE5C641AEE17FC00ADE682 /* Pick4mListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FEE5C621AEE17FC00ADE682 /* Pick4mListViewController.xib */; };
 		9FF6A24B1AE52EEB0016F55F /* editable_btn.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FF6A24A1AE52EEB0016F55F /* editable_btn.png */; };
@@ -530,7 +528,6 @@
 		9F272F6A1BF09DCC005814D2 /* KBRadioButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBRadioButton.h; sourceTree = "<group>"; };
 		9F272F6B1BF09DCC005814D2 /* KBRadioButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBRadioButton.m; sourceTree = "<group>"; };
 		9F2813B41B28199200DEE3BB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		9F2813B61B281A9800DEE3BB /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		9F2813BB1B281C5200DEE3BB /* InAppPurchaseHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InAppPurchaseHelper.h; sourceTree = "<group>"; };
 		9F2813BC1B281C5200DEE3BB /* InAppPurchaseHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InAppPurchaseHelper.m; sourceTree = "<group>"; };
 		9F2813BE1B281CA800DEE3BB /* ModelInAppPurchase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelInAppPurchase.h; sourceTree = "<group>"; };
@@ -610,8 +607,6 @@
 		9F71C4F21A553D98006AA4FF /* GroupMemberTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GroupMemberTableViewCell.xib; sourceTree = "<group>"; };
 		9F768A761A4D69F9007D8CC5 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		9F768A781A4D6A0C007D8CC5 /* AddressBookUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBookUI.framework; path = System/Library/Frameworks/AddressBookUI.framework; sourceTree = SDKROOT; };
-		9F80F1D31BDE4ACF00220D04 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
-		9F80F1D41BDE4AD000220D04 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
 		9F8EAFC31A8C7EFB00CE173B /* OpenSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Bold.ttf"; sourceTree = "<group>"; };
 		9F8EAFC41A8C7EFB00CE173B /* OpenSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		9F8EAFC51A8C7EFB00CE173B /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
@@ -704,6 +699,7 @@
 		9FE7D1611A54085600EE41CA /* GroupMemberViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GroupMemberViewController.m; sourceTree = "<group>"; };
 		9FE7D1671A540BEE00EE41CA /* man_group@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "man_group@2x.png"; sourceTree = "<group>"; };
 		9FE7D16B1A54102E00EE41CA /* GroupMemberViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GroupMemberViewController.xib; sourceTree = "<group>"; };
+		9FED78161C083BBE00713B9D /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		9FEE5C601AEE17FC00ADE682 /* Pick4mListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pick4mListViewController.h; sourceTree = "<group>"; };
 		9FEE5C611AEE17FC00ADE682 /* Pick4mListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Pick4mListViewController.m; sourceTree = "<group>"; };
 		9FEE5C621AEE17FC00ADE682 /* Pick4mListViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Pick4mListViewController.xib; sourceTree = "<group>"; };
@@ -730,11 +726,10 @@
 			files = (
 				9FE54D631BDE53D6009E3A4C /* libsqlite3.tbd in Frameworks */,
 				9FE54D5F1BDE53B8009E3A4C /* libz.1.2.5.tbd in Frameworks */,
+				9FED78171C083BBE00713B9D /* CoreTelephony.framework in Frameworks */,
 				9FE7B2B81BF1C731009578E6 /* Photos.framework in Frameworks */,
 				9FC2F49A1BD10EFF00E80B96 /* GLKit.framework in Frameworks */,
 				9F2DC6011B947559002549F2 /* Security.framework in Frameworks */,
-				9F80F1D61BDE4AD000220D04 /* Crashlytics.framework in Frameworks */,
-				9F2813B71B281A9800DEE3BB /* AdSupport.framework in Frameworks */,
 				9F2813B51B28199200DEE3BB /* StoreKit.framework in Frameworks */,
 				39AFADC11A08D6D0004DF43F /* SystemConfiguration.framework in Frameworks */,
 				39AFADB71A08D670004DF43F /* MessageUI.framework in Frameworks */,
@@ -748,7 +743,6 @@
 				39AD3A1219E80C8800A32054 /* CoreGraphics.framework in Frameworks */,
 				39AD3A1419E80C8800A32054 /* UIKit.framework in Frameworks */,
 				39AD3A1019E80C8800A32054 /* Foundation.framework in Frameworks */,
-				9F80F1D51BDE4AD000220D04 /* Fabric.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -831,8 +825,6 @@
 		39AD3A0319E80C8800A32054 = {
 			isa = PBXGroup;
 			children = (
-				9F80F1D31BDE4ACF00220D04 /* Fabric.framework */,
-				9F80F1D41BDE4AD000220D04 /* Crashlytics.framework */,
 				39AD3A1519E80C8800A32054 /* Heya */,
 				39AD3A2E19E80C8900A32054 /* HeyaTests */,
 				39AD3A0E19E80C8800A32054 /* Frameworks */,
@@ -852,12 +844,12 @@
 		39AD3A0E19E80C8800A32054 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9FE7B2B71BF1C731009578E6 /* Photos.framework */,
 				9FE54D621BDE53D6009E3A4C /* libsqlite3.tbd */,
 				9FE54D5B1BDE53B8009E3A4C /* libz.1.2.5.tbd */,
+				9FED78161C083BBE00713B9D /* CoreTelephony.framework */,
+				9FE7B2B71BF1C731009578E6 /* Photos.framework */,
 				9FC2F4991BD10EFF00E80B96 /* GLKit.framework */,
 				9F2DC6001B947559002549F2 /* Security.framework */,
-				9F2813B61B281A9800DEE3BB /* AdSupport.framework */,
 				9F2813B41B28199200DEE3BB /* StoreKit.framework */,
 				9FC544FD1A5700210046074B /* QuartzCore.framework */,
 				9F9AB9621A52842B005734E2 /* AssetsLibrary.framework */,
@@ -1541,7 +1533,6 @@
 				39AD3A0819E80C8800A32054 /* Sources */,
 				39AD3A0919E80C8800A32054 /* Frameworks */,
 				39AD3A0A19E80C8800A32054 /* Resources */,
-				9F80F1D21BDE4A9500220D04 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1812,22 +1803,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		9F80F1D21BDE4A9500220D04 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "./Fabric.framework/run 0857aa71c4b0d353965960b0c7d98e3506b33f6a d9e5c92c34725ff8aea04d3c98fd1445e02a079a745dd34c3a2b5beb64e50355";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		39AD3A0819E80C8800A32054 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -2066,6 +2041,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = HeyMessenger.HooduInc.com;
 				PRODUCT_NAME = Hey;
 				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -2088,6 +2064,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = HeyMessenger.HooduInc.com;
 				PRODUCT_NAME = Hey;
 				PROVISIONING_PROFILE = "51269200-2961-4688-95ab-74f52af80442";
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

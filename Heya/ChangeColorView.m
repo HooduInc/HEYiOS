@@ -52,6 +52,7 @@ long int seletRow;
 
 -(void) viewWillAppear:(BOOL)animated
 {
+     [super viewWillAppear:animated];
     for(int i=0; i<[themeName count];i++)
     {
         if([[themeName objectAtIndex:i] isEqual:[preferances valueForKey:@"themeName"]])

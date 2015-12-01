@@ -54,7 +54,7 @@ NSUserDefaults *preferances;
 
 -(void) viewWillAppear:(BOOL)animated
 {
-    
+     [super viewWillAppear:animated];
     [self.themeNameLabel setText:[preferances valueForKey:@"themeName"]];
     
     NSMutableArray *userProfile=[[NSMutableArray alloc] init];
@@ -62,7 +62,7 @@ NSUserDefaults *preferances;
     
     if(userProfile.count>0)
     {
-        ModelUserProfile *obj=[userProfile objectAtIndex:0];
+        ModelUserProfile *obj=[userProfile firstObject];
         
         if (obj.strFirstName.length>0 || obj.strLastName.length>0)
             self.userName.text=[NSString stringWithFormat:@"%@ %@",obj.strFirstName, obj.strLastName];

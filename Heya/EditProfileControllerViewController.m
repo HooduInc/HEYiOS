@@ -49,15 +49,14 @@
 
 -(void) viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
     NSMutableArray *userProfile=[[NSMutableArray alloc] init];
     userProfile=[DBManager fetchUserProfile];
     
     if(userProfile.count>0)
     {
+        ModelUserProfile *obj=[userProfile firstObject];
         
-        ModelUserProfile *obj=[[ModelUserProfile alloc] init];
-        
-        obj=[userProfile objectAtIndex:0];
         strUDID=obj.strDeviceUDID;
         if (obj.strLastName.length>0) {
             name.text=[NSString stringWithFormat:@"%@ %@",obj.strFirstName,obj.strLastName];
@@ -112,13 +111,14 @@
 
 - (IBAction)back:(id)sender
 {
-    
+    [name resignFirstResponder];
+    [phone resignFirstResponder];
+    [self.view endEditing:YES];
     [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (IBAction)doneBtnTapped:(id)sender
 {
-    
     [name resignFirstResponder];
     [phone resignFirstResponder];
     
@@ -205,112 +205,116 @@
 
                 NSMutableArray *userProfile=[[NSMutableArray alloc] init];
                 userProfile=[DBManager fetchUserProfile];
-                ModelUserProfile *modObj=[userProfile objectAtIndex:0];
                 
-                NSString *createFullName=[NSString stringWithFormat:@"%@ %@",modObj.strFirstName,modObj.strLastName];
-                
-                NSString *accountCreationDateStr=@"";
-                NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
-                if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                if (userProfile.count>0)
                 {
-                    //[formatter setDateFormat:@"yyyy-MM-dd"];
-                    NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
-                    [formatter setDateFormat:@"yyyy-MM-dd"];
-                    accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
-                }
-                
-                NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
-                if (modObj.isRegistered==0)
-                {
-                    [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[createFullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[modObj.strPhoneNo stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         [HUD hide:YES];
-                         [HUD removeFromSuperview];
-                         if (isError)
+                    ModelUserProfile *modObj=[userProfile firstObject];
+                    
+                    NSString *createFullName=[NSString stringWithFormat:@"%@ %@",modObj.strFirstName,modObj.strLastName];
+                    
+                    NSString *accountCreationDateStr=@"";
+                    NSLog(@"Account Creation Date: %@",modObj.strAccountCreated);
+                    if (modObj.strAccountCreated && modObj.strAccountCreated.length>0)
+                    {
+                        //[formatter setDateFormat:@"yyyy-MM-dd"];
+                        NSDate *accountCreationDate=[formatter dateFromString:modObj.strAccountCreated];
+                        [formatter setDateFormat:@"yyyy-MM-dd"];
+                        accountCreationDateStr=[formatter stringFromDate:accountCreationDate];
+                    }
+                    
+                    NSLog(@"isSendToServer Status: %d",modObj.isRegistered);
+                    if (modObj.isRegistered==0)
+                    {
+                        [[HeyWebService service] registerWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[createFullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[modObj.strPhoneNo stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp AccountCreated:accountCreationDateStr WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                          {
-                             NSLog(@"Resigartion Error Message: %@",strMsg);
-                             
-                             if ([strMsg isEqualToString:@"This Mobile UDID already exists. Try with another!"])
+                             [HUD hide:YES];
+                             [HUD removeFromSuperview];
+                             if (isError)
                              {
-                                 UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                                 NSLog(@"Resigartion Error Message: %@",strMsg);
                                  
-                                 [showDialog show];
-                                 
-                                 [DBManager updatedToServerForUserWithFlag:1];
+                                 if ([strMsg containsString:@"This Mobile UDID already exists. Try with another!"])
+                                 {
+                                     UIAlertView *showDialog=[[UIAlertView alloc] initWithTitle:nil message:@"Already Registered." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+                                     
+                                     [showDialog show];
+                                     
+                                     [DBManager updatedToServerForUserWithFlag:1];
+                                     [DBManager isRegistrationSuccessful:1];
+                                     
+                                 }
+                             }
+                             
+                             else
+                             {   [DBManager updatedToServerForUserWithFlag:1];
                                  [DBManager isRegistrationSuccessful:1];
+                                 NSLog(@"Resigartion Success Message: %@",strMsg);
                                  
-                             }
-                         }
-                         
-                         else
-                         {   [DBManager updatedToServerForUserWithFlag:1];
-                             [DBManager isRegistrationSuccessful:1];
-                             NSLog(@"Resigartion Success Message: %@",strMsg);
-                             
-                             if (pushDeviceTokenId && pushDeviceTokenId.length>0)
-                             {
-                                 [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                                  {
-                                      NSLog(@"Push Message: %@",strMsg);
-                                  }];
-                             }
-                             
-                             //store the trail period date or the subscription date in NSUserDefaults
-                             [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                              {
-                                  if (isError)
-                                  {
-                                      NSLog(@"Subscription Fetch Failed: %@",strMsg);
-                                  }
-                                  else
-                                  {
-                                      NSDictionary *resultDict=(id)result;
-                                      if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                                 if (pushDeviceTokenId && pushDeviceTokenId.length>0)
+                                 {
+                                     [[HeyWebService service] fetchPushNotificationFromServerWithPushToken:[pushDeviceTokenId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] UDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                                       {
-                                          NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
-                                          
-                                          if (serverDateString && serverDateString.length>0)
-                                          {
-                                              NSDateFormatter *format=[[NSDateFormatter alloc] init];
-                                              [format setDateFormat:@"MM.dd.yyyy"];
-                                              NSDate * serverDate =[format dateFromString:serverDateString];
-                                              NSLog(@"Server Date: %@",serverDate);
-                                              if (serverDate)
-                                              {
-                                                  [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
-                                                  [[NSUserDefaults standardUserDefaults] synchronize];
-                                              }
-                                          }
-                                          
+                                          NSLog(@"Push Message: %@",strMsg);
+                                      }];
+                                 }
+                                 
+                                 //store the trail period date or the subscription date in NSUserDefaults
+                                 [[HeyWebService service] fetchSubscriptionDateWithUDID:modObj.strDeviceUDID WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
+                                  {
+                                      if (isError)
+                                      {
+                                          NSLog(@"Subscription Fetch Failed: %@",strMsg);
                                       }
-                                  }
-                                  
-                              }];
-                             //store the trail period date or the subscription date in NSUserDefaults
-                             
-                             [self.navigationController popViewControllerAnimated:YES];
-                         }
-                     }];
-                }
-                else
-                {
-                    [[HeyWebService service] updateProfileWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[createFullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[userObj.strPhoneNo stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
-                     {
-                         
-                         [HUD hide:YES];
-                         [HUD removeFromSuperview];
-                         if (isError)
-                             NSLog(@"Updation Error Message: %@",strMsg);
-                         
-                         else
+                                      else
+                                      {
+                                          NSDictionary *resultDict=(id)result;
+                                          if ([[resultDict valueForKey:@"status"] boolValue]==true)
+                                          {
+                                              NSString *serverDateString=[NSString stringWithFormat:@"%@", [[resultDict valueForKey:@"error"] valueForKey:@"date"]];
+                                              
+                                              if (serverDateString && serverDateString.length>0)
+                                              {
+                                                  NSDateFormatter *format=[[NSDateFormatter alloc] init];
+                                                  [format setDateFormat:@"MM.dd.yyyy"];
+                                                  NSDate * serverDate =[format dateFromString:serverDateString];
+                                                  NSLog(@"Server Date: %@",serverDate);
+                                                  if (serverDate)
+                                                  {
+                                                      [[NSUserDefaults standardUserDefaults] setObject:serverDate forKey:kSubscriptionExpirationDateKey];
+                                                      [[NSUserDefaults standardUserDefaults] synchronize];
+                                                  }
+                                              }
+                                              
+                                          }
+                                      }
+                                      
+                                  }];
+                                 //store the trail period date or the subscription date in NSUserDefaults
+                                 
+                                 [self.navigationController popViewControllerAnimated:YES];
+                             }
+                         }];
+                    }
+                    else
+                    {
+                        [[HeyWebService service] updateProfileWithUDID:[modObj.strDeviceUDID stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] FullName:[createFullName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] ContactNumber:[userObj.strPhoneNo stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] TimeStamp:timeStamp WithCompletionHandler:^(id result, BOOL isError, NSString *strMsg)
                          {
-                             NSLog(@"Updation Success Message: %@",strMsg);
-                             [DBManager updatedToServerForUserWithFlag:1];
-                             [self.navigationController popViewControllerAnimated:YES];
-                         }
-                         
-                     }];
-                
+                             
+                             [HUD hide:YES];
+                             [HUD removeFromSuperview];
+                             if (isError)
+                                 NSLog(@"Updation Error Message: %@",strMsg);
+                             
+                             else
+                             {
+                                 NSLog(@"Updation Success Message: %@",strMsg);
+                                 [DBManager updatedToServerForUserWithFlag:1];
+                                 [self.navigationController popViewControllerAnimated:YES];
+                             }
+                             
+                         }];
+                        
+                    }
                 }
             }
             else
